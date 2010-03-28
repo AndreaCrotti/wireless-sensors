@@ -1,0 +1,96 @@
+
+* Groupmates
+  alin.bastea@rwth-aachen.de,
+  hi2sumukhi@gmail.com,
+  Andrea Crotti <andrea.crotti@rwth-aachen.de>,
+  ahsan.muneer.gill@gmail.com,
+  marius.grysla@rwth-aachen.de,
+  lierenfeld@yahoo.de,
+  Can Liu <can.liu@rwth-aachen.de>,
+  abid.mehmood@rwth-aachen.de,
+  rizwan.mumtaz@rwth-aachen.de,
+  dominik.schulte@web.de,
+  alaa.alhamoud@rwth-aachen.de,
+  Tian.Yu@rwth-aachen.de,
+  Muhammad Hamad Alizai <hamad.alizai@rwth-aachen.de>,
+  Nicolai Viol <nicolai.viol@rwth-aachen.de>
+
+* TODO Get tinyos up and running on a virtual machine or whatever else
+  [[http://docs.tinyos.net/index.php/Getting_started][installing guide]]
+
+* Programming in NESC
+  An extension of C language.
+
+* From Mail
+  The main goal of the sensor networks lab is to give you a hands-on
+  experience on distributed systems and communications. For more see
+  http://ds.informatik.rwth-aachen.de/teaching/ss10/lab_wsn/
+
+  The lab requires strong knowledge of C. If you are still scared of casts,
+  pointers and so on you probably want to get the next best C-book and fix
+  this.
+
+  As some people have asked us about introductory readings, here is a little
+  list. Please make sure you have read them before trying to program a sensor
+  node ;-)
+
+  Background about sensor networks (nice to read): 
+  ACM SPECIAL ISSUE
+  [[http://portal.acm.org/toc.cfm%3Fid%3D990680&type%3Dissue&coll%3DACM&dl%3DACM&CFID%3D73957894&CFTOKEN%3D16376143#990702][background about sensor networks]]
+  (Works only from inside RWTH). Please scroll to "SPECIAL ISSUE: Wireless
+  sensor networks" and read the first three of the five articles.  After that,
+  "System architecture directions for network sensors
+  (www.tinyos.net/papers/tos.pdf )" gives you a deeper introduction to the
+  Sensornode OS (TinyOS) and the node hardware. 
+  "The nesC Language: A Holistic Approach to Networked Embedded Systems
+  (nescc.sourceforge.net/papers/nesc-pldi-2003.pdf)" gives you an introduction
+  to NesC, the C extension used to program the sensor nodes. 
+
+  Tutorial ( http://docs.tinyos.net/index.php/TinyOS_Tutorials ): This one
+  should answer most of your questions when you start to design your first
+  program. More information can be found at
+  http://www.tinyos.net/scoop/special/support and specifically in the TinyOS
+  Programming manual, which can be found at
+  http://csl.stanford.edu/~pal/pubs/tinyos-programming.pdf
+
+  Software:
+  We will have machines set up in the lab where you develop your programs and
+  deploy it on the nodes. You will get account and keys. However, some of you
+  may want to have the software on their own systems, too. Follow
+  http://docs.tinyos.net/index.php/Getting_started for installation guide for
+  various OS. 
+
+  Just for your information, we will use Telosb nodes from crossbow running
+  tinyos-2.x.
+
+  Looking forward to see you at the first meeting,
+  Nico and Hamad
+
+
+* TinyOS
+  - concurrency
+  - power saving
+  - limited physical parallelism
+  - robust operations
+
+  *Context switch speed* is a very important factor to consider.
+
+** Components
+   Falling in 3 categories:
+   - hardware abstractions
+   - synthetic hardware
+   - high level software components
+
+   This component model allows for easy migrations for the hardware/software boundary.
+
+   Every physical device is in fact represented as a stack of abstractions, which monitor the conditions and forward them all the time.
+
+
+* Links
+
+* Dictionary
+  | ACR  | meaning |
+  |------+---------|
+  | UART |         |
+  | DMA  |         |
+  | FPGA |         |
