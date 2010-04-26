@@ -1,3 +1,21 @@
+* Organization
+  - weekly tasks
+
+** User/pass
+   sensornet1/mariosandrea
+
+
+* Tiny
+  - light sensor
+  - humidity sensor
+  - usb port
+
+* Demo with proper programming style
+  Send it with zip/gz/bzip2/tar
+  - doxygen programming
+  - describe algorithms and approach used
+
+* One final project with 6 weeks of time
 
 * Groupmates
   alin.bastea@rwth-aachen.de,
@@ -66,14 +84,20 @@
   Looking forward to see you at the first meeting,
   Nico and Hamad
 
-
 * TinyOS
   - concurrency
   - power saving
   - limited physical parallelism
   - robust operations
-
   *Context switch speed* is a very important factor to consider.
+
+** Not an operating system in the common sense:
+   - NO process/memory management
+   - NO scheduling
+   More like a set of library to use, no USER/KERNEL space concept.
+
+   Language used is netc, an extension of C.
+   Components are similar to OO approach of seeing things.
 
 ** Components
    Falling in 3 categories:
@@ -85,6 +109,18 @@
 
    Every physical device is in fact represented as a stack of abstractions, which monitor the conditions and forward them all the time.
 
+** Simulator
+   A simulator is given by [[http://docs.tinyos.net/index.php/TOSSIM][TOSSIM]], a python/C application to simulate networks of components
+
+* Netc
+  - Interfaces
+  - Components
+
+* Tasks
+** First task
+   - toogle on the three leds on a node network
+
+   In TOSSIM we can run only one program at a time.
 
 * Links
 
