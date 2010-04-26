@@ -1,10 +1,6 @@
 * Organization
   - weekly tasks
 
-** User/pass
-   sensornet1/mariosandrea
-
-
 * Tiny
   - light sensor
   - humidity sensor
@@ -14,24 +10,6 @@
   Send it with zip/gz/bzip2/tar
   - doxygen programming
   - describe algorithms and approach used
-
-* One final project with 6 weeks of time
-
-* Groupmates
-  alin.bastea@rwth-aachen.de,
-  hi2sumukhi@gmail.com,
-  Andrea Crotti <andrea.crotti@rwth-aachen.de>,
-  ahsan.muneer.gill@gmail.com,
-  marius.grysla@rwth-aachen.de,
-  lierenfeld@yahoo.de,
-  Can Liu <can.liu@rwth-aachen.de>,
-  abid.mehmood@rwth-aachen.de,
-  rizwan.mumtaz@rwth-aachen.de,
-  dominik.schulte@web.de,
-  alaa.alhamoud@rwth-aachen.de,
-  Tian.Yu@rwth-aachen.de,
-  Muhammad Hamad Alizai <hamad.alizai@rwth-aachen.de>,
-  Nicolai Viol <nicolai.viol@rwth-aachen.de>
 
 * TODO Get tinyos up and running on a virtual machine or whatever else
   [[http://docs.tinyos.net/index.php/Getting_started][installing guide]]
@@ -122,7 +100,6 @@
 
    In TOSSIM we can run only one program at a time.
 
-* Links
 
 * Dictionary
   | ACR  | meaning |
