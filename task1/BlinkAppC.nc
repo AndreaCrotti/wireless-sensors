@@ -37,6 +37,9 @@
  * @author tinyos-help@millennium.berkeley.edu
  **/
 
+#include <Timer.h>
+#include "Blink.h"
+
 configuration BlinkAppC
 {
 }

@@ -12,4 +12,6 @@ n.bootAtTime(45654)
 t.addChannel("Boot", sys.stdout)
 t.addChannel("BlinkC", sys.stdout)
 
-t.runNextEvent()
+for i in range(1000):
+    t.runNextEvent()
+
