@@ -34,41 +34,49 @@
  * Timer fires.
  **/
 
+#include <stdlib.h>
 #include "Timer.h"
+int ch;
 
 module BlinkC @safe()
 {
-  uses interface Timer<TMilli> as Timer0;
-  uses interface Timer<TMilli> as Timer1;
-  uses interface Timer<TMilli> as Timer2;
-  uses interface Leds;
-  uses interface Boot;
+     uses interface Timer<TMilli> as Timer;
+     uses interface Leds;
+     uses interface Boot;
 }
 implementation
 {
-  event void Boot.booted()
-  {
-    call Timer0.startPeriodic( 250 );
-    call Timer1.startPeriodic( 500 );
-    call Timer2.startPeriodic( 1000 );
-  }
+     event void Boot.booted()
+     {
+	  dbg("Boot", "Booting first");
+	  dbg("BlinkC", "Booting");
+	  call Timer.startPeriodic( 1000 );
+     }
 
-  event void Timer0.fired()
-  {
-    dbg("BlinkC", "Timer 0 fired @ %s.\n", sim_time_string());
-    call Leds.led0Toggle();
-  }
-  
-  event void Timer1.fired()
-  {
-    dbg("BlinkC", "Timer 1 fired @ %s \n", sim_time_string());
-    call Leds.led1Toggle();
-  }
-  
-  event void Timer2.fired()
-  {
-    dbg("BlinkC", "Timer 2 fired @ %s.\n", sim_time_string());
-    call Leds.led2Toggle();
-  }
+     event void Timer.fired()
+     {
+	  dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string());
+       
+	  // Choose a random LED
+	  ch = (int) (random() * 3);
+	  // Turn all LEDs off
+	  call Leds.set(0);
+	  // Turn on the new LED
+	  switch(ch)
+	  {
+	  case '0':
+	       call Leds.led0On();
+	       break;
+	  case '1':
+	       call Leds.led1On();
+	       break;
+	  case '2':
+	       call Leds.led2On();
+	       break;
+	  }
+
+       
+
+     }
 }
 

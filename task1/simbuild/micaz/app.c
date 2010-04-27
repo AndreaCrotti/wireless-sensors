@@ -706,7 +706,9 @@ typedef union __nesc_unnamed4259 {
   char __size[4];
   int __align;
 } pthread_barrierattr_t;
-# 349 "/usr/include/stdlib.h" 3
+# 327 "/usr/include/stdlib.h" 3
+extern long int random(void ) __attribute((__nothrow__)) ;
+#line 349
 struct random_data {
 
   int32_t *fptr;
@@ -731,7 +733,7 @@ extern void *malloc(size_t __size) __attribute((__nothrow__)) __attribute((__mal
 #line 488
 extern void free(void *__ptr) __attribute((__nothrow__)) ;
 #line 691
-typedef int (*__compar_fn_t)(const void *arg_0x2ac7deeb86b0, const void *arg_0x2ac7deeb8988);
+typedef int (*__compar_fn_t)(const void *arg_0x2ae5caf876b0, const void *arg_0x2ae5caf87988);
 #line 725
 __extension__ 
 #line 742
@@ -1113,8 +1115,8 @@ typedef struct hashtable hashtable_t;
 #line 78
 struct hashtable *
 create_hashtable(unsigned int minsize, 
-unsigned int (*hashfunction)(void *arg_0x2ac7df16e100), 
-int (*key_eq_fn)(void *arg_0x2ac7df16e878, void *arg_0x2ac7df16eb18));
+unsigned int (*hashfunction)(void *arg_0x2ae5cb23d100), 
+int (*key_eq_fn)(void *arg_0x2ae5cb23d878, void *arg_0x2ae5cb23db18));
 #line 103
 #line 102
 int 
@@ -1729,7 +1731,7 @@ struct tm;
 
 struct tm;
 # 46 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/randomlib.h"
-static inline void RandomInitialise(int arg_0x2ac7df35ecc0, int arg_0x2ac7df35d020);
+static inline void RandomInitialise(int arg_0x2ae5cb42dcc0, int arg_0x2ae5cb42c020);
 static inline double RandomUniform(void );
 # 43 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/sim_noise.c"
 int numCase1 = 0;
@@ -3221,6 +3223,8 @@ typedef struct __nesc_unnamed4294 {
 } 
 #line 31
 TMicro;
+# 39 "BlinkC.nc"
+int ch;
 # 32 "/home/sensornet1/tinyos-2.x/tos/types/Leds.h"
 enum __nesc_unnamed4295 {
   LEDS_LED0 = 1 << 0, 
@@ -3503,9 +3507,7 @@ typedef union __nesc_unnamed4321 {
     uint8_t rsvd : 2;
   } bits;
 } Atm128_ETIFR_t;
-typedef TMilli BlinkC$Timer0$precision_tag;
-typedef TMilli BlinkC$Timer1$precision_tag;
-typedef TMilli BlinkC$Timer2$precision_tag;
+typedef TMilli BlinkC$Timer$precision_tag;
 typedef TMilli /*AlarmCounterMilliP.Atm128AlarmAsyncC*/Atm128AlarmAsyncC$0$precision;
 typedef /*AlarmCounterMilliP.Atm128AlarmAsyncC*/Atm128AlarmAsyncC$0$precision /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$precision;
 typedef /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$precision /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$Alarm$precision_tag;
@@ -3533,31 +3535,30 @@ static error_t PlatformP$Init$init(void );
 static error_t MotePlatformP$SubInit$default$init(void );
 #line 51
 static error_t MotePlatformP$PlatformInit$init(void );
-# 31 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-static void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$toggle(void );
+# 32 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
 static bool /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$get(void );
 
 
 static void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$makeOutput(void );
 #line 29
 static void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$set(void );
+static void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$clr(void );
 
-static void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$toggle(void );
 static bool /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$get(void );
 
 
 static void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$makeOutput(void );
 #line 29
 static void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$set(void );
+static void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$clr(void );
 
-static void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$toggle(void );
 static bool /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$get(void );
 
 
 static void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$makeOutput(void );
 #line 29
 static void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$set(void );
-
+static void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$clr(void );
 
 
 static void /*HplAtm128GeneralIOC.PortA.Bit4*/HplAtm128GeneralIOPinP$4$IO$makeInput(void );
@@ -3568,11 +3569,11 @@ static error_t MeasureClockC$Init$init(void );
 # 56 "/home/sensornet1/tinyos-2.x/tos/interfaces/TaskBasic.nc"
 static error_t SimSchedulerBasicP$TaskBasic$postTask(
 # 41 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimSchedulerBasicP.nc"
-uint8_t arg_0x2ac7df46dab0);
+uint8_t arg_0x2ae5cb53cab0);
 # 64 "/home/sensornet1/tinyos-2.x/tos/interfaces/TaskBasic.nc"
 static void SimSchedulerBasicP$TaskBasic$default$runTask(
 # 41 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimSchedulerBasicP.nc"
-uint8_t arg_0x2ac7df46dab0);
+uint8_t arg_0x2ae5cb53cab0);
 # 46 "/home/sensornet1/tinyos-2.x/tos/interfaces/Scheduler.nc"
 static void SimSchedulerBasicP$Scheduler$init(void );
 
@@ -3610,7 +3611,7 @@ message_t *
 
 TossimActiveMessageC$Snoop$default$receive(
 # 41 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/TossimActiveMessageC.nc"
-am_id_t arg_0x2ac7df739b68, 
+am_id_t arg_0x2ae5cb808b68, 
 # 60 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -3649,7 +3650,7 @@ message_t *
 
 TossimActiveMessageC$Receive$default$receive(
 # 40 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/TossimActiveMessageC.nc"
-am_id_t arg_0x2ac7df739020, 
+am_id_t arg_0x2ae5cb808020, 
 # 60 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -3683,22 +3684,38 @@ message_t * amsg);
 static bool TossimActiveMessageC$AMPacket$isForMe(
 #line 122
 message_t * amsg);
-# 72 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-static void BlinkC$Timer0$fired(void );
 # 49 "/home/sensornet1/tinyos-2.x/tos/interfaces/Boot.nc"
 static void BlinkC$Boot$booted(void );
 # 72 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-static void BlinkC$Timer1$fired(void );
-#line 72
-static void BlinkC$Timer2$fired(void );
+static void BlinkC$Timer$fired(void );
 # 51 "/home/sensornet1/tinyos-2.x/tos/interfaces/Init.nc"
 static error_t LedsP$Init$init(void );
-# 56 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
-static void LedsP$Leds$led0Toggle(void );
-#line 72
-static void LedsP$Leds$led1Toggle(void );
-#line 89
-static void LedsP$Leds$led2Toggle(void );
+# 50 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
+static void LedsP$Leds$led0Off(void );
+
+
+
+
+
+
+
+
+
+
+static void LedsP$Leds$led1On(void );
+
+
+
+
+static void LedsP$Leds$led1Off(void );
+#line 83
+static void LedsP$Leds$led2Off(void );
+#line 123
+static void LedsP$Leds$set(uint8_t val);
+#line 45
+static void LedsP$Leds$led0On(void );
+#line 78
+static void LedsP$Leds$led2On(void );
 # 98 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Alarm.nc"
 static /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$Alarm$size_type /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$Alarm$getNow(void );
 #line 92
@@ -3765,11 +3782,11 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$TimerFrom$fire
 #line 72
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$default$fired(
 # 37 "/home/sensornet1/tinyos-2.x/tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2ac7dfa732f8);
+uint8_t arg_0x2ae5cbb4d2f8);
 # 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(
 # 37 "/home/sensornet1/tinyos-2.x/tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2ac7dfa732f8, 
+uint8_t arg_0x2ae5cbb4d2f8, 
 # 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
 uint32_t dt);
 # 71 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Counter.nc"
@@ -3803,8 +3820,8 @@ static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$
 
 
 
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$clr(void );
 
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$toggle(void );
 
 
 static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$makeOutput(void );
@@ -3814,8 +3831,8 @@ static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$
 
 
 
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$clr(void );
 
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$toggle(void );
 
 
 static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$makeOutput(void );
@@ -3825,8 +3842,8 @@ static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$
 
 
 
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$clr(void );
 
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$toggle(void );
 
 
 static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$makeOutput(void );
@@ -3858,7 +3875,7 @@ int sim_main_start_mote(void )   ;
 # 64 "/home/sensornet1/tinyos-2.x/tos/interfaces/TaskBasic.nc"
 static void SimSchedulerBasicP$TaskBasic$runTask(
 # 41 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimSchedulerBasicP.nc"
-uint8_t arg_0x2ac7df46dab0);
+uint8_t arg_0x2ae5cb53cab0);
 
 
 
@@ -4032,7 +4049,7 @@ message_t *
 
 TossimActiveMessageC$Snoop$receive(
 # 41 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/TossimActiveMessageC.nc"
-am_id_t arg_0x2ac7df739b68, 
+am_id_t arg_0x2ae5cb808b68, 
 # 60 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -4051,7 +4068,7 @@ message_t *
 
 TossimActiveMessageC$Receive$receive(
 # 40 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/TossimActiveMessageC.nc"
-am_id_t arg_0x2ac7df739020, 
+am_id_t arg_0x2ae5cb808020, 
 # 60 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -4115,18 +4132,16 @@ static inline void TossimActiveMessageC$active_message_deliver_handle(sim_event_
 static inline sim_event_t *TossimActiveMessageC$allocate_deliver_event(int node, message_t *msg, sim_time_t t);
 #line 246
 void active_message_deliver(int node, message_t *msg, sim_time_t t)   ;
+# 61 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
+static void BlinkC$Leds$led1On(void );
+#line 123
+static void BlinkC$Leds$set(uint8_t val);
+#line 45
+static void BlinkC$Leds$led0On(void );
+#line 78
+static void BlinkC$Leds$led2On(void );
 # 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-static void BlinkC$Timer0$startPeriodic(uint32_t dt);
-#line 53
-static void BlinkC$Timer1$startPeriodic(uint32_t dt);
-# 56 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
-static void BlinkC$Leds$led0Toggle(void );
-#line 72
-static void BlinkC$Leds$led1Toggle(void );
-#line 89
-static void BlinkC$Leds$led2Toggle(void );
-# 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-static void BlinkC$Timer2$startPeriodic(uint32_t dt);
+static void BlinkC$Timer$startPeriodic(uint32_t dt);
 # 49 "BlinkC.nc"
 static inline void BlinkC$Boot$booted(void );
 
@@ -4135,51 +4150,72 @@ static inline void BlinkC$Boot$booted(void );
 
 
 
-static inline void BlinkC$Timer0$fired(void );
-
-
-
-
-
-static inline void BlinkC$Timer1$fired(void );
-
-
-
-
-
-static inline void BlinkC$Timer2$fired(void );
-# 31 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-static void LedsP$Led0$toggle(void );
+static inline void BlinkC$Timer$fired(void );
+# 32 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
 static bool LedsP$Led0$get(void );
 
 
 static void LedsP$Led0$makeOutput(void );
 #line 29
 static void LedsP$Led0$set(void );
+static void LedsP$Led0$clr(void );
 
-static void LedsP$Led1$toggle(void );
 static bool LedsP$Led1$get(void );
 
 
 static void LedsP$Led1$makeOutput(void );
 #line 29
 static void LedsP$Led1$set(void );
+static void LedsP$Led1$clr(void );
 
-static void LedsP$Led2$toggle(void );
 static bool LedsP$Led2$get(void );
 
 
 static void LedsP$Led2$makeOutput(void );
 #line 29
 static void LedsP$Led2$set(void );
+static void LedsP$Led2$clr(void );
 # 45 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
 static inline error_t LedsP$Init$init(void );
-#line 73
-static inline void LedsP$Leds$led0Toggle(void );
-#line 88
-static inline void LedsP$Leds$led1Toggle(void );
-#line 103
-static inline void LedsP$Leds$led2Toggle(void );
+#line 63
+static void LedsP$Leds$led0On(void );
+
+
+
+
+static inline void LedsP$Leds$led0Off(void );
+
+
+
+
+
+
+
+
+
+static void LedsP$Leds$led1On(void );
+
+
+
+
+static inline void LedsP$Leds$led1Off(void );
+
+
+
+
+
+
+
+
+
+static void LedsP$Leds$led2On(void );
+
+
+
+
+static inline void LedsP$Leds$led2Off(void );
+#line 125
+static inline void LedsP$Leds$set(uint8_t val);
 # 44 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/timer/HplAtm128TimerCtrl8.nc"
 static Atm128_TIFR_t /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAsyncP*/Atm128AlarmAsyncP$0$TimerCtrl$getInterruptFlag(void );
 #line 37
@@ -4502,7 +4538,7 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$TimerFrom$stop
 
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$fired(
 # 37 "/home/sensornet1/tinyos-2.x/tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2ac7dfa732f8);
+uint8_t arg_0x2ae5cbb4d2f8);
 #line 60
 enum /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$__nesc_unnamed4326 {
 #line 60
@@ -4513,7 +4549,7 @@ typedef int /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$__nesc_sillyta
 #line 42
 enum /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$__nesc_unnamed4327 {
 
-  VirtualizeTimerC$0$NUM_TIMERS = 3U, 
+  VirtualizeTimerC$0$NUM_TIMERS = 1U, 
   VirtualizeTimerC$0$END_OF_LIST = 255
 };
 
@@ -4558,7 +4594,7 @@ static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$startTi
 
 
 
-static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(uint8_t num, uint32_t dt);
+static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(uint8_t num, uint32_t dt);
 #line 193
 static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$default$fired(uint8_t num);
 # 47 "/home/sensornet1/tinyos-2.x/tos/lib/timer/CounterToLocalTimeC.nc"
@@ -4981,13 +5017,13 @@ static inline message_t *TossimActiveMessageC$Snoop$default$receive(am_id_t id, 
 }
 
 # 67 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
-inline static message_t * TossimActiveMessageC$Snoop$receive(am_id_t arg_0x2ac7df739b68, message_t * msg, void * payload, uint8_t len){
+inline static message_t * TossimActiveMessageC$Snoop$receive(am_id_t arg_0x2ae5cb808b68, message_t * msg, void * payload, uint8_t len){
 #line 67
   nx_struct message_t *result;
 #line 67
 
 #line 67
-    result = TossimActiveMessageC$Snoop$default$receive(arg_0x2ac7df739b68, msg, payload, len);
+    result = TossimActiveMessageC$Snoop$default$receive(arg_0x2ae5cb808b68, msg, payload, len);
 #line 67
 
 #line 67
@@ -5003,13 +5039,13 @@ static inline message_t *TossimActiveMessageC$Receive$default$receive(am_id_t id
 }
 
 # 67 "/home/sensornet1/tinyos-2.x/tos/interfaces/Receive.nc"
-inline static message_t * TossimActiveMessageC$Receive$receive(am_id_t arg_0x2ac7df739020, message_t * msg, void * payload, uint8_t len){
+inline static message_t * TossimActiveMessageC$Receive$receive(am_id_t arg_0x2ae5cb808020, message_t * msg, void * payload, uint8_t len){
 #line 67
   nx_struct message_t *result;
 #line 67
 
 #line 67
-    result = TossimActiveMessageC$Receive$default$receive(arg_0x2ac7df739020, msg, payload, len);
+    result = TossimActiveMessageC$Receive$default$receive(arg_0x2ae5cb808020, msg, payload, len);
 #line 67
 
 #line 67
@@ -5473,9 +5509,9 @@ static inline void SimSchedulerBasicP$TaskBasic$default$runTask(uint8_t id)
 }
 
 # 64 "/home/sensornet1/tinyos-2.x/tos/interfaces/TaskBasic.nc"
-inline static void SimSchedulerBasicP$TaskBasic$runTask(uint8_t arg_0x2ac7df46dab0){
+inline static void SimSchedulerBasicP$TaskBasic$runTask(uint8_t arg_0x2ae5cb53cab0){
 #line 64
-  switch (arg_0x2ac7df46dab0) {
+  switch (arg_0x2ae5cb53cab0) {
 #line 64
     case /*HilTimerMilliC.AlarmToTimerC*/AlarmToTimerC$0$fired:
 #line 64
@@ -5491,7 +5527,7 @@ inline static void SimSchedulerBasicP$TaskBasic$runTask(uint8_t arg_0x2ac7df46da
 #line 64
     default:
 #line 64
-      SimSchedulerBasicP$TaskBasic$default$runTask(arg_0x2ac7df46dab0);
+      SimSchedulerBasicP$TaskBasic$default$runTask(arg_0x2ae5cb53cab0);
 #line 64
       break;
 #line 64
@@ -5537,22 +5573,43 @@ inline static Atm128_TIFR_t /*AlarmCounterMilliP.Atm128AlarmAsyncC.Atm128AlarmAs
 #line 44
 }
 #line 44
+# 78 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
+inline static void BlinkC$Leds$led2On(void ){
+#line 78
+  LedsP$Leds$led2On();
+#line 78
+}
+#line 78
+#line 61
+inline static void BlinkC$Leds$led1On(void ){
+#line 61
+  LedsP$Leds$led1On();
+#line 61
+}
+#line 61
+#line 45
+inline static void BlinkC$Leds$led0On(void ){
+#line 45
+  LedsP$Leds$led0On();
+#line 45
+}
+#line 45
 # 45 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline bool /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$get(void )
+static __inline bool /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$get(void )
 #line 45
 {
 #line 45
-  return (atm128RegFile[sim_node()][27U] & (1 << 2)) != 0;
+  return (atm128RegFile[sim_node()][27U] & (1 << 0)) != 0;
 }
 
 # 32 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static bool LedsP$Led0$get(void ){
+inline static bool LedsP$Led2$get(void ){
 #line 32
   unsigned char result;
 #line 32
 
 #line 32
-  result = /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$get();
+  result = /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$get();
 #line 32
 
 #line 32
@@ -5560,47 +5617,29 @@ inline static bool LedsP$Led0$get(void ){
 #line 32
 }
 #line 32
-# 51 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$toggle(void )
-#line 51
+# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$set(void )
+#line 46
 {
-#line 51
-  { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
-#line 51
-    atm128RegFile[sim_node()][27U] ^= 1 << 2;
-#line 51
-    __nesc_atomic_end(__nesc_atomic); }
+  sim_log_debug(46U, "Pins", "Setting bit %i of port %i.\n", (int )0, (int )27U);
+  atm128RegFile[sim_node()][27U] |= 1 << 0;
 }
 
-# 31 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led0$toggle(void ){
-#line 31
-  /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$toggle();
-#line 31
+# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led2$set(void ){
+#line 29
+  /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$set();
+#line 29
 }
-#line 31
-# 73 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
-static inline void LedsP$Leds$led0Toggle(void )
-#line 73
+#line 29
+# 98 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
+static inline void LedsP$Leds$led2Off(void )
+#line 98
 {
-  LedsP$Led0$toggle();
-  sim_log_debug(115U, "LedsC", "LEDS: Led""0"" %s.\n", LedsP$Led0$get() ? "off" : "on");
-#line 75
+  LedsP$Led2$set();
+  sim_log_debug(120U, "LedsC", "LEDS: Led""2"" %s.\n", LedsP$Led2$get() ? "off" : "on");
+#line 100
   ;
-}
-
-# 56 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
-inline static void BlinkC$Leds$led0Toggle(void ){
-#line 56
-  LedsP$Leds$led0Toggle();
-#line 56
-}
-#line 56
-# 56 "BlinkC.nc"
-static inline void BlinkC$Timer0$fired(void )
-{
-  sim_log_debug(109U, "BlinkC", "Timer 0 fired @ %s.\n", sim_time_string());
-  BlinkC$Leds$led0Toggle();
 }
 
 # 45 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
@@ -5626,65 +5665,47 @@ inline static bool LedsP$Led1$get(void ){
 #line 32
 }
 #line 32
-# 51 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$toggle(void )
-#line 51
+# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$set(void )
+#line 46
 {
-#line 51
-  { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
-#line 51
-    atm128RegFile[sim_node()][27U] ^= 1 << 1;
-#line 51
-    __nesc_atomic_end(__nesc_atomic); }
+  sim_log_debug(47U, "Pins", "Setting bit %i of port %i.\n", (int )1, (int )27U);
+  atm128RegFile[sim_node()][27U] |= 1 << 1;
 }
 
-# 31 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led1$toggle(void ){
-#line 31
-  /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$toggle();
-#line 31
+# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led1$set(void ){
+#line 29
+  /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$set();
+#line 29
 }
-#line 31
-# 88 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
-static inline void LedsP$Leds$led1Toggle(void )
-#line 88
+#line 29
+# 83 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
+static inline void LedsP$Leds$led1Off(void )
+#line 83
 {
-  LedsP$Led1$toggle();
-  sim_log_debug(118U, "LedsC", "LEDS: Led""1"" %s.\n", LedsP$Led1$get() ? "off" : "on");
-#line 90
+  LedsP$Led1$set();
+  sim_log_debug(117U, "LedsC", "LEDS: Led""1"" %s.\n", LedsP$Led1$get() ? "off" : "on");
+#line 85
   ;
 }
 
-# 72 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
-inline static void BlinkC$Leds$led1Toggle(void ){
-#line 72
-  LedsP$Leds$led1Toggle();
-#line 72
-}
-#line 72
-# 62 "BlinkC.nc"
-static inline void BlinkC$Timer1$fired(void )
-{
-  sim_log_debug(110U, "BlinkC", "Timer 1 fired @ %s \n", sim_time_string());
-  BlinkC$Leds$led1Toggle();
-}
-
 # 45 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline bool /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$get(void )
+static __inline bool /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$get(void )
 #line 45
 {
 #line 45
-  return (atm128RegFile[sim_node()][27U] & (1 << 0)) != 0;
+  return (atm128RegFile[sim_node()][27U] & (1 << 2)) != 0;
 }
 
 # 32 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static bool LedsP$Led2$get(void ){
+inline static bool LedsP$Led0$get(void ){
 #line 32
   unsigned char result;
 #line 32
 
 #line 32
-  result = /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$get();
+  result = /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$get();
 #line 32
 
 #line 32
@@ -5692,47 +5713,90 @@ inline static bool LedsP$Led2$get(void ){
 #line 32
 }
 #line 32
-# 51 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$toggle(void )
-#line 51
+# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$set(void )
+#line 46
 {
-#line 51
-  { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
-#line 51
-    atm128RegFile[sim_node()][27U] ^= 1 << 0;
-#line 51
-    __nesc_atomic_end(__nesc_atomic); }
+  sim_log_debug(48U, "Pins", "Setting bit %i of port %i.\n", (int )2, (int )27U);
+  atm128RegFile[sim_node()][27U] |= 1 << 2;
 }
 
-# 31 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led2$toggle(void ){
-#line 31
-  /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$toggle();
-#line 31
+# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led0$set(void ){
+#line 29
+  /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$set();
+#line 29
 }
-#line 31
-# 103 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
-static inline void LedsP$Leds$led2Toggle(void )
-#line 103
+#line 29
+# 68 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
+static inline void LedsP$Leds$led0Off(void )
+#line 68
 {
-  LedsP$Led2$toggle();
-  sim_log_debug(121U, "LedsC", "LEDS: Led""2"" %s.\n", LedsP$Led2$get() ? "off" : "on");
-#line 105
+  LedsP$Led0$set();
+  sim_log_debug(114U, "LedsC", "LEDS: Led""0"" %s.\n", LedsP$Led0$get() ? "off" : "on");
+#line 70
   ;
 }
 
-# 89 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
-inline static void BlinkC$Leds$led2Toggle(void ){
-#line 89
-  LedsP$Leds$led2Toggle();
-#line 89
-}
-#line 89
-# 68 "BlinkC.nc"
-static inline void BlinkC$Timer2$fired(void )
+#line 125
+static inline void LedsP$Leds$set(uint8_t val)
+#line 125
 {
-  sim_log_debug(111U, "BlinkC", "Timer 2 fired @ %s.\n", sim_time_string());
-  BlinkC$Leds$led2Toggle();
+  { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
+#line 126
+    {
+      if (val & LEDS_LED0) {
+          LedsP$Leds$led0On();
+        }
+      else {
+          LedsP$Leds$led0Off();
+        }
+      if (val & LEDS_LED1) {
+          LedsP$Leds$led1On();
+        }
+      else {
+          LedsP$Leds$led1Off();
+        }
+      if (val & LEDS_LED2) {
+          LedsP$Leds$led2On();
+        }
+      else {
+          LedsP$Leds$led2Off();
+        }
+    }
+#line 145
+    __nesc_atomic_end(__nesc_atomic); }
+}
+
+# 123 "/home/sensornet1/tinyos-2.x/tos/interfaces/Leds.nc"
+inline static void BlinkC$Leds$set(uint8_t val){
+#line 123
+  LedsP$Leds$set(val);
+#line 123
+}
+#line 123
+# 56 "BlinkC.nc"
+static inline void BlinkC$Timer$fired(void )
+{
+  sim_log_debug(111U, "Boot", "Timer 0 fired @ %s.\n", sim_time_string());
+
+
+  ch = (int )(random() * 3);
+
+  BlinkC$Leds$set(0);
+
+  switch (ch) 
+    {
+      case '0': 
+        BlinkC$Leds$led0On();
+      break;
+      case '1': 
+        BlinkC$Leds$led1On();
+      break;
+      case '2': 
+        BlinkC$Leds$led2On();
+      break;
+    }
 }
 
 # 193 "/home/sensornet1/tinyos-2.x/tos/lib/timer/VirtualizeTimerC.nc"
@@ -5741,31 +5805,19 @@ static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$d
 }
 
 # 72 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$fired(uint8_t arg_0x2ac7dfa732f8){
+inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$fired(uint8_t arg_0x2ae5cbb4d2f8){
 #line 72
-  switch (arg_0x2ac7dfa732f8) {
+  switch (arg_0x2ae5cbb4d2f8) {
 #line 72
     case 0U:
 #line 72
-      BlinkC$Timer0$fired();
-#line 72
-      break;
-#line 72
-    case 1U:
-#line 72
-      BlinkC$Timer1$fired();
-#line 72
-      break;
-#line 72
-    case 2U:
-#line 72
-      BlinkC$Timer2$fired();
+      BlinkC$Timer$fired();
 #line 72
       break;
 #line 72
     default:
 #line 72
-      /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$default$fired(arg_0x2ac7dfa732f8);
+      /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$default$fired(arg_0x2ae5cbb4d2f8);
 #line 72
       break;
 #line 72
@@ -5773,6 +5825,51 @@ inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$f
 #line 72
 }
 #line 72
+# 50 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$clr(void )
+#line 50
+{
+#line 50
+  atm128RegFile[sim_node()][27U] &= ~(1 << 2);
+}
+
+# 30 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led0$clr(void ){
+#line 30
+  /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$clr();
+#line 30
+}
+#line 30
+# 50 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$clr(void )
+#line 50
+{
+#line 50
+  atm128RegFile[sim_node()][27U] &= ~(1 << 1);
+}
+
+# 30 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led1$clr(void ){
+#line 30
+  /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$clr();
+#line 30
+}
+#line 30
+# 50 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
+static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$clr(void )
+#line 50
+{
+#line 50
+  atm128RegFile[sim_node()][27U] &= ~(1 << 0);
+}
+
+# 30 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
+inline static void LedsP$Led2$clr(void ){
+#line 30
+  /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$clr();
+#line 30
+}
+#line 30
 # 131 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimSchedulerBasicP.nc"
 static inline bool SimSchedulerBasicP$isWaiting(uint8_t id)
 {
@@ -6236,51 +6333,6 @@ static inline error_t MotePlatformP$PlatformInit$init(void )
   return MotePlatformP$SubInit$init();
 }
 
-# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$set(void )
-#line 46
-{
-  sim_log_debug(46U, "Pins", "Setting bit %i of port %i.\n", (int )0, (int )27U);
-  atm128RegFile[sim_node()][27U] |= 1 << 0;
-}
-
-# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led2$set(void ){
-#line 29
-  /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$set();
-#line 29
-}
-#line 29
-# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$set(void )
-#line 46
-{
-  sim_log_debug(47U, "Pins", "Setting bit %i of port %i.\n", (int )1, (int )27U);
-  atm128RegFile[sim_node()][27U] |= 1 << 1;
-}
-
-# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led1$set(void ){
-#line 29
-  /*HplAtm128GeneralIOC.PortA.Bit1*/HplAtm128GeneralIOPinP$1$IO$set();
-#line 29
-}
-#line 29
-# 46 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
-static __inline void /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$set(void )
-#line 46
-{
-  sim_log_debug(48U, "Pins", "Setting bit %i of port %i.\n", (int )2, (int )27U);
-  atm128RegFile[sim_node()][27U] |= 1 << 2;
-}
-
-# 29 "/home/sensornet1/tinyos-2.x/tos/interfaces/GeneralIO.nc"
-inline static void LedsP$Led0$set(void ){
-#line 29
-  /*HplAtm128GeneralIOC.PortA.Bit2*/HplAtm128GeneralIOPinP$2$IO$set();
-#line 29
-}
-#line 29
 # 54 "/home/sensornet1/tinyos-2.x/tos/chips/atm128/pins/sim/HplAtm128GeneralIOPinP.nc"
 static __inline void /*HplAtm128GeneralIOC.PortA.Bit0*/HplAtm128GeneralIOPinP$0$IO$makeOutput(void )
 #line 54
@@ -6509,40 +6561,6 @@ inline static error_t SimMainP$SoftwareInit$init(void ){
 #line 51
 }
 #line 51
-# 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
-inline static void BlinkC$Timer2$startPeriodic(uint32_t dt){
-#line 53
-  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(2U, dt);
-#line 53
-}
-#line 53
-inline static void BlinkC$Timer1$startPeriodic(uint32_t dt){
-#line 53
-  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(1U, dt);
-#line 53
-}
-#line 53
-inline static void BlinkC$Timer0$startPeriodic(uint32_t dt){
-#line 53
-  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(0U, dt);
-#line 53
-}
-#line 53
-# 49 "BlinkC.nc"
-static inline void BlinkC$Boot$booted(void )
-{
-  BlinkC$Timer0$startPeriodic(250);
-  BlinkC$Timer1$startPeriodic(500);
-  BlinkC$Timer2$startPeriodic(1000);
-}
-
-# 49 "/home/sensornet1/tinyos-2.x/tos/interfaces/Boot.nc"
-inline static void SimMainP$Boot$booted(void ){
-#line 49
-  BlinkC$Boot$booted();
-#line 49
-}
-#line 49
 # 56 "/home/sensornet1/tinyos-2.x/tos/interfaces/TaskBasic.nc"
 inline static error_t /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$updateFromTimer$postTask(void ){
 #line 56
@@ -6571,6 +6589,33 @@ static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$startTi
   /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$updateFromTimer$postTask();
 }
 
+static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(uint8_t num, uint32_t dt)
+{
+  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$startTimer(num, /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$TimerFrom$getNow(), dt, FALSE);
+}
+
+# 53 "/home/sensornet1/tinyos-2.x/tos/lib/timer/Timer.nc"
+inline static void BlinkC$Timer$startPeriodic(uint32_t dt){
+#line 53
+  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(0U, dt);
+#line 53
+}
+#line 53
+# 49 "BlinkC.nc"
+static inline void BlinkC$Boot$booted(void )
+{
+  sim_log_debug(109U, "Boot", "Booting first");
+  sim_log_debug(110U, "BlinkC", "Booting");
+  BlinkC$Timer$startPeriodic(1000);
+}
+
+# 49 "/home/sensornet1/tinyos-2.x/tos/interfaces/Boot.nc"
+inline static void SimMainP$Boot$booted(void ){
+#line 49
+  BlinkC$Boot$booted();
+#line 49
+}
+#line 49
 # 47 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimMoteP.nc"
 static inline long long int SimMoteP$SimMote$getEuid(void )
 #line 47
@@ -8266,6 +8311,54 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$fireTimers(uin
   /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$updateFromTimer$postTask();
 }
 
+# 63 "/home/sensornet1/tinyos-2.x/tos/system/LedsP.nc"
+static void LedsP$Leds$led0On(void )
+#line 63
+{
+  LedsP$Led0$clr();
+  sim_log_debug(113U, "LedsC", "LEDS: Led""0"" %s.\n", LedsP$Led0$get() ? "off" : "on");
+#line 65
+  ;
+}
+
+
+
+
+
+
+
+
+
+
+
+static void LedsP$Leds$led1On(void )
+#line 78
+{
+  LedsP$Led1$clr();
+  sim_log_debug(116U, "LedsC", "LEDS: Led""1"" %s.\n", LedsP$Led1$get() ? "off" : "on");
+#line 80
+  ;
+}
+
+
+
+
+
+
+
+
+
+
+
+static void LedsP$Leds$led2On(void )
+#line 93
+{
+  LedsP$Led2$clr();
+  sim_log_debug(119U, "LedsC", "LEDS: Led""2"" %s.\n", LedsP$Led2$get() ? "off" : "on");
+#line 95
+  ;
+}
+
 # 197 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimSchedulerBasicP.nc"
 static error_t SimSchedulerBasicP$TaskBasic$postTask(uint8_t id)
 {
@@ -8531,12 +8624,6 @@ static void HplAtm128Timer0AsyncP$configure_compare(sim_event_t *evt)
   sim_log_debug(135U, "HplAtm128Timer0AsyncP", "Configuring new compare of %i for %i at time %llu  (@ %llu)\n", (int )compareVal, sim_node(), compareTime, sim_time());
 
   evt->time = compareTime;
-}
-
-# 143 "/home/sensornet1/tinyos-2.x/tos/lib/timer/VirtualizeTimerC.nc"
-static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$Timer$startPeriodic(uint8_t num, uint32_t dt)
-{
-  /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$startTimer(num, /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC$0$TimerFrom$getNow(), dt, FALSE);
 }
 
 # 82 "/home/sensornet1/tinyos-2.x/tos/lib/tossim/SimMoteP.nc"
