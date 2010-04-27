@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: testclass
+# key: tf
+# group : definitions
+# --
+
+import unittest
+${1:from ${2:test_file} import *}
+
+$0
+
+if __name__ == '__main__':
+    unittest.main()

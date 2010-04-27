@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+#name: org-src
+#key: src
+#contributor: Andrea Crotti
+
+#+BEGIN_SRC ${1:language} ${2:options}
+$0
+#+END_SRC
