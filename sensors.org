@@ -1,15 +1,18 @@
+* TODO What exactly has to be sent?
+* TODO Every single function/variable has to be commented or not?
+
 * Organization
   - weekly tasks
 
-* Tiny
+** Demo with proper programming style
+   Send it with zip/gz/bzip2/tar
+   - doxygen programming
+   - describe algorithms and approach used
+
+* Motes
   - light sensor
   - humidity sensor
   - usb port
-
-* Demo with proper programming style
-  Send it with zip/gz/bzip2/tar
-  - doxygen programming
-  - describe algorithms and approach used
 
 * TODO Get tinyos up and running on a virtual machine or whatever else
   [[http://docs.tinyos.net/index.php/Getting_started][installing guide]]

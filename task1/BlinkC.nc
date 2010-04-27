@@ -35,48 +35,60 @@
  **/
 
 #include <stdlib.h>
-#include "Timer.h"
-int ch;
 
-module BlinkC @safe()
+module BlinkC
 {
-     uses interface Timer<TMilli> as Timer;
-     uses interface Leds;
-     uses interface Boot;
+  uses interface Packet;
+  uses interface AMPacket;
+  uses interface AMSend;
+  uses interface SplitControl as AMControl;
+  uses interface Timer<TMilli> as Timer;
+  uses interface Boot;
+  uses interface Leds;
 }
 implementation
 {
-     event void Boot.booted()
-     {
-	  dbg("Boot", "Booting first");
-	  dbg("BlinkC", "Booting");
-	  call Timer.startPeriodic( 1000 );
-     }
+  int ch;
+  event void Boot.booted()
+  {
+    dbg("BlinkC", "Booting first");
+    dbg("BlinkC", "Booting");
+    call Timer.startPeriodic( 1000 );
+  }
 
-     event void Timer.fired()
-     {
-	  dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string());
+  event void Timer.fired()
+  {
+    dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string());
        
-	  // Choose a random LED
-	  ch = (int) (random() * 3);
-	  // Turn all LEDs off
-	  call Leds.set(0);
-	  // Turn on the new LED
-	  switch(ch)
-	  {
-	  case '0':
-	       call Leds.led0On();
-	       break;
-	  case '1':
-	       call Leds.led1On();
-	       break;
-	  case '2':
-	       call Leds.led2On();
-	       break;
-	  }
-
-       
-
-     }
+    if (TOS_NODE_ID == 0) {
+	       
+      // Choose a random LED
+      ch = (int) (random() * 3);
+      // Turn all LEDs off
+      call Leds.set(0);
+      // Turn on the new LED
+      switch(ch)
+	{
+	case '0':
+	  call Leds.led0On();
+	  break;
+	case '1':
+	  call Leds.led1On();
+	  break;
+	case '2':
+	  call Leds.led2On();
+	  break;
+	}
+    }
+  }
+  event void AMControl.startDone(error_t err) 
+  {
+  }
+  event void AMControl.stopDone(error_t err)
+  {
+  }
+  event void AMSend.sendDone(message_t* msg, error_t error) 
+  {
+  }
 }
 
