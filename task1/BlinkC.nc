@@ -17,10 +17,11 @@ module BlinkC
 }
 
 implementation {
-    int led_idx;
+    uint8_t led_idx;
 
     event void Boot.booted() {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
+        // The timer fires every 10 seconds
         call Timer.startPeriodic(10000);
     }
  
@@ -29,11 +30,12 @@ implementation {
 
         if (TOS_NODE_ID == 0) {
 
+            // TODO: use instead the random generator included in tinyos
             // Choose a random LED, * and / is faster then % operator
             led_idx = (int) (3 * (random() / (RAND_MAX + 1.0)));
             // Turn all LEDs off
-            call Leds.set(0);
             dbg("BlinkC", "Node 0 turn on led %d and propagates the message\n", led_idx);
+            call Leds.set(0);
 
             // Turn on the new LED
             switch(led_idx) {
