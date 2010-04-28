@@ -3,7 +3,7 @@
  * Timer fires.
  **/
 
-#include <stdlib.h>
+#include <stdlib.h> // Used for random call 
 
 module BlinkC
 {
@@ -21,18 +21,19 @@ implementation {
 
     event void Boot.booted() {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
-        call Timer.startPeriodic( 1000 );
+        call Timer.startPeriodic(10000);
     }
  
     event void Timer.fired() {
-        dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string());
-       
+        /* dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string()); */
+
         if (TOS_NODE_ID == 0) {
-	       
-            // Choose a random LED
-            led_idx = (int) (random() * 3);
+
+            // Choose a random LED, * and / is faster then % operator
+            led_idx = (int) (3 * (random() / (RAND_MAX + 1.0)));
             // Turn all LEDs off
             call Leds.set(0);
+            dbg("BlinkC", "Node 0 turn on led %d and propagates the message\n", led_idx);
 
             // Turn on the new LED
             switch(led_idx) {
