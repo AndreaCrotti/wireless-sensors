@@ -1,94 +1,120 @@
-// $Id: BlinkC.nc,v 1.5 2008/06/26 03:38:26 regehr Exp $
-
-/*									tab:4
- * "Copyright (c) 2000-2005 The Regents of the University  of California.  
- * All rights reserved.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
- * CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS."
- *
- * Copyright (c) 2002-2003 Intel Corporation
- * All rights reserved.
- *
- * This file is distributed under the terms in the attached INTEL-LICENSE     
- * file. If you do not find these files, copies can be found by writing to
- * Intel Research Berkeley, 2150 Shattuck Avenue, Suite 1300, Berkeley, CA, 
- * 94704.  Attention:  Intel License Inquiry.
- */
-
 /**
  * Implementation for Blink application.  Toggle the red LED when a
  * Timer fires.
  **/
 
-#include <stdlib.h>
+#include <stdlib.h> // Used for random call 
 
-module BlinkC
-{
-  uses interface Packet;
-  uses interface AMPacket;
-  uses interface AMSend;
-  uses interface SplitControl as AMControl;
-  uses interface Timer<TMilli> as Timer;
-  uses interface Boot;
-  uses interface Leds;
+module BlinkC {
+    // required interfaces to manage and send/receive packages
+    uses interface Packet;
+    uses interface AMPacket;
+    uses interface AMSend;
+    // used to control the ActiveMessageC component
+    uses interface SplitControl as AMControl;
+
+    uses interface Timer<TMilli> as Timer;
+    uses interface Boot;
+    uses interface Leds;
 }
-implementation
-{
-  int ch;
-  event void Boot.booted()
-  {
-    dbg("BlinkC", "Booting first");
-    dbg("BlinkC", "Booting");
-    call Timer.startPeriodic( 1000 );
-  }
 
-  event void Timer.fired()
-  {
-    dbg("Boot", "Timer 0 fired @ %s.\n", sim_time_string());
-       
-    if (TOS_NODE_ID == 0) {
-	       
-      // Choose a random LED
-      ch = (int) (random() * 3);
-      // Turn all LEDs off
-      call Leds.set(0);
-      // Turn on the new LED
-      switch(ch)
-	{
-	case '0':
-	  call Leds.led0On();
-	  break;
-	case '1':
-	  call Leds.led1On();
-	  break;
-	case '2':
-	  call Leds.led2On();
-	  break;
-	}
+implementation {
+
+    void setLed(uint8_t);
+    uint8_t selectRandomLed();
+
+    uint8_t led_idx;
+    // variables to control the channel
+    bool busy = FALSE;
+    message_t pkt;
+    uint8_t id = 0;
+    uint8_t led_idx;
+
+    event void Boot.booted() {
+        dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
+        // booted now must wait until the radio channel is actually available
+        // handling of timer starting is done in AMControl now
+        call AMControl.start();
     }
-  }
-  event void AMControl.startDone(error_t err) 
-  {
-  }
-  event void AMControl.stopDone(error_t err)
-  {
-  }
-  event void AMSend.sendDone(message_t* msg, error_t error) 
-  {
-  }
+ 
+    // We can split in more functions to avoid code duplication
+    // - ID == 0
+    //   + set random led
+    //   + broadcast
+    // - ID != 0
+    //   + receive
+    //   + check if already got or set led and broadcast
+
+    event void Timer.fired() {
+
+        if (TOS_NODE_ID == 0) {
+            led_idx = selectRandomLed();
+            setLed(led_idx);
+        }
+
+        else {
+
+        }
+    }
+    
+    // normal functions can still call events or tasks
+    uint8_t selectRandomLed() {
+        uint8_t led = (int) (3 * (random() / (RAND_MAX + 1.0)));
+        return led;
+    }
+
+    void setLed(uint8_t led) {
+        call Leds.set(0);
+
+        // Turn on the new LED
+        switch(led_idx) {
+        case '0':
+            call Leds.led0On();
+            break;
+        case '1':
+            call Leds.led1On();
+            break;
+        case '2':
+            call Leds.led2On();
+            break;
+        }
+    }
+
+    bool broadcastLed() {
+        /// check if the channel is busy, take the payload of the message and manipulate it
+        if (!busy) {
+            // TODO: is the casting actually needed in nesc?
+            // This differs from tutorial where it was NULL, check correctness
+            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(&pkt, 0));
+
+            /// setting the id of the message and incrementing it for the next call
+            btrpkt->id = id++;
+            btrpkt->led_idx = led_idx;
+            /// if the send was successful make the channel busy, will be freed in sendDone
+            if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+                busy = TRUE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    event void AMControl.startDone(error_t err) {
+        if (err == SUCCESS) {
+            dbg("BlinkC", "Radio channel is started correctly, starting timer\n");
+            call Timer.startPeriodic(INTERVAL);
+        }
+        else {
+            call AMControl.start();
+        }
+    }
+    event void AMControl.stopDone(error_t err) {
+    }
+
+    event void AMSend.sendDone(message_t* msg, error_t error) {
+        if (&pkt == msg) {
+            busy = FALSE;
+        }
+    }
 }
 
