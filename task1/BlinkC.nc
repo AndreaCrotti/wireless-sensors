@@ -84,6 +84,9 @@ implementation {
     }
 
     event void AMSend.sendDone(message_t* msg, error_t error) {
+        if (&pkt == msg) {
+            busy = FALSE;
+        }
     }
 }
 
