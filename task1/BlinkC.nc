@@ -5,12 +5,14 @@
 
 #include <stdlib.h> // Used for random call 
 
-module BlinkC
-{
+module BlinkC {
+    // required interfaces to manage and send/receive packages
     uses interface Packet;
     uses interface AMPacket;
     uses interface AMSend;
+    // used to control the ActiveMessageC component
     uses interface SplitControl as AMControl;
+
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
@@ -18,11 +20,16 @@ module BlinkC
 
 implementation {
     uint8_t led_idx;
+    // variables to control the channel
+    bool busy = FALSE;
+    message_t pkt;
+    uint8_t id = 0;
 
     event void Boot.booted() {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
-        // The timer fires every 10 seconds
-        call Timer.startPeriodic(10000);
+        // booted now must wait until the radio channel is actually available
+        // handling of timer starting is done in AMControl now
+        call AMControl.start();
     }
  
     event void Timer.fired() {
@@ -49,11 +56,30 @@ implementation {
                 call Leds.led2On();
                 break;
             }
+
+            /// check if the channel is busy, take the payload of the message and manipulate it
+            if (!busy) {
+                // TODO: is the casting actually needed in nesc?
+                BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(&pkt, NULL));
+
+                /// setting the id of the message and incrementing it for the next call
+                btrpkt->id = id++;
+                btrpkt->led_idx = led_idx;
+                /// if the send was successful make the channel busy, will be freed in sendDone
+                if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+                    busy = TRUE;
+                }
+            }
         }
     }
     event void AMControl.startDone(error_t err) {
+        if (err == SUCCESS) {
+            call Timer.startPeriodic(INTERVAL);
+        }
+        else {
+            call AMControl.start();
+        }
     }
-
     event void AMControl.stopDone(error_t err) {
     }
 

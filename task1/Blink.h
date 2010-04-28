@@ -14,7 +14,12 @@
 /// we only need the id number of the message and the index of the led to turn on
 typedef nx_struct BlinkToRadioMsg {
 nx_uint16_t id;
-nx_uint16_t led_num;
+nx_uint16_t led_idx;
 } BlinkToRadioMsg;
+
+/// Interval of the timer in Milliseconds
+enum {
+  INTERVAL = 10000
+};
  
 #endif
