@@ -3,7 +3,7 @@
  * Timer fires.
  **/
 
-#include <stdlib.h> // Used for random call 
+#include <stdlib.h> // Used for random call
 
 module BlinkC {
     // required interfaces to manage and send/receive packages
@@ -124,11 +124,13 @@ implementation {
     }
     event void AMControl.stopDone(error_t err) {
     }
-
+    
+    BlinkToRadioMsg* btrpkt_loc;
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
             busy = FALSE;
-            dbg("BlinkC", "sending done\n");
+            btrpkt_loc = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
+            dbg("BlinkC", "sended message with sequential number %i and led number %i\n", btrpkt_loc->id, btrpkt_loc->led_idx);
         }
     }
 
