@@ -134,11 +134,14 @@ implementation {
 
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
         dbg("BlinkC", "receive entered\n");
+
         if (len == sizeof(BlinkToRadioMsg)){
+
             BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
             uint8_t seq_num = btrpkt->id; 
             dbg("BlinkC", "Message received\n");
-            if(seq_num > curr_id){
+
+            if(seq_num > curr_id) {
                 dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx);
                 curr_id = seq_num;
                 setLed(btrpkt->led_idx);
@@ -148,4 +151,3 @@ implementation {
         return message;
     }
 }
-
