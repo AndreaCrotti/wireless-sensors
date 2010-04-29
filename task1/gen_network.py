@@ -21,4 +21,4 @@ for x in range(1, NUM+1):
         if random.random() * CONN > 1:
             val = random.randrange(*DB_RANGE)
             print "%d %d %f" % (x, y, val)
-            print "%d %d %f" % (x, y, val + random.randrange(3))
+            print "%d %d %f" % (y, x, val + random.randrange(3))

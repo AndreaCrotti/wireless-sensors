@@ -23,6 +23,8 @@ implementation {
   components ActiveMessageC;
   components new AMSenderC(AM_BLINKTORADIO);
 
+  components RandomC;
+
   BlinkC -> MainC.Boot;
 
   BlinkC.Timer -> Timer;
@@ -33,5 +35,7 @@ implementation {
   BlinkC.AMPacket -> AMSenderC;
   BlinkC.AMSend -> AMSenderC;
   BlinkC.AMControl -> ActiveMessageC;
+
+  BlinkC.Random -> RandomC;
 }
 

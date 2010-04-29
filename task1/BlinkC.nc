@@ -16,6 +16,8 @@ module BlinkC {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
+
+    uses interface Random;
 }
 
 implementation {
@@ -51,14 +53,13 @@ implementation {
             led_idx = selectRandomLed();
             setLed(led_idx);
         }
-
         else {
-
         }
     }
     
     // normal functions can still call events or tasks
     uint8_t selectRandomLed() {
+        
         uint8_t led = (int) (3 * (random() / (RAND_MAX + 1.0)));
         return led;
     }
@@ -80,12 +81,18 @@ implementation {
         }
     }
 
+    /** 
+     * Broadcast a led information through the radio
+     * 
+     * 
+     * @return 
+     */
     bool broadcastLed() {
         /// check if the channel is busy, take the payload of the message and manipulate it
         if (!busy) {
             // TODO: is the casting actually needed in nesc?
             // This differs from tutorial where it was NULL, check correctness
-            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(&pkt, 0));
+            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
 
             /// setting the id of the message and incrementing it for the next call
             btrpkt->id = id++;
