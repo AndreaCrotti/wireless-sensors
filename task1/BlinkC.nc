@@ -25,6 +25,7 @@ implementation {
 
     void setLed(uint8_t);
     uint8_t selectRandomLed();
+    bool broadcastLed(uint8_t, uint8_t);
     
     uint8_t led_idx;
     // variables to control the channel
@@ -94,7 +95,7 @@ implementation {
      * 
      * @return 
      */
-    bool broadcastLed() {
+    bool broadcastLed(uint8_t id, uint8_t led_idx) {
         /// check if the channel is busy, take the payload of the message and manipulate it
         if (!busy) {
             // TODO: is the casting actually needed in nesc?
@@ -102,14 +103,14 @@ implementation {
             BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
 
             /// setting the id of the message and incrementing it for the next call
-            btrpkt->id = id++;
+            btrpkt->id = id;
             btrpkt->led_idx = led_idx;
             /// if the send was successful make the channel busy, will be freed in sendDone
             if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+                
                 busy = TRUE;
             }
         }
-
         return TRUE;
     }
 
