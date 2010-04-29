@@ -10,6 +10,8 @@ module BlinkC {
     uses interface Packet;
     uses interface AMPacket;
     uses interface AMSend;
+    uses interface Receive;    
+
     // used to control the ActiveMessageC component
     uses interface SplitControl as AMControl;
 
@@ -27,12 +29,11 @@ implementation {
     uint8_t selectRandomLed();
     bool broadcastLed(uint8_t, uint8_t);
     
-    uint8_t led_idx;
+
     // variables to control the channel
     bool busy = FALSE;
     message_t pkt;
-    uint8_t id = 0;
-    uint8_t led_idx;
+    uint8_t curr_id = 0;
 
     event void Boot.booted() {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
@@ -51,18 +52,17 @@ implementation {
     //   + check if already got or set led and broadcast
 
     event void Timer.fired() {
-
         if (TOS_NODE_ID == 0) {
-            led_idx = selectRandomLed();
-            dbg("BlinkC", "got led %d\n", led_idx);
+            uint8_t led_idx = selectRandomLed();
+            /* dbg("BlinkC", "got led %d\n", led_idx); */
             setLed(led_idx);
-        }
-        else {
+            broadcastLed(++curr_id, led_idx);
         }
     }
-    
+
     // normal functions can still call events or tasks
     uint8_t selectRandomLed() {
+        // TODO: seed the random generator
         uint8_t led = (call Random.rand16()) % 3;
         return led;
     }
@@ -76,7 +76,7 @@ implementation {
         call Leds.set(0);
 
         // Turn on the new LED
-        switch(led_idx) {
+        switch(led) {
         case '0':
             call Leds.led0On();
             break;
@@ -107,7 +107,6 @@ implementation {
             btrpkt->led_idx = led_idx;
             /// if the send was successful make the channel busy, will be freed in sendDone
             if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
-                
                 busy = TRUE;
             }
         }
@@ -129,7 +128,24 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
             busy = FALSE;
+            dbg("BlinkC", "sending done\n");
         }
+    }
+
+    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
+        dbg("BlinkC", "receive entered\n");
+        if (len == sizeof(BlinkToRadioMsg)){
+            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
+            uint8_t seq_num = btrpkt->id; 
+            dbg("BlinkC", "Message received\n");
+            if(seq_num > curr_id){
+                dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx);
+                curr_id = seq_num;
+                setLed(btrpkt->led_idx);
+                broadcastLed(curr_id, btrpkt->led_idx);
+            }
+        }
+        return message;
     }
 }
 
