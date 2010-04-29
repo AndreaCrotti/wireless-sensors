@@ -18,13 +18,14 @@ module BlinkC {
     uses interface Leds;
 
     uses interface Random;
+    /* uses interface ParameterInit as SeedInit; */
 }
 
 implementation {
 
     void setLed(uint8_t);
     uint8_t selectRandomLed();
-
+    
     uint8_t led_idx;
     // variables to control the channel
     bool busy = FALSE;
@@ -36,6 +37,7 @@ implementation {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
         // booted now must wait until the radio channel is actually available
         // handling of timer starting is done in AMControl now
+        /* call SeedInit.init(0); */
         call AMControl.start();
     }
  
@@ -51,6 +53,7 @@ implementation {
 
         if (TOS_NODE_ID == 0) {
             led_idx = selectRandomLed();
+            dbg("BlinkC", "got led %d\n", led_idx);
             setLed(led_idx);
         }
         else {
@@ -59,8 +62,7 @@ implementation {
     
     // normal functions can still call events or tasks
     uint8_t selectRandomLed() {
-        
-        uint8_t led = (int) (3 * (random() / (RAND_MAX + 1.0)));
+        uint8_t led = (call Random.rand16()) % 3;
         return led;
     }
 

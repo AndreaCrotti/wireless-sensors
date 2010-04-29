@@ -37,5 +37,6 @@ implementation {
   BlinkC.AMControl -> ActiveMessageC;
 
   BlinkC.Random -> RandomC;
+  /* BlinkC.ParameterInit<uint16_t> -> RandomC; */
 }
 

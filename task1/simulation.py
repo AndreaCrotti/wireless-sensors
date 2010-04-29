@@ -39,5 +39,5 @@ for n in nodes:
     n.bootAtTime(100)
 
 # after booting we have to run to the next events to see what happens
-for i in range(10000):
+for i in range(100000):
     t.runNextEvent()
