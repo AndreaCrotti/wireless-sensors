@@ -65,7 +65,12 @@ implementation {
         uint8_t led = (call Random.rand16()) % 3;
         return led;
     }
-
+  
+    /** 
+     * Turns on one Led and turns off all the others.
+     * 
+     * @param led Number of the LED to turn on.
+     */
     void setLed(uint8_t led) {
         call Leds.set(0);
 
