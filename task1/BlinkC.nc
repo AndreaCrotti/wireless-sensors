@@ -186,10 +186,10 @@ implementation {
                 curr_id = seq_num;
                 setLed(btrpkt->led_idx);
                 broadcastLed(curr_id, btrpkt->led_idx);
-            }else{
-		if(seq_num < curr_id){
-		    dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
-		}
+
+            } 
+            else {
+                dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
 	    }
         }
         return message;

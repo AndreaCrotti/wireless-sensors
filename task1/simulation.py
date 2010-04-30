@@ -1,47 +1,42 @@
-#! /usr/bin/python
-from TOSSIM import *
-import sys
-import random
+#!/usr/bin/env python
 
-### Simulation settings ###
-# Number of nodes 
-NUM_NODES = 100
-# Simulation runtime in seconds
+import sys
+import time
+import random
+from TOSSIM import *
+
 RUNTIME = 200
+NUM_NODES = 100
 
 t = Tossim([])
 r = t.radio()
-f = open("topo.txt", "r")
 
-lines = f.readlines()
-for line in lines:
-  s = line.split()
-  if (len(s) > 0):
-    r.add(int(s[0]), int(s[1]), float(s[2]))
-
+# Setting up the debugging channels
+# we could make use of decorators for this for example
+# We could also use some StringIO objects to encapsulate writing on pseudo files
 t.addChannel("BlinkC", sys.stdout)
 t.addChannel("Boot", sys.stdout)
 
-noise = open("noise.txt", "r")
-lines = noise.readlines()
-for line in lines:
-  str = line.strip()
-  if (str != ""):
-    val = int(str)
-    for i in range(0, NUM_NODES):
-      t.getNode(i).addNoiseTraceReading(val)
+# creating the list of nodes we're working with
+nodes = [t.getNode(x) for x in range(NUM_NODES)]
 
-for i in range(0, NUM_NODES):
-  # print "Creating noise model for ",i;
-  t.getNode(i).createNoiseModel()
+# loading the topology
+# TODO: Does it make sense to open the file instead of generating directly the topology here?
+for line in open("topo.txt"):
+    vals = line.split()
+    vals = (int(vals[0]), int(vals[1]), float(vals[2]))
+    r.add(*vals)
 
-for i in range(0, NUM_NODES):
-    t.getNode(i).bootAtTime(random.randint(100001, 900009))
+for line in open("noise.txt"):
+    val = int(line.strip())
+    for n in nodes:
+        n.addNoiseTraceReading(val)
 
-# t.getNode(0).bootAtTime(100001);
-# t.getNode(1).bootAtTime(800008);
-# t.getNode(2).bootAtTime(1800009);
+for n in nodes:
+    n.createNoiseModel()
 
+for n in nodes:
+    n.bootAtTime(random.randint(100001, 900009))
 
 t.runNextEvent()
 time = t.time()
