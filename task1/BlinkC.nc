@@ -21,6 +21,7 @@ module BlinkC {
     uses interface SplitControl as AMControl;
     
     // additional needed components
+    // TODO: is it possible to add the timer ONLY to mote 0?
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
@@ -35,7 +36,7 @@ implementation {
     
 
     //// variables to control the channel ////
-    // Is true, when the csending module is busy
+    // Is true when the sending module is busy
     bool busy = FALSE;
     // The current message
     message_t pkt;
@@ -46,7 +47,7 @@ implementation {
      * This event is called, after the device was booted and we start AMControl here.
      */
     event void Boot.booted() {
-        dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
+        /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
         // booted now must wait until the radio channel is actually available
         // handling of timer starting is done in AMControl now
         /* call SeedInit.init(0); */
@@ -54,9 +55,9 @@ implementation {
     }
 
     /**
-     * This event is called, whenever the timer fires.
+     * This event is triggered whenever the timer fires.
      * If the mote has ID 0, a LED is randomly choosen and activated,
-     * and the choice is braodcast over the network. 
+     * and the choice is braodcasted over the network. 
      */
     event void Timer.fired() {
 	if (TOS_NODE_ID == 0) {
@@ -174,7 +175,7 @@ implementation {
      * @return The received message.
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
-         if (len == sizeof(BlinkToRadioMsg)){
+        if (len == sizeof(BlinkToRadioMsg)){
 
             BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
             uint8_t seq_num = btrpkt->id; 
@@ -185,6 +186,9 @@ implementation {
                 curr_id = seq_num;
                 setLed(btrpkt->led_idx);
                 broadcastLed(curr_id, btrpkt->led_idx);
+            }
+            else {
+                dbg("BlinkC", "Skipping duplicate message received\n");
             }
         }
         return message;
