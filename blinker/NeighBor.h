@@ -3,7 +3,8 @@
 
 enum {
     BEACON = 2,
-    TIMEOUT = 15
+    TIMEOUT = 15,
+    PERIOD = 1000
 };
 
 #endif

@@ -1,3 +1,5 @@
+#include "NeighBor.h"
+
 /**
  * @file   NeighBourMod.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
@@ -25,6 +27,16 @@ module NeighBorMod {
 implementation {
     // 2 seconds every beacon, 15 seconds is the timeout
     command void startTimer() {
-        Timer.startPeriodic(1000);
+        Timer.startPeriodic(PERIOD);
+    }
+
+    event void Timer.fired() {
+        uint32_t delay = Timer.getdt();
+        if (delay % (BEACON * PERIOD) == 0) {
+            // start to broacast the beacon package
+        }
+        if (delay % (TIMEOUT * PERIOD) == 0) {
+            // send a timeout package for who didn't answer?
+        }
     }
 }
