@@ -537,14 +537,16 @@ public class BlinkGUI extends JFrame {
         this.setResizable(false);
     }
     
-    public void sendSelected(short mask){
+    public void sendSelected(short ledMask){
 	JCheckBox[] cbAr = {getMoteChoice1(), getMoteChoice2(), getMoteChoice3(), getMoteChoice4(), getMoteChoice5()};
 					
+        short destMask = 0;
 	for (int i = 0; i < cbAr.length; i++) {
 	    if(cbAr[i].isSelected()){
-		connector.sendLedMask((short)i, mask);
+		dest_mask += (1 << i);
 	    }
 	}
+        connector.sendLedMask(destMask, ledMask);
     }
 
     /**
