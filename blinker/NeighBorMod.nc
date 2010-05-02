@@ -72,4 +72,11 @@ implementation {
     void addNeighbor(uint8_t idx) {
         neighbors |= (1 << idx);
     }
+
+    // TODO: implement the receive part where it makes a distinction between
+    // a broacast beacon message and a ACK to the beacon
+
+    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
+        // in the payload there could be contained the type of the message
+    }
 }

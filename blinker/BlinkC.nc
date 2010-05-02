@@ -42,7 +42,7 @@ implementation {
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     void transmitLed(BlinkMsg);
-    char checkReceiver(BlinkMsg* m);
+    char amIaReceiver(BlinkMsg *);
     
 
     //// variables to control the channel ////
@@ -191,10 +191,10 @@ implementation {
      * Check whether we are one of the receivers of the message in question.
      * Our messages are multicast.
      * 
-     * @param m The message we want to check.
+     * @param msg The message we want to check.
      * @return 1 if we are one receiver.
      */
-    char checkReceiver(BlinkMsg* msg) {
+    char amIaReceiver(BlinkMsg* msg) {
         return !!(msg->dests & (1 << TOS_NODE_ID));
     }
     
@@ -216,7 +216,7 @@ implementation {
 	    
             if(sn > curr_sn || (!sn && curr_sn)) {
                 curr_sn = sn;
-                if (checkReceiver(btrpkt)){
+                if (amIaReceiver(btrpkt)){
 		    setLed(btrpkt->instr);
                 }
                 transmitLed(*btrpkt);
@@ -237,11 +237,13 @@ implementation {
      */
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
-            BlinkMsg* m = (BlinkMsg*)payload;
-            if (checkReceiver(m)) {
-                setLed(m->instr);
+            BlinkMsg* msg = (BlinkMsg *) payload;
+
+            if (amIaReceiver(m)) {
+                setLed(msg->instr);
             }
-            transmitLed(*m);
+
+            transmitLed(*msg);
             //note: m is not needed now anymore
         }
         return message;
