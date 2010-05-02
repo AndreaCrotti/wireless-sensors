@@ -65,9 +65,9 @@ public class BlinkConnector implements MessageListener {
     	gui.print("Sended message with mask " + mask + " and destination "+ destination);
     	
     	try{
-    		moteInterface.send(this.commID, message);
-    	}catch(Exception e){
-    		this.gui.print(e.getMessage());
+            moteInterface.send(this.commID, message);
+    	} catch(Exception e) {
+            this.gui.print(e.getMessage());
     	}
     }
     
