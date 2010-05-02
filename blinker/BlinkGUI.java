@@ -543,7 +543,7 @@ public class BlinkGUI extends JFrame {
         short destMask = 0;
 	for (int i = 0; i < cbAr.length; i++) {
 	    if(cbAr[i].isSelected()){
-		dest_mask += (1 << i);
+		destMask += (1 << i);
 	    }
 	}
         connector.sendLedMask(destMask, ledMask);
