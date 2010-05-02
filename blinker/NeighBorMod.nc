@@ -21,7 +21,7 @@ module NeighBorMod {
     // maybe seconds could be also enough
     uses interface Timer<TMilli> as Timer;
     
-    provides interface startTimer();
+    provides interface startSensing();
 }
 
 // use a task to post the event that makes the list of neighbors update
@@ -33,7 +33,7 @@ implementation {
     uint16_t last_seen = 0;
 
     // 2 seconds every beacon, 15 seconds is the timeout
-    command void startTimer() {
+    command void startSensing() {
         Timer.startPeriodic(PERIOD);
     }
 
@@ -50,7 +50,8 @@ implementation {
             // 15 seconds to make sure we are not doing useless operations
             // who didn't answer and is not in the list gets removed
             
-
+            // This is the simple way, just replace with the last seen motes
+            neighbors = last_seen;
             last_seen = 0;
         }
     }
@@ -78,5 +79,6 @@ implementation {
 
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         // in the payload there could be contained the type of the message
+        // in case it's a ACK we can add a neighbor, removing is actually never done automatically
     }
 }

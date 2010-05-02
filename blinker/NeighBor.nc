@@ -13,4 +13,6 @@ implementation {
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
 
     // now wire all the components together
+    
+    
 }
