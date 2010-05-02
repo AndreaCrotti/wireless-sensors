@@ -1,17 +1,18 @@
+#include <Timer.h>
+#include "Blink.h"
+
 /**
- * @file   BlinkAppC.nc
- * @author andrea <andrea@64-176.eduroam.rwth-aachen.de>
- * @date   Wed Apr 28 13:14:44 2010
- * 
- * @brief  First task, node number 0 of the network select a random led
+ * Configuration for the first task.
+ * Node number 0 of the network select a random led
  * and broadcast it to the whole network.
  * The other nodes accept the command, make sure they only receive once
  * and set the led also.
  * 
+ * @file   BlinkAppC.nc
+ * @author Andrea Crotti and Marius Grysla
+ * @date   So 2. Mai 21:11:02 CEST 2010
+ * 
  */
-
-#include <Timer.h>
-#include "Blink.h"
 
 configuration BlinkAppC {
 
@@ -36,7 +37,8 @@ implementation {
     BlinkC.AMSend -> AMSenderC;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> AMReceiverC;
-
+    
+    /// Connect the Random component for the LED choice
     BlinkC.Random -> RandomC;
     /* BlinkC.ParameterInit<uint16_t> -> RandomC; */
 }
