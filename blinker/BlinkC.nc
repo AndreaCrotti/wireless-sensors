@@ -63,6 +63,8 @@ implementation {
         call SeedInit.init(13);
         call AMControl.start();
         call SerialControl.start();
+
+        // start the timer of the NeighBourMod
     }
 
     /**
@@ -158,6 +160,7 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     void transmitLed(BlinkMsg msg) {
+        // TODO: in one line?
         void* m = call Packet.getPayload(&pkt, 0);
         *(BlinkMsg *)(m) = msg;
         call CC2420Packet.setPower(&pkt,2);
@@ -191,8 +194,8 @@ implementation {
      * @param m The message we want to check.
      * @return 1 if we are one receiver.
      */
-    char checkReceiver(BlinkMsg* m) {
-        return !!(m->dests & (1 << TOS_NODE_ID));
+    char checkReceiver(BlinkMsg* msg) {
+        return !!(msg->dests & (1 << TOS_NODE_ID));
     }
     
     /**

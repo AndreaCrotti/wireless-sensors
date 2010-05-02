@@ -1,7 +1,6 @@
 /**
  * @file   Blink.h
- * @author Andrea Crotti, Marius Gysla
- * @author Oscar Dustmann
+ * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date   Wed Apr 28 12:02:18 2010
  * 
  * @brief  Interface for Blink program
