@@ -18,26 +18,26 @@ configuration BlinkAppC {
 }
 
 implementation {
-  components MainC, BlinkC, LedsC;
-  components new TimerMilliC() as Timer;
-  components ActiveMessageC;
-  components new AMSenderC(AM_BLINKTORADIO);
-  components new AMReceiverC(AM_BLINKTORADIO);
-  components RandomC;
+    components MainC, BlinkC, LedsC;
+    components new TimerMilliC() as Timer;
+    components ActiveMessageC;
+    components new AMSenderC(AM_BLINKTORADIO);
+    components new AMReceiverC(AM_BLINKTORADIO);
+    components RandomC;
+    
+    BlinkC -> MainC.Boot;
+    
+    BlinkC.Timer -> Timer;
+    BlinkC.Leds -> LedsC;
 
-  BlinkC -> MainC.Boot;
+    /// Linking all our interfaces to the correct components
+    BlinkC.Packet -> AMSenderC;
+    BlinkC.AMPacket -> AMSenderC;
+    BlinkC.AMSend -> AMSenderC;
+    BlinkC.AMControl -> ActiveMessageC;
+    BlinkC.Receive -> AMReceiverC;
 
-  BlinkC.Timer -> Timer;
-  BlinkC.Leds -> LedsC;
-
-  /// Linking all our interfaces to the correct components
-  BlinkC.Packet -> AMSenderC;
-  BlinkC.AMPacket -> AMSenderC;
-  BlinkC.AMSend -> AMSenderC;
-  BlinkC.AMControl -> ActiveMessageC;
-  BlinkC.Receive -> AMReceiverC;
-
-  BlinkC.Random -> RandomC;
-  /* BlinkC.ParameterInit<uint16_t> -> RandomC; */
+    BlinkC.Random -> RandomC;
+    /* BlinkC.ParameterInit<uint16_t> -> RandomC; */
 }
 

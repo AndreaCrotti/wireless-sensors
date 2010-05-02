@@ -1,45 +1,50 @@
-#!/usr/bin/env python
-
-import sys
-import time
+#! /usr/bin/python
 from TOSSIM import *
+import sys
+import random
 
-NUM_NODES = 2
 
 t = Tossim([])
 r = t.radio()
+f = open("topo.txt", "r")
 
-# Setting up the debugging channels
-# we could make use of decorators for this for example
-# We could also use some StringIO objects to encapsulate writing on pseudo files
+NUM_NODES = 20
+
+lines = f.readlines()
+for line in lines:
+  s = line.split()
+  if (len(s) > 0):
+    r.add(int(s[0]), int(s[1]), float(s[2]))
+
+# r.add(0, 1, -54.0)
+# r.add(1, 0, -54.0)
+# r.add(0, 2, -54.0)
+# r.add(2, 0, -54.0)
+# r.add(2, 1, -54.0)
+# r.add(1, 2, -54.0)
+
 t.addChannel("BlinkC", sys.stdout)
+t.addChannel("Boot", sys.stdout)
 
-# loading the topology
-# TODO: Does it make sense to open the file instead of generating directly the topology here?
-# for line in open("topo.txt"):
-#     vals = line.split()
-#     vals = (int(vals[0]), int(vals[1]), float(vals[2]))
-#     r.add(*vals)
+noise = open("noise.txt", "r")
+lines = noise.readlines()
+for line in lines:
+  str = line.strip()
+  if (str != ""):
+    val = int(str)
+    for i in range(0, NUM_NODES):
+      t.getNode(i).addNoiseTraceReading(val)
 
-r.add(1, 2, -1000.0)
-r.add(2, 1, -1000.0)
+for i in range(0, NUM_NODES):
+  print "Creating noise model for ",i;
+  t.getNode(i).createNoiseModel()
 
-# creating the list of nodes we're working with
-nodes = [t.getNode(x) for x in range(NUM_NODES)]
+for i in range(0, NUM_NODES):
+    t.getNode(i).bootAtTime(random.randint(100001, 900009))
 
-# adding the noise track to each of them and creating the noisemodel
-for line in open("noise.txt"):
-    val = int(line.strip())
-    for n in nodes:
-        n.addNoiseTraceReading(val)
+# t.getNode(0).bootAtTime(100001);
+# t.getNode(1).bootAtTime(800008);
+# t.getNode(2).bootAtTime(1800009);
 
-for n in nodes:
-    n.createNoiseModel()
-
-# booting all nodes at same time
-for n in nodes:
-    n.bootAtTime(100)
-
-# after booting we have to run to the next events to see what happens
-for i in range(10000):
-    t.runNextEvent()
+for i in range(0, 100000):
+  t.runNextEvent()

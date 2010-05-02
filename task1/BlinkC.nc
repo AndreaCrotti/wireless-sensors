@@ -18,13 +18,12 @@ module BlinkC {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-
     uses interface Random;
     /* uses interface ParameterInit as SeedInit; */
 }
 
 implementation {
-
+  
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     bool broadcastLed(uint8_t, uint8_t);
@@ -34,7 +33,7 @@ implementation {
     bool busy = FALSE;
     message_t pkt;
     uint8_t curr_id = 0;
-
+    
     event void Boot.booted() {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
         // booted now must wait until the radio channel is actually available
@@ -52,7 +51,7 @@ implementation {
     //   + check if already got or set led and broadcast
 
     event void Timer.fired() {
-        if (TOS_NODE_ID == 0) {
+	if (TOS_NODE_ID == 0) {
             uint8_t led_idx = selectRandomLed();
             /* dbg("BlinkC", "got led %d\n", led_idx); */
             setLed(led_idx);
@@ -67,9 +66,9 @@ implementation {
         return led;
     }
   
-    /** 
+    /**
      * Turns on one Led and turns off all the others.
-     * 
+     *
      * @param led Number of the LED to turn on.
      */
     void setLed(uint8_t led) {
@@ -87,13 +86,15 @@ implementation {
             call Leds.led2On();
             break;
         }
+
+	dbg("BlinkC", "Turned on LED %i\n", led);
     }
 
-    /** 
+    /**
      * Broadcast a led information through the radio
-     * 
-     * 
-     * @return 
+     *
+     *
+     * @return
      */
     bool broadcastLed(uint8_t id, uint8_t led_idx) {
         /// check if the channel is busy, take the payload of the message and manipulate it
@@ -107,6 +108,8 @@ implementation {
             btrpkt->led_idx = led_idx;
             /// if the send was successful make the channel busy, will be freed in sendDone
             if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+		dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", btrpkt->id, btrpkt->led_idx);
+
                 busy = TRUE;
             }
         }
@@ -115,7 +118,7 @@ implementation {
 
     event void AMControl.startDone(error_t err) {
         if (err == SUCCESS) {
-            dbg("BlinkC", "Radio channel is started correctly, starting timer\n");
+            /* dbg("BlinkC", "Radio channel is started correctly, starting timer\n"); */
             call Timer.startPeriodic(INTERVAL);
         }
         else {
@@ -129,22 +132,18 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
             busy = FALSE;
-            btrpkt_loc = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
-            dbg("BlinkC", "sended message with sequential number %i and led number %i\n", btrpkt_loc->id, btrpkt_loc->led_idx);
         }
     }
 
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
-        dbg("BlinkC", "receive entered\n");
-
-        if (len == sizeof(BlinkToRadioMsg)){
+         if (len == sizeof(BlinkToRadioMsg)){
 
             BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
             uint8_t seq_num = btrpkt->id; 
-            dbg("BlinkC", "Message received\n");
-
+            /* dbg("BlinkC", "Message received\n"); */
+	    
             if(seq_num > curr_id) {
-                dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx);
+                /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_id = seq_num;
                 setLed(btrpkt->led_idx);
                 broadcastLed(curr_id, btrpkt->led_idx);
