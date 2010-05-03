@@ -17,9 +17,7 @@ nx_uint16_t id;
 nx_uint16_t led_idx;
 } BlinkToRadioMsg;
 
-/// Interval of the timer in Milliseconds
 enum {
-  /// type of the sent message
   AM_BLINKTORADIO = 6,
   INTERVAL = 10000
 };

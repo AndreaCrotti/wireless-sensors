@@ -19,13 +19,6 @@ for line in lines:
   if (len(s) > 0):
     r.add(int(s[0]), int(s[1]), float(s[2]))
 
-# r.add(0, 1, -54.0)
-# r.add(1, 0, -54.0)
-# r.add(0, 2, -54.0)
-# r.add(2, 0, -54.0)
-# r.add(2, 1, -54.0)
-# r.add(1, 2, -54.0)
-
 t.addChannel("BlinkC", sys.stdout)
 t.addChannel("Boot", sys.stdout)
 
@@ -39,7 +32,7 @@ for line in lines:
       t.getNode(i).addNoiseTraceReading(val)
 
 for i in range(0, NUM_NODES):
-  print "Creating noise model for ",i;
+  # print "Creating noise model for ",i;
   t.getNode(i).createNoiseModel()
 
 for i in range(0, NUM_NODES):
