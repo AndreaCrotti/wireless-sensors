@@ -7,7 +7,7 @@ import random
 # Number of nodes 
 NUM_NODES = 100
 # Simulation runtime in seconds
-RUNTIME = 35
+RUNTIME = 200
 
 t = Tossim([])
 r = t.radio()

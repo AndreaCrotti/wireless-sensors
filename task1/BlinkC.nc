@@ -25,6 +25,7 @@ module BlinkC {
     uses interface Boot;
     uses interface Leds;
     uses interface Random;
+    uses interface ParameterInit<uint16_t> as SeedInit;
 }
 
 implementation {
@@ -49,7 +50,7 @@ implementation {
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
         // booted now must wait until the radio channel is actually available
         // handling of timer starting is done in AMControl now
-        /* call SeedInit.init(0); */
+        call SeedInit.init(13);
         call AMControl.start();
     }
 
@@ -185,7 +186,11 @@ implementation {
                 curr_id = seq_num;
                 setLed(btrpkt->led_idx);
                 broadcastLed(curr_id, btrpkt->led_idx);
-            }
+            }else{
+		if(seq_num < curr_id){
+		    dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
+		}
+	    }
         }
         return message;
     }

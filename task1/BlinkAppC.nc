@@ -40,6 +40,6 @@ implementation {
     
     /// Connect the Random component for the LED choice
     BlinkC.Random -> RandomC;
-    /* BlinkC.ParameterInit<uint16_t> -> RandomC; */
+    BlinkC.SeedInit -> RandomC;
 }
 
