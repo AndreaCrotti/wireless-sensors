@@ -125,7 +125,6 @@ implementation {
                 busy = TRUE;
             }
         }
-        return TRUE;
     }
 
     /**

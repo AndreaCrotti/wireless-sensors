@@ -3,12 +3,15 @@ from TOSSIM import *
 import sys
 import random
 
+### Simulation settings ###
+# Number of nodes 
+NUM_NODES = 100
+# Simulation runtime in seconds
+RUNTIME = 35
 
 t = Tossim([])
 r = t.radio()
 f = open("topo.txt", "r")
-
-NUM_NODES = 20
 
 lines = f.readlines()
 for line in lines:
@@ -46,5 +49,8 @@ for i in range(0, NUM_NODES):
 # t.getNode(1).bootAtTime(800008);
 # t.getNode(2).bootAtTime(1800009);
 
-for i in range(0, 100000):
-  t.runNextEvent()
+
+t.runNextEvent()
+time = t.time()
+while(time + RUNTIME * 10000000000 > t.time()):
+    t.runNextEvent()
