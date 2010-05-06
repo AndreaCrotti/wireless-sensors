@@ -114,13 +114,13 @@ implementation {
         if (!busy) {
             // TODO: is the casting actually needed in nesc?
             // This differs from tutorial where it was NULL, check correctness
-            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
+            BlinkMsg* btrpkt = (BlinkMsg *)(call Packet.getPayload(&pkt, 0));
 
             /// setting the id of the message and incrementing it for the next call
             btrpkt->id = id;
             btrpkt->led_idx = led_idx;
             /// if the send was successful make the channel busy, will be freed in sendDone
-            if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+            if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS) {
 		dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", btrpkt->id, btrpkt->led_idx);
 
                 busy = TRUE;
@@ -175,9 +175,9 @@ implementation {
      * @return The received message.
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
-        if (len == sizeof(BlinkToRadioMsg)){
+        if (len == sizeof(BlinkMsg)){
 
-            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
+            BlinkMsg* btrpkt = (BlinkMsg*) payload;
             uint8_t seq_num = btrpkt->id; 
             /* dbg("BlinkC", "Message received\n"); */
 	    

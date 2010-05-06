@@ -18,33 +18,36 @@ import java.awt.event.KeyEvent;
 
 public class BlinkGUI extends JFrame {
 
+	// Saves a reference to the connector
+	private BlinkConnector connector;
+	
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanel = null;
 	private JPanel jPanel1 = null;
-	private JCheckBox jCheckBox = null;
+	private JCheckBox moteChoice1 = null;
 	private JLabel jLabel = null;
-	private JCheckBox jCheckBox1 = null;
-	private JCheckBox jCheckBox2 = null;
-	private JCheckBox jCheckBox3 = null;
-	private JCheckBox jCheckBox4 = null;
+	private JCheckBox moteChoice2 = null;
+	private JCheckBox moteChoice3 = null;
+	private JCheckBox moteChoice4 = null;
+	private JCheckBox moteChoice5 = null;
 	private JLabel jLabel1 = null;
 	private JPanel jPanel2 = null;
-	private JButton jButton = null;
-	private JButton jButton1 = null;
-	private JButton jButton2 = null;
-	private JButton jButton3 = null;
-	private JButton jButton4 = null;
-	private JButton jButton5 = null;
+	private JButton led0Button1 = null;
+	private JButton led0Button2 = null;
+	private JButton led1Button1 = null;
+	private JButton led1Button2 = null;
+	private JButton led2Button1 = null;
+	private JButton led2Button2 = null;
 	private JPanel jPanel3 = null;
 	private JPanel jPanel4 = null;
 	private JLabel jLabel2 = null;
-	private JCheckBox jCheckBox5 = null;
-	private JCheckBox jCheckBox6 = null;
-	private JCheckBox jCheckBox7 = null;
-	private JButton jButton6 = null;
+	private JCheckBox led0Choice = null;
+	private JCheckBox led1Choice = null;
+	private JCheckBox led2Choice = null;
+	private JButton setCustomButton = null;
 	private JPanel jPanel5 = null;
 	private JPanel jPanel6 = null;
-	private JTextPane jTextPane = null;
+	private JTextPane DebugPane = null;
 	private JLabel jLabel3 = null;
 	/**
 	 * This method initializes jPanel	
@@ -89,68 +92,68 @@ public class BlinkGUI extends JFrame {
 	}
 
 	/**
-	 * This method initializes jCheckBox	
+	 * This method initializes moteChoice1	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox() {
-		if (jCheckBox == null) {
-			jCheckBox = new JCheckBox();
-			jCheckBox.setText("Leia");
+	private JCheckBox getMoteChoice1() {
+		if (moteChoice1 == null) {
+			moteChoice1 = new JCheckBox();
+			moteChoice1.setText("Leia");
 		}
-		return jCheckBox;
+		return moteChoice1;
 	}
 
 	/**
-	 * This method initializes jCheckBox1	
+	 * This method initializes moteChoice2	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox1() {
-		if (jCheckBox1 == null) {
-			jCheckBox1 = new JCheckBox();
-			jCheckBox1.setText("Mote2");
+	private JCheckBox getMoteChoice2() {
+		if (moteChoice2 == null) {
+			moteChoice2 = new JCheckBox();
+			moteChoice2.setText("Mote2");
 		}
-		return jCheckBox1;
+		return moteChoice2;
 	}
 
 	/**
-	 * This method initializes jCheckBox2	
+	 * This method initializes moteChoice3	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox2() {
-		if (jCheckBox2 == null) {
-			jCheckBox2 = new JCheckBox();
-			jCheckBox2.setText("Mote3");
+	private JCheckBox getMoteChoice3() {
+		if (moteChoice3 == null) {
+			moteChoice3 = new JCheckBox();
+			moteChoice3.setText("Mote3");
 		}
-		return jCheckBox2;
+		return moteChoice3;
 	}
 
 	/**
-	 * This method initializes jCheckBox3	
+	 * This method initializes moteChoice4	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox3() {
-		if (jCheckBox3 == null) {
-			jCheckBox3 = new JCheckBox();
-			jCheckBox3.setText("Mote4");
+	private JCheckBox getMoteChoice4() {
+		if (moteChoice4 == null) {
+			moteChoice4 = new JCheckBox();
+			moteChoice4.setText("Mote4");
 		}
-		return jCheckBox3;
+		return moteChoice4;
 	}
 
 	/**
-	 * This method initializes jCheckBox4	
+	 * This method initializes moteChoice5	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox4() {
-		if (jCheckBox4 == null) {
-			jCheckBox4 = new JCheckBox();
-			jCheckBox4.setText("Mote5");
+	private JCheckBox getMoteChoice5() {
+		if (moteChoice5 == null) {
+			moteChoice5 = new JCheckBox();
+			moteChoice5.setText("Mote5");
 		}
-		return jCheckBox4;
+		return moteChoice5;
 	}
 
 	/**
@@ -171,81 +174,81 @@ public class BlinkGUI extends JFrame {
 	}
 
 	/**
-	 * This method initializes jButton	
+	 * This method initializes led0Button1	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton() {
-		if (jButton == null) {
-			jButton = new JButton();
-			jButton.setText("LED 0 On");
+	private JButton getLed0Button1() {
+		if (led0Button1 == null) {
+			led0Button1 = new JButton();
+			led0Button1.setText("LED 0 On");
 		}
-		return jButton;
+		return led0Button1;
 	}
 
 	/**
-	 * This method initializes jButton1	
+	 * This method initializes led0Button2	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton1() {
-		if (jButton1 == null) {
-			jButton1 = new JButton();
-			jButton1.setText("LED 0 Off");
+	private JButton getLed0Button2() {
+		if (led0Button2 == null) {
+			led0Button2 = new JButton();
+			led0Button2.setText("LED 0 Off");
 		}
-		return jButton1;
+		return led0Button2;
 	}
 
 	/**
-	 * This method initializes jButton2	
+	 * This method initializes led1Button1	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton2() {
-		if (jButton2 == null) {
-			jButton2 = new JButton();
-			jButton2.setText("LED 1 On");
+	private JButton getLed1Button1() {
+		if (led1Button1 == null) {
+			led1Button1 = new JButton();
+			led1Button1.setText("LED 1 On");
 		}
-		return jButton2;
+		return led1Button1;
 	}
 
 	/**
-	 * This method initializes jButton3	
+	 * This method initializes led1Button2	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton3() {
-		if (jButton3 == null) {
-			jButton3 = new JButton();
-			jButton3.setText("LED 1 Off");
+	private JButton getLed1Button2() {
+		if (led1Button2 == null) {
+			led1Button2 = new JButton();
+			led1Button2.setText("LED 1 Off");
 		}
-		return jButton3;
+		return led1Button2;
 	}
 
 	/**
-	 * This method initializes jButton4	
+	 * This method initializes led2Button1	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton4() {
-		if (jButton4 == null) {
-			jButton4 = new JButton();
-			jButton4.setText("LED 2 On");
+	private JButton getLed2Button1() {
+		if (led2Button1 == null) {
+			led2Button1 = new JButton();
+			led2Button1.setText("LED 2 On");
 		}
-		return jButton4;
+		return led2Button1;
 	}
 
 	/**
-	 * This method initializes jButton5	
+	 * This method initializes led2Button2	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton5() {
-		if (jButton5 == null) {
-			jButton5 = new JButton();
-			jButton5.setText("LED 2 Off");
+	private JButton getLed2Button2() {
+		if (led2Button2 == null) {
+			led2Button2 = new JButton();
+			led2Button2.setText("LED 2 Off");
 		}
-		return jButton5;
+		return led2Button2;
 	}
 
 	/**
@@ -276,12 +279,12 @@ public class BlinkGUI extends JFrame {
 			jPanel3 = new JPanel();
 			jPanel3.setLayout(new GridBagLayout());
 			jPanel3.setName("LEDButtonPanel");
-			jPanel3.add(getJButton1(), gridBagConstraints6);
-			jPanel3.add(getJButton(), gridBagConstraints11);
-			jPanel3.add(getJButton4(), gridBagConstraints8);
-			jPanel3.add(getJButton2(), gridBagConstraints7);
-			jPanel3.add(getJButton5(), gridBagConstraints9);
-			jPanel3.add(getJButton3(), gridBagConstraints10);
+			jPanel3.add(getLed0Button2(), gridBagConstraints6);
+			jPanel3.add(getLed0Button1(), gridBagConstraints11);
+			jPanel3.add(getLed2Button1(), gridBagConstraints8);
+			jPanel3.add(getLed1Button1(), gridBagConstraints7);
+			jPanel3.add(getLed2Button2(), gridBagConstraints9);
+			jPanel3.add(getLed1Button2(), gridBagConstraints10);
 		}
 		return jPanel3;
 	}
@@ -298,64 +301,66 @@ public class BlinkGUI extends JFrame {
 			jPanel4 = new JPanel();
 			jPanel4.setLayout(new BorderLayout());
 			jPanel4.add(jLabel2, BorderLayout.NORTH);
-			jPanel4.add(getJCheckBox5(), BorderLayout.WEST);
-			jPanel4.add(getJCheckBox6(), BorderLayout.CENTER);
-			jPanel4.add(getJCheckBox7(), BorderLayout.EAST);
-			jPanel4.add(getJButton6(), BorderLayout.SOUTH);
+			jPanel4.add(getLed0Choice(), BorderLayout.WEST);
+			jPanel4.add(getLed1Choice(), BorderLayout.CENTER);
+			jPanel4.add(getLed2Choice(), BorderLayout.EAST);
+			jPanel4.add(getSetCustomButton(), BorderLayout.SOUTH);
 		}
 		return jPanel4;
 	}
 
 	/**
-	 * This method initializes jCheckBox5	
+	 * This method initializes led0Choice	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox5() {
-		if (jCheckBox5 == null) {
-			jCheckBox5 = new JCheckBox();
-			jCheckBox5.setText("LED1");
+	private JCheckBox getLed0Choice() {
+		if (led0Choice == null) {
+			led0Choice = new JCheckBox();
+			led0Choice.setText("LED0");
+			led0Choice.setActionCommand("LED0");
 		}
-		return jCheckBox5;
+		return led0Choice;
 	}
 
 	/**
-	 * This method initializes jCheckBox6	
+	 * This method initializes led1Choice	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox6() {
-		if (jCheckBox6 == null) {
-			jCheckBox6 = new JCheckBox();
-			jCheckBox6.setText("LED2");
+	private JCheckBox getLed1Choice() {
+		if (led1Choice == null) {
+			led1Choice = new JCheckBox();
+			led1Choice.setText("LED1");
 		}
-		return jCheckBox6;
+		return led1Choice;
 	}
 
 	/**
-	 * This method initializes jCheckBox7	
+	 * This method initializes led2Choice	
 	 * 	
 	 * @return javax.swing.JCheckBox	
 	 */
-	private JCheckBox getJCheckBox7() {
-		if (jCheckBox7 == null) {
-			jCheckBox7 = new JCheckBox();
-			jCheckBox7.setText("LED3");
+	private JCheckBox getLed2Choice() {
+		if (led2Choice == null) {
+			led2Choice = new JCheckBox();
+			led2Choice.setText("LED2");
+			led2Choice.setMnemonic(KeyEvent.VK_UNDEFINED);
 		}
-		return jCheckBox7;
+		return led2Choice;
 	}
 
 	/**
-	 * This method initializes jButton6	
+	 * This method initializes setCustomButton	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButton6() {
-		if (jButton6 == null) {
-			jButton6 = new JButton();
-			jButton6.setText("Set");
+	private JButton getSetCustomButton() {
+		if (setCustomButton == null) {
+			setCustomButton = new JButton();
+			setCustomButton.setText("Set");
 		}
-		return jButton6;
+		return setCustomButton;
 	}
 
 	/**
@@ -382,11 +387,11 @@ public class BlinkGUI extends JFrame {
 			gridBagConstraints.gridy = 0;
 			jPanel5 = new JPanel();
 			jPanel5.setLayout(new GridBagLayout());
-			jPanel5.add(getJCheckBox(), gridBagConstraints);
-			jPanel5.add(getJCheckBox1(), gridBagConstraints1);
-			jPanel5.add(getJCheckBox2(), gridBagConstraints2);
-			jPanel5.add(getJCheckBox3(), gridBagConstraints3);
-			jPanel5.add(getJCheckBox4(), gridBagConstraints4);
+			jPanel5.add(getMoteChoice1(), gridBagConstraints);
+			jPanel5.add(getMoteChoice2(), gridBagConstraints1);
+			jPanel5.add(getMoteChoice3(), gridBagConstraints2);
+			jPanel5.add(getMoteChoice4(), gridBagConstraints3);
+			jPanel5.add(getMoteChoice5(), gridBagConstraints4);
 		}
 		return jPanel5;
 	}
@@ -406,30 +411,30 @@ public class BlinkGUI extends JFrame {
 			jPanel6.setLayout(new BorderLayout());
 			jPanel6.setPreferredSize(new Dimension(30, 200));
 			jPanel6.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-			jPanel6.add(getJTextPane(), BorderLayout.CENTER);
+			jPanel6.add(getDebugPane(), BorderLayout.CENTER);
 			jPanel6.add(jLabel3, BorderLayout.NORTH);
 		}
 		return jPanel6;
 	}
 
 	/**
-	 * This method initializes jTextPane	
+	 * This method initializes DebugPane	
 	 * 	
 	 * @return javax.swing.JTextPane	
 	 */
-	private JTextPane getJTextPane() {
-		if (jTextPane == null) {
-			jTextPane = new JTextPane();
-			jTextPane.setText("");
-			jTextPane.setPreferredSize(new Dimension(30, 150));
+	private JTextPane getDebugPane() {
+		if (DebugPane == null) {
+			DebugPane = new JTextPane();
+			DebugPane.setText("");
+			DebugPane.setPreferredSize(new Dimension(30, 150));
 		}
-		return jTextPane;
+		return DebugPane;
 	}
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -438,14 +443,17 @@ public class BlinkGUI extends JFrame {
 				thisClass.setVisible(true);
 			}
 		});
-	}
+	}*/
 
 	/**
 	 * This is the default constructor
 	 */
-	public BlinkGUI() {
+	public BlinkGUI(BlinkConnector connector) {
 		super();
+		this.connector = connector;
 		initialize();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
 	}
 
 	/**

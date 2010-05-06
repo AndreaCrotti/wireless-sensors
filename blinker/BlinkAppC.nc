@@ -22,8 +22,8 @@ implementation {
     components MainC, BlinkC, LedsC;
     components new TimerMilliC() as Timer;
     components ActiveMessageC;
-    components new AMSenderC(AM_BLINKTORADIO);
-    components new AMReceiverC(AM_BLINKTORADIO);
+    components new AMSenderC(AM_BLINK);
+    components new AMReceiverC(AM_BLINK);
     components RandomC;
     
     BlinkC -> MainC.Boot;
