@@ -22,8 +22,8 @@ implementation {
     components MainC, BlinkC, LedsC;
     components new TimerMilliC() as Timer;
     components ActiveMessageC;
-    components new AMSenderC(AM_BLINK);
-    components new AMReceiverC(AM_BLINK);
+    components new AMSenderC(AM_BLINK) as BlinkSender;
+    components new AMReceiverC(AM_BLINK) as BlinkReceiver;
     components RandomC;
     
     BlinkC -> MainC.Boot;
@@ -32,11 +32,11 @@ implementation {
     BlinkC.Leds -> LedsC;
 
     /// Linking all our interfaces to the correct components
-    BlinkC.Packet -> AMSenderC;
-    BlinkC.AMPacket -> AMSenderC;
-    BlinkC.AMSend -> AMSenderC;
+    BlinkC.Packet -> BlinkSender.Packet;
+    BlinkC.AMPacket -> BlinkSender.Packet;
+    BlinkC.AMSend -> BlinkSender.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
-    BlinkC.Receive -> AMReceiverC;
+    BlinkC.Receive -> BlinkReceiver;
     
     /// Connect the Random component for the LED choice
     BlinkC.Random -> RandomC;
