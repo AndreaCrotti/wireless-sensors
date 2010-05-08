@@ -35,11 +35,12 @@ typedef nx_uint8_t nx_nodeid_t;
 typedef nx_struct BlinkMsg {
   nx_instr_t instr;
   nx_seqno_t seqno;
-  nx_node_t dest;
+  nx_nodeid_t dest;
 } BlinkMsg;
 
 enum {
-  AM_BLINK = 6
+  AM_BLINK = 6,
+  AM_SERIAL_BLINK
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 10000

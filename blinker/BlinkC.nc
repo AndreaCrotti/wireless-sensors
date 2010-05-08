@@ -1,4 +1,6 @@
 #include "Blink.h"
+#include <assert.h>
+
 /**
  * Implementation of the first task.
  * Node number 0 of the network select a random led
@@ -12,17 +14,22 @@
  **/
 
 module BlinkC {
-    // required interfaces to manage and send/receive packages
+    // required interfaces to manage and send/receive packets
     uses interface Packet;
     uses interface AMPacket;
     uses interface AMSend;
-    uses interface Receive;    
+    uses interface Receive;
+    // serial interface
+    //uses interface Packet as SerialPacket;
+    //uses interface AMPacket as SerialAMPacket;
+    //uses interface AMSend as SerialAMSend;
+    uses interface Receive as SerialReceive;
 
     // used to control the ActiveMessageC component
     uses interface SplitControl as AMControl;
+    uses interface SplitControl as SerialControl;
     
     // additional needed components
-    // TODO: is it possible to add the timer ONLY to mote 0?
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
@@ -34,7 +41,7 @@ implementation {
   
     void setLed(uint8_t);
     uint8_t selectRandomLed();
-    void broadcastLed(uint8_t, uint8_t);
+    void transmitLed(BlinkMsg);
     
 
     //// variables to control the channel ////
@@ -54,6 +61,7 @@ implementation {
         // handling of timer starting is done in AMControl now
         call SeedInit.init(13);
         call AMControl.start();
+        call SerialControl.start();
     }
 
     /**
@@ -77,9 +85,8 @@ implementation {
     event void AMControl.startDone(error_t err) {
         if (err == SUCCESS) {
             /* dbg("BlinkC", "Radio channel is started correctly, starting timer\n"); */
-            timer();
-        }
-        else {
+            // timer(); dont generate toggle instructions
+        } else {
             call AMControl.start();
         }
     }
@@ -92,6 +99,24 @@ implementation {
     }
 
     /**
+     * Is called, if the serial module is started.
+     *
+     * @param err SUCCESS if the component was successfully turned on, FAIL otherwise.
+     */
+    event void SerialControl.startDone(error_t err) {
+        if (err == FAIL) {
+            call SerialControl.start();
+        }
+    }
+
+    /**
+     * Called, when the serial module has stopped.
+     * - not used -
+     */
+    event void SerialControl.stopDone(error_t err) {
+    }
+
+    /**
      * This event is triggered whenever the timer fires.
      * If the mote has ID 0, a LED is randomly choosen and activated,
      * and the choice is braodcasted over the network. 
@@ -101,7 +126,8 @@ implementation {
             instr_t leds = (instr_t)selectRandomLed();
             /* dbg("BlinkC", "got led %d\n", led_idx); */
             setLed(leds);
-            broadcastLed(++curr_sn, leds);
+//            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
+//transmitLed(msg);
         }
     }
 
@@ -111,7 +137,10 @@ implementation {
      * @return An interger between 0 and 2
      */
     uint8_t selectRandomLed() {
-        return 1 << ((call Random.rand16()) % 3);
+        uint8_t leds = 1 << ((call Random.rand16()) % 3);
+        dbg("BlinkC","new command is %u\n",leds);
+        assert(!(leds & ~7));
+        return leds;
     }
   
     /**
@@ -120,7 +149,9 @@ implementation {
      * @param led Number of the LED to turn on.
      */
     void setLed(instr_t led) {
+        instr_t oldLM = ledMask;
         ledMask = (ledMask & (~led >> 3)) ^ led;
+        dbg("BlinkC", "Setting led from %u to %u, using instruction %u\n", oldLM, ledMask, led);
         call Leds.set(ledMask);
     }
 
@@ -130,18 +161,11 @@ implementation {
      * @param id The sequential ID of the message.
      * @param led_idx The ID of the LED.
      */
-    void broadcastLed(uint8_t id, uint8_t led_idx) {
-        BlinkMsg* btrpkt;
-        // TODO: is the casting actually needed in nesc?
+    void transmitLed(BlinkMsg msg) {
         // This differs from tutorial where it was NULL, check correctness
-        btrpkt = (BlinkMsg *)(call Packet.getPayload(&pkt, 0));
-
-        /// setting the id of the message and incrementing it for the next call
-        btrpkt->seqno = seqno;
-        btrpkt->instr = instr;
-        btrpkt->dest = AM_BROADCAST_ADDR;
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
-            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", btrpkt->seqno, btrpkt->instr);
+        *(BlinkMsg *)(call Packet.getPayload(&pkt, 0)) = msg;
+        if (call AMSend.send(msg.dest, &pkt, sizeof(BlinkMsg)) == SUCCESS)
+            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
 
     
@@ -153,11 +177,11 @@ implementation {
      *   ECANCEL if it was cancelled 
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
-        if (&pkt == msg)
+        if (&pkt == msg) {
             if (error == SUCCESS) {
               timer();
             } else {
-              while (call AMSend.send(AM_BROADCAST_ADD,msg,sizeof(PrlMsg)) == FAIL);
+              while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
             }
         }
     }
@@ -172,7 +196,7 @@ implementation {
      * @param len The length of the data region pointed to by payload. 
      * @return The received message.
      */
-    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
+    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)){
 
             BlinkMsg* btrpkt = (BlinkMsg*) payload;
@@ -182,12 +206,30 @@ implementation {
             if(sn > curr_sn || (!sn && curr_sn)) {
                 /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_sn = sn;
-                setLed(btrpkt->instr);
-                broadcastLed(curr_id, btrpkt->led_idx);
+                if ((btrpkt->dest == TOS_NODE_ID) || (btrpkt->dest == AM_BROADCAST_ADDR))
+                  setLed(btrpkt->instr);
+                transmitLed(*btrpkt);
             } else {
                 dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
 	    }
         }
         return message;
+    }
+
+    /**
+     * This event is triggered, whenever a message is received via the serial interface.
+     * If the message is new to the mote, it sets his LED to the LED number specified in
+     * the messages payload and broadcasts the message.
+     *
+     * @param message The received packet.
+     * @param payload A pointer to the packet's payload.
+     * @param len The length of the data region pointed to by payload. 
+     * @return The received message.
+     */
+    event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
+      if (len == sizeof(BlinkMsg)) {
+        transmitLed(*(BlinkMsg*)payload);
+      }
+      return message;
     }
 }
