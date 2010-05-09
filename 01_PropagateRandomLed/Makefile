@@ -1,0 +1,3 @@
+COMPONENT=PrlAppC
+include $(MAKERULES)
+

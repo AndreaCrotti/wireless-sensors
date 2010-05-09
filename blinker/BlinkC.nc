@@ -1,3 +1,6 @@
+#include "Blink.h"
+#include <assert.h>
+
 /**
  * Implementation of the first task.
  * Node number 0 of the network select a random led
@@ -11,17 +14,22 @@
  **/
 
 module BlinkC {
-    // required interfaces to manage and send/receive packages
+    // required interfaces to manage and send/receive packets
     uses interface Packet;
     uses interface AMPacket;
     uses interface AMSend;
-    uses interface Receive;    
+    uses interface Receive;
+    // serial interface
+    //uses interface Packet as SerialPacket;
+    //uses interface AMPacket as SerialAMPacket;
+    //uses interface AMSend as SerialAMSend;
+    uses interface Receive as SerialReceive;
 
     // used to control the ActiveMessageC component
     uses interface SplitControl as AMControl;
+    uses interface SplitControl as SerialControl;
     
     // additional needed components
-    // TODO: is it possible to add the timer ONLY to mote 0?
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
@@ -33,16 +41,16 @@ implementation {
   
     void setLed(uint8_t);
     uint8_t selectRandomLed();
-    void broadcastLed(uint8_t, uint8_t);
+    void transmitLed(BlinkMsg);
     
 
     //// variables to control the channel ////
-    // Is true when the sending module is busy
-    bool busy = FALSE;
     // The current message
     message_t pkt;
     // The current sequential ID
-    uint8_t curr_id = 0;
+    seqno_t curr_sn = 0;
+    // led mask
+    uint8_t ledMask = 0;
     
     /**
      * This event is called, after the device was booted and we start AMControl here.
@@ -53,78 +61,18 @@ implementation {
         // handling of timer starting is done in AMControl now
         call SeedInit.init(13);
         call AMControl.start();
+        call SerialControl.start();
     }
 
     /**
-     * This event is triggered whenever the timer fires.
-     * If the mote has ID 0, a LED is randomly choosen and activated,
-     * and the choice is braodcasted over the network. 
+     *  Helper function to start a one-shot timer for node 0 and do
+     *  nothing for other nodes.
      */
-    event void Timer.fired() {
-	if (TOS_NODE_ID == 0) {
-            uint8_t led_idx = selectRandomLed();
-            /* dbg("BlinkC", "got led %d\n", led_idx); */
-            setLed(led_idx);
-            broadcastLed(++curr_id, led_idx);
-        }
-    }
-
-    /**
-     * Selects a LED number randomly.
-     *
-     * @return An interger between 0 and 2
-     */
-    uint8_t selectRandomLed() {
-        uint8_t led = (call Random.rand16()) % 3;
-        return led;
-    }
-  
-    /**
-     * Turns on one Led and turns off all the others.
-     *
-     * @param led Number of the LED to turn on.
-     */
-    void setLed(uint8_t led) {
-        call Leds.set(0);
-
-        // Turn on the new LED
-        switch(led) {
-        case '0':
-            call Leds.led0On();
-            break;
-        case '1':
-            call Leds.led1On();
-            break;
-        case '2':
-            call Leds.led2On();
-            break;
-        }
-
-	dbg("BlinkC", "Turned on LED %i\n", led);
-    }
-
-    /**
-     * Broadcast a led number over the radio network.
-     *
-     * @param id The sequential ID of the message.
-     * @param led_idx The ID of the LED.
-     */
-    void broadcastLed(uint8_t id, uint8_t led_idx) {
-        /// check if the channel is busy, take the payload of the message and manipulate it
-        if (!busy) {
-            // TODO: is the casting actually needed in nesc?
-            // This differs from tutorial where it was NULL, check correctness
-            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg *)(call Packet.getPayload(&pkt, 0));
-
-            /// setting the id of the message and incrementing it for the next call
-            btrpkt->id = id;
-            btrpkt->led_idx = led_idx;
-            /// if the send was successful make the channel busy, will be freed in sendDone
-            if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
-		dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", btrpkt->id, btrpkt->led_idx);
-
-                busy = TRUE;
-            }
+    void timer(void) {
+        if (!TOS_NODE_ID) {
+            // if we use one time shots, we do not need a busy flag or anything
+            // also: we cannot have timer fires while we are still busy
+            call Timer.startOneShot(BLINK_GENERATE_INTERVAL_MS);
         }
     }
 
@@ -137,19 +85,89 @@ implementation {
     event void AMControl.startDone(error_t err) {
         if (err == SUCCESS) {
             /* dbg("BlinkC", "Radio channel is started correctly, starting timer\n"); */
-            call Timer.startPeriodic(INTERVAL);
-        }
-        else {
+            // timer(); dont generate toggle instructions
+        } else {
             call AMControl.start();
         }
     }
 
     /**
      * Called, when the radio module has stopped.
-     * - not implemented -
+     * - not used -
      */
     event void AMControl.stopDone(error_t err) {
     }
+
+    /**
+     * Is called, if the serial module is started.
+     *
+     * @param err SUCCESS if the component was successfully turned on, FAIL otherwise.
+     */
+    event void SerialControl.startDone(error_t err) {
+        if (err == FAIL) {
+            call SerialControl.start();
+        }
+    }
+
+    /**
+     * Called, when the serial module has stopped.
+     * - not used -
+     */
+    event void SerialControl.stopDone(error_t err) {
+    }
+
+    /**
+     * This event is triggered whenever the timer fires.
+     * If the mote has ID 0, a LED is randomly choosen and activated,
+     * and the choice is braodcasted over the network. 
+     */
+    event void Timer.fired() {
+        if (TOS_NODE_ID == 0) {
+            instr_t leds = (instr_t)selectRandomLed();
+            /* dbg("BlinkC", "got led %d\n", led_idx); */
+            setLed(leds);
+//            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
+//transmitLed(msg);
+        }
+    }
+
+    /**
+     * Selects a LED number randomly.
+     *
+     * @return An interger between 0 and 2
+     */
+    uint8_t selectRandomLed() {
+        uint8_t leds = 1 << ((call Random.rand16()) % 3);
+        dbg("BlinkC","new command is %u\n",leds);
+        assert(!(leds & ~7));
+        return leds;
+    }
+  
+    /**
+     * Applies an instruction to the leds.
+     *
+     * @param led Number of the LED to turn on.
+     */
+    void setLed(instr_t led) {
+        instr_t oldLM = ledMask;
+        ledMask = (ledMask & (~led >> 3)) ^ led;
+        dbg("BlinkC", "Setting led from %u to %u, using instruction %u\n", oldLM, ledMask, led);
+        call Leds.set(ledMask);
+    }
+
+    /**
+     * Broadcast a led number over the radio network.
+     *
+     * @param id The sequential ID of the message.
+     * @param led_idx The ID of the LED.
+     */
+    void transmitLed(BlinkMsg msg) {
+        // This differs from tutorial where it was NULL, check correctness
+        *(BlinkMsg *)(call Packet.getPayload(&pkt, 0)) = msg;
+        if (call AMSend.send(msg.dest, &pkt, sizeof(BlinkMsg)) == SUCCESS)
+            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
+    }
+
     
     /**
      * When the sending is completed successfully, we set the busy-flag to false.
@@ -160,7 +178,11 @@ implementation {
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
-            busy = FALSE;
+            if (error == SUCCESS) {
+              timer();
+            } else {
+              while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+            }
         }
     }
     
@@ -174,24 +196,40 @@ implementation {
      * @param len The length of the data region pointed to by payload. 
      * @return The received message.
      */
-    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len){
-        if (len == sizeof(BlinkToRadioMsg)){
+    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
+        if (len == sizeof(BlinkMsg)){
 
-            BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*) payload;
-            uint8_t seq_num = btrpkt->id; 
+            BlinkMsg* btrpkt = (BlinkMsg*) payload;
+            seqno_t sn = btrpkt->seqno;
             /* dbg("BlinkC", "Message received\n"); */
 	    
-            if(seq_num > curr_id) {
+            if(sn > curr_sn || (!sn && curr_sn)) {
                 /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
-                curr_id = seq_num;
-                setLed(btrpkt->led_idx);
-                broadcastLed(curr_id, btrpkt->led_idx);
-
-            } 
-            else {
+                curr_sn = sn;
+                if ((btrpkt->dest == TOS_NODE_ID) || (btrpkt->dest == AM_BROADCAST_ADDR))
+                  setLed(btrpkt->instr);
+                transmitLed(*btrpkt);
+            } else {
                 dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
 	    }
         }
         return message;
+    }
+
+    /**
+     * This event is triggered, whenever a message is received via the serial interface.
+     * If the message is new to the mote, it sets his LED to the LED number specified in
+     * the messages payload and broadcasts the message.
+     *
+     * @param message The received packet.
+     * @param payload A pointer to the packet's payload.
+     * @param len The length of the data region pointed to by payload. 
+     * @return The received message.
+     */
+    event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
+      if (len == sizeof(BlinkMsg)) {
+        transmitLed(*(BlinkMsg*)payload);
+      }
+      return message;
     }
 }
