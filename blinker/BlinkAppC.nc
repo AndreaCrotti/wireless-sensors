@@ -29,6 +29,7 @@ implementation {
     //components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     components RandomC;
+    components CC2420PacketC;
     
     BlinkC -> MainC.Boot;
     
@@ -41,6 +42,7 @@ implementation {
     BlinkC.AMSend -> BlinkSender.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> BlinkReceiver;
+    BlinkC.CC2420Packet -> CC2420PacketC;
 
     /// serial communication
     //BlinkC.SerialPacket -> SerialBlinkSender;
