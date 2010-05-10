@@ -126,7 +126,7 @@ implementation {
         //if (TOS_NODE_ID == 0) {
             //instr_t leds = (instr_t)selectRandomLed();
             /* dbg("BlinkC", "got led %d\n", led_idx); */
-            setLed(2);
+            //setLed(2);
 //            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
 //transmitLed(msg);
 	    //}
@@ -208,15 +208,17 @@ implementation {
 	    seqno_t sn = btrpkt->seqno;
             /* dbg("BlinkC", "Message received\n"); */
 	    
-	    setLed(1);
+	    //setLed(1);
 
             if(sn > curr_sn || (!sn && curr_sn)) {
                 /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_sn = sn;
-                if ((btrpkt->dest == TOS_NODE_ID))
-                  // || (btrpkt->dest == AM_BROADCAST_ADDR))
-                  setLed(btrpkt->instr);
-                transmitLed(*btrpkt);
+                if ((btrpkt->dest == TOS_NODE_ID)){
+		    // || (btrpkt->dest == AM_BROADCAST_ADDR))
+		    setLed(btrpkt->instr);
+		}else{
+		    transmitLed(*btrpkt);
+		}
             } else {
                 dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
 	    }

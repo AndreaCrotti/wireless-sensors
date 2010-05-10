@@ -26,16 +26,17 @@ typedef uint8_t instr_t;
 typedef nx_uint8_t nx_instr_t;
 
 /// type of the node id
-typedef uint8_t nodeid_t;
+typedef uint16_t nodeid_t;
 
 /// type of the node id suitable for use in messages
-typedef nx_uint8_t nx_nodeid_t;
+typedef nx_uint16_t nx_nodeid_t;
 
 /// we only need the id number of the message and the index of the led to turn on
 typedef nx_struct BlinkMsg {
   nx_instr_t instr;
   nx_seqno_t seqno;
-  nx_nodeid_t dest;
+  // The destination of the message stored as a bitmask
+  nx_nodeid_t dests;
 } BlinkMsg;
 
 enum {
