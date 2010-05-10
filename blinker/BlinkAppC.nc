@@ -10,6 +10,7 @@
  * 
  * @file   BlinkAppC.nc
  * @author Andrea Crotti and Marius Grysla
+ * @author Oscar Dustmann
  * @date   So 2. Mai 21:11:02 CEST 2010
  * 
  */

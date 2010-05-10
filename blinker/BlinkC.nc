@@ -1,5 +1,5 @@
 #include "Blink.h"
-#include <assert.h>
+//#include <assert.h>
 
 /**
  * Implementation of the first task.
@@ -139,7 +139,7 @@ implementation {
     uint8_t selectRandomLed() {
         uint8_t leds = 1 << ((call Random.rand16()) % 3);
         dbg("BlinkC","new command is %u\n",leds);
-        assert(!(leds & ~7));
+        //assert(!(leds & ~7));
         return leds;
     }
   
