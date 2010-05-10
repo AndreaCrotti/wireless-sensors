@@ -70,11 +70,11 @@ implementation {
      *  nothing for other nodes.
      */
     void timer(void) {
-        if (!TOS_NODE_ID) {
+        //if (!TOS_NODE_ID) {
             // if we use one time shots, we do not need a busy flag or anything
             // also: we cannot have timer fires while we are still busy
-            call Timer.startOneShot(BLINK_GENERATE_INTERVAL_MS);
-        }
+            call Timer.startPeriodic(BLINK_GENERATE_INTERVAL_MS);
+	//}
     }
 
     /**
@@ -86,7 +86,7 @@ implementation {
     event void AMControl.startDone(error_t err) {
         if (err == SUCCESS) {
             /* dbg("BlinkC", "Radio channel is started correctly, starting timer\n"); */
-            // timer(); dont generate toggle instructions
+            timer(); // dont generate toggle instructions
         } else {
             call AMControl.start();
         }
@@ -123,13 +123,13 @@ implementation {
      * and the choice is braodcasted over the network. 
      */
     event void Timer.fired() {
-        if (TOS_NODE_ID == 0) {
-            instr_t leds = (instr_t)selectRandomLed();
+        //if (TOS_NODE_ID == 0) {
+            //instr_t leds = (instr_t)selectRandomLed();
             /* dbg("BlinkC", "got led %d\n", led_idx); */
-            setLed(leds);
+            setLed(2);
 //            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
 //transmitLed(msg);
-        }
+	    //}
     }
 
     /**
@@ -166,7 +166,7 @@ implementation {
         // This differs from tutorial where it was NULL, check correctness
         message_t* m = call Packet.getPayload(&pkt, 0);
         *(BlinkMsg *)(m) = msg;
-        call CC2420Packet.setPower(m,31);
+        call CC2420Packet.setPower(m,2);
         if (call AMSend.send(msg.dest, &pkt, sizeof(BlinkMsg)) == SUCCESS)
             dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
@@ -182,7 +182,7 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
             if (error == SUCCESS) {
-              timer();
+		//timer();
             } else {
               while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
             }
@@ -201,11 +201,15 @@ implementation {
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)){
-
             BlinkMsg* btrpkt = (BlinkMsg*) payload;
-            seqno_t sn = btrpkt->seqno;
+            
+	    
+
+	    seqno_t sn = btrpkt->seqno;
             /* dbg("BlinkC", "Message received\n"); */
 	    
+	    setLed(1);
+
             if(sn > curr_sn || (!sn && curr_sn)) {
                 /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_sn = sn;
