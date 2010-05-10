@@ -18,14 +18,19 @@ import javax.swing.BorderFactory;
 import javax.swing.border.BevelBorder;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.JTextPane;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class BlinkGUI extends JFrame {
 
     // Saves a reference to the connector
-    private BlinkConnector connector;
+    public BlinkConnector connector;
 	
     private static final long serialVersionUID = 1L;
     private JPanel jPanel = null;
@@ -53,7 +58,7 @@ public class BlinkGUI extends JFrame {
     private JButton setCustomButton = null;
     private JPanel jPanel5 = null;
     private JPanel jPanel6 = null;
-    private JTextPane DebugPane = null;
+    private JTextArea DebugArea = null;
     private JLabel jLabel3 = null;
     /**
      * This method initializes jPanel	
@@ -105,7 +110,7 @@ public class BlinkGUI extends JFrame {
     private JCheckBox getMoteChoice1() {
         if (moteChoice1 == null) {
             moteChoice1 = new JCheckBox();
-            moteChoice1.setText("Leia");
+            moteChoice1.setText("Mote0");
         }
         return moteChoice1;
     }
@@ -118,7 +123,7 @@ public class BlinkGUI extends JFrame {
     private JCheckBox getMoteChoice2() {
         if (moteChoice2 == null) {
             moteChoice2 = new JCheckBox();
-            moteChoice2.setText("Mote2");
+            moteChoice2.setText("Mote1");
         }
         return moteChoice2;
     }
@@ -131,7 +136,7 @@ public class BlinkGUI extends JFrame {
     private JCheckBox getMoteChoice3() {
         if (moteChoice3 == null) {
             moteChoice3 = new JCheckBox();
-            moteChoice3.setText("Mote3");
+            moteChoice3.setText("Mote2");
         }
         return moteChoice3;
     }
@@ -144,7 +149,7 @@ public class BlinkGUI extends JFrame {
     private JCheckBox getMoteChoice4() {
         if (moteChoice4 == null) {
             moteChoice4 = new JCheckBox();
-            moteChoice4.setText("Mote4");
+            moteChoice4.setText("Mote3");
         }
         return moteChoice4;
     }
@@ -157,7 +162,7 @@ public class BlinkGUI extends JFrame {
     private JCheckBox getMoteChoice5() {
         if (moteChoice5 == null) {
             moteChoice5 = new JCheckBox();
-            moteChoice5.setText("Mote5");
+            moteChoice5.setText("Mote4");
         }
         return moteChoice5;
     }
@@ -188,6 +193,12 @@ public class BlinkGUI extends JFrame {
         if (led0Button1 == null) {
             led0Button1 = new JButton();
             led0Button1.setText("LED 0 On");
+	    led0Button1.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x09;
+			sendSelected(mask);
+		    }
+		});
         }
         return led0Button1;
     }
@@ -201,6 +212,12 @@ public class BlinkGUI extends JFrame {
         if (led0Button2 == null) {
             led0Button2 = new JButton();
             led0Button2.setText("LED 0 Off");
+	    led0Button2.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x08;
+			sendSelected(mask);
+		    }
+		});
         }
         return led0Button2;
     }
@@ -214,6 +231,12 @@ public class BlinkGUI extends JFrame {
         if (led1Button1 == null) {
             led1Button1 = new JButton();
             led1Button1.setText("LED 1 On");
+	    led1Button1.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x12;
+			sendSelected(mask);
+		    }
+		});
         }
         return led1Button1;
     }
@@ -227,6 +250,12 @@ public class BlinkGUI extends JFrame {
         if (led1Button2 == null) {
             led1Button2 = new JButton();
             led1Button2.setText("LED 1 Off");
+	    led1Button2.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x10;
+			sendSelected(mask);
+		    }
+		});
         }
         return led1Button2;
     }
@@ -240,6 +269,12 @@ public class BlinkGUI extends JFrame {
         if (led2Button1 == null) {
             led2Button1 = new JButton();
             led2Button1.setText("LED 2 On");
+	    led2Button1.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x24;
+			sendSelected(mask);
+		    }
+		});
         }
         return led2Button1;
     }
@@ -253,6 +288,12 @@ public class BlinkGUI extends JFrame {
         if (led2Button2 == null) {
             led2Button2 = new JButton();
             led2Button2.setText("LED 2 Off");
+	    led2Button2.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			short mask = 0x24;
+			sendSelected(mask);
+		    }
+		});
         }
         return led2Button2;
     }
@@ -365,6 +406,23 @@ public class BlinkGUI extends JFrame {
         if (setCustomButton == null) {
             setCustomButton = new JButton();
             setCustomButton.setText("Set");
+            setCustomButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					short mask = 0x38;
+					
+					if(getLed0Choice().isSelected()){
+						mask += 0x01;
+					}
+					if(getLed1Choice().isSelected()){
+						mask += 0x02;
+					}
+					if(getLed2Choice().isSelected()){
+						mask += 0x04;
+					}
+					
+											
+				}
+			});
         }
         return setCustomButton;
     }
@@ -417,24 +475,26 @@ public class BlinkGUI extends JFrame {
             jPanel6.setLayout(new BorderLayout());
             jPanel6.setPreferredSize(new Dimension(30, 200));
             jPanel6.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-            jPanel6.add(getDebugPane(), BorderLayout.CENTER);
             jPanel6.add(jLabel3, BorderLayout.NORTH);
+            jPanel6.add(getDebugArea(), BorderLayout.CENTER);
         }
         return jPanel6;
     }
 
     /**
-     * This method initializes DebugPane	
+     * This method initializes DebugArea	
      * 	
      * @return javax.swing.JTextPane	
      */
-    private JTextPane getDebugPane() {
-        if (DebugPane == null) {
-            DebugPane = new JTextPane();
-            DebugPane.setText("");
-            DebugPane.setPreferredSize(new Dimension(30, 150));
+    private JTextArea getDebugArea() {
+        if (DebugArea == null) {
+            DebugArea = new JTextArea();
+            DebugArea.setText("");
+            DebugArea.setColumns(0);
+            DebugArea.setEditable(false);
+            DebugArea.setPreferredSize(new Dimension(30, 30));
         }
-        return DebugPane;
+        return DebugArea;
     }
 
     /**
@@ -468,13 +528,32 @@ public class BlinkGUI extends JFrame {
      * @return void
      */
     private void initialize() {
-        this.setSize(458, 392);
+        this.setSize(458, 389);
         this.setContentPane(getJPanel());
         this.setTitle("Mote Control Interface");
         // Minimizes the size of the window
         // this.pack();
         // Prevent resizing
         this.setResizable(false);
+    }
+    
+    public void sendSelected(short mask){
+	JCheckBox[] cbAr = {getMoteChoice1(), getMoteChoice2(), getMoteChoice3(), getMoteChoice4(), getMoteChoice5()};
+					
+	for (int i = 0; i < cbAr.length; i++) {
+	    if(cbAr[i].isSelected()){
+		connector.sendLedMask((short)i, mask);
+	    }
+	}
+    }
+
+    /**
+     * Prints messages to the debug window.
+     * @param message
+     */
+    public void print(String message){
+    	this.DebugArea.append(message + "\n");
+    	this.DebugArea.setText(DebugArea.getText());
     }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

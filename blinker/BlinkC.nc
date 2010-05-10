@@ -228,7 +228,12 @@ implementation {
      */
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
       if (len == sizeof(BlinkMsg)) {
-        transmitLed(*(BlinkMsg*)payload);
+	  BlinkMsg* m = (BlinkMsg*)payload;
+          if (m->dest == TOS_NODE_ID) {
+	      setLed(m->instr);
+          } else {
+	    transmitLed(*m);
+          }
       }
       return message;
     }
