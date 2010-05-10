@@ -290,7 +290,7 @@ public class BlinkGUI extends JFrame {
             led2Button2.setText("LED 2 Off");
 	    led2Button2.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {
-			short mask = 0x24;
+			short mask = 0x20;
 			sendSelected(mask);
 		    }
 		});
