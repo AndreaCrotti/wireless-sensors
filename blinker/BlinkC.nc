@@ -35,6 +35,7 @@ module BlinkC {
     uses interface Leds;
     uses interface Random;
     uses interface ParameterInit<uint16_t> as SeedInit;
+    uses interface CC2420Packet;
 }
 
 implementation {
@@ -149,9 +150,9 @@ implementation {
      * @param led Number of the LED to turn on.
      */
     void setLed(instr_t led) {
-        instr_t oldLM = ledMask;
+        //instr_t oldLM = ledMask;
         ledMask = (ledMask & (~led >> 3)) ^ led;
-        dbg("BlinkC", "Setting led from %u to %u, using instruction %u\n", oldLM, ledMask, led);
+        //dbg("BlinkC", "Setting led from %u to %u, using instruction %u\n", oldLM, ledMask, led);
         call Leds.set(ledMask);
     }
 
@@ -163,7 +164,9 @@ implementation {
      */
     void transmitLed(BlinkMsg msg) {
         // This differs from tutorial where it was NULL, check correctness
-        *(BlinkMsg *)(call Packet.getPayload(&pkt, 0)) = msg;
+        message_t* m = call Packet.getPayload(&pkt, 0);
+        *(BlinkMsg *)(m) = msg;
+        call CC2420Packet.setPower(m,31);
         if (call AMSend.send(msg.dest, &pkt, sizeof(BlinkMsg)) == SUCCESS)
             dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
@@ -206,7 +209,8 @@ implementation {
             if(sn > curr_sn || (!sn && curr_sn)) {
                 /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_sn = sn;
-                if ((btrpkt->dest == TOS_NODE_ID) || (btrpkt->dest == AM_BROADCAST_ADDR))
+                if ((btrpkt->dest == TOS_NODE_ID))
+                  // || (btrpkt->dest == AM_BROADCAST_ADDR))
                   setLed(btrpkt->instr);
                 transmitLed(*btrpkt);
             } else {
