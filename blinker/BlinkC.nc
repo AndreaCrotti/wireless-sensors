@@ -1,5 +1,4 @@
 #include "Blink.h"
-//#include <assert.h>
 
 /**
  * Implementation of the first task.
