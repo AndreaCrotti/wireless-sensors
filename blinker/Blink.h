@@ -45,5 +45,6 @@ enum {
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 1000
- 
+#define AM_BLINKMSG AM_SERIAL_BLINK
+
 #endif
