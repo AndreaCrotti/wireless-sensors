@@ -105,7 +105,7 @@ implementation {
      * @param idx index of the mote
      */
     void removeNeighbor(uint8_t idx) {
-        neighbors &= !(1 << idx);
+        neighbors &= ~(1 << idx);
     }
     
     /** 
