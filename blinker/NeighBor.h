@@ -16,6 +16,7 @@ enum {
     TIMEOUT = 15,
     PERIOD = 1000,
     AM_BLINK = 6,
+    MAX_MOTES = 16
 };
 
 

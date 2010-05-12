@@ -31,14 +31,48 @@ implementation {
     uint16_t neighbors = 0;
     // motes that answered in the last TIMEOUT period
     uint16_t last_seen = 0;
+    
+    uint8_t LAST_ARRIVAL[MAX_MOTES];
+    void simple_check(uint32_t);
 
     // 2 seconds every beacon, 15 seconds is the timeout
     command void startSensing() {
         Timer.startPeriodic(PERIOD);
+        int i;
+        // setup initially to -1
+        for (i = 0; i < MAX_MOTES; i++) {
+            LAST_ARRIVAL[i] = -1;
+        }
+        
+        // checking if multiple
+        assert(TIMEOUT % BEACON == 0);
     }
 
+    
     event void Timer.fired() {
         uint32_t delay = Timer.getdt();
+
+        simple_check(delay);
+    }
+    
+    /** 
+     * Use the LAST_ARRIVAL array to determine when we're actually having a timeout
+     * 
+     * @param delay time passed from Timer start
+     */
+    void smart_check(uint32_t delay) {
+        int i;
+        for (i = 0; i < MAX_MOTES; i++) {
+            
+        }
+    }
+
+    /** 
+     * Simply set the neighbors list as the last seen motes
+     * 
+     * @param delay 
+     */
+    void simple_check(uint32_t delay) {
 
         if (delay % (BEACON * PERIOD) == 0) {
             // start to broacast the beacon package
