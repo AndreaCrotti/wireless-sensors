@@ -185,7 +185,16 @@ implementation {
             }
         }
     }
-
+    
+    event void SerialAMSend.sendDone(message_t* msg, error_t error) {
+	if (&pkt == msg) {
+            if (error == SUCCESS) {
+		//timer();
+            } else {
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+            }
+        }
+    }
 
     /**
      * Check whether we are one of the receivers of the message in question.
@@ -239,7 +248,7 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-            if (amIaReceiver(m)) {
+            if (amIaReceiver(msg)) {
                 setLed(msg->instr);
             }
 
