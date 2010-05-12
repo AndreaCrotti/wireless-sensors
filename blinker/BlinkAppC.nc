@@ -10,6 +10,7 @@
  * 
  * @file   BlinkAppC.nc
  * @author Andrea Crotti and Marius Grysla
+ * @author Oscar Dustmann
  * @date   So 2. Mai 21:11:02 CEST 2010
  * 
  */
@@ -28,6 +29,7 @@ implementation {
     //components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     components RandomC;
+    components CC2420PacketC;
     
     BlinkC -> MainC.Boot;
     
@@ -40,6 +42,7 @@ implementation {
     BlinkC.AMSend -> BlinkSender.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> BlinkReceiver;
+    BlinkC.CC2420Packet -> CC2420PacketC;
 
     /// serial communication
     //BlinkC.SerialPacket -> SerialBlinkSender;

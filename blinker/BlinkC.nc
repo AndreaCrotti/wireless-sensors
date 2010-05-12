@@ -1,5 +1,4 @@
 #include "Blink.h"
-#include <assert.h>
 
 /**
  * Implementation of the first task.
@@ -35,6 +34,7 @@ module BlinkC {
     uses interface Leds;
     uses interface Random;
     uses interface ParameterInit<uint16_t> as SeedInit;
+    uses interface CC2420Packet;
 }
 
 implementation {
@@ -42,6 +42,7 @@ implementation {
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     void transmitLed(BlinkMsg);
+    char amIaReceiver(BlinkMsg *);
     
 
     //// variables to control the channel ////
@@ -57,11 +58,13 @@ implementation {
      */
     event void Boot.booted() {
         /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
-        // booted now must wait until the radio channel is actually available
-        // handling of timer starting is done in AMControl now
+        // Now we must wait until the radio channel is actually available.
+        // Handling of timer starting is done in AMControl.
         call SeedInit.init(13);
         call AMControl.start();
         call SerialControl.start();
+
+        // start the timer of the NeighBourMod
     }
 
     /**
@@ -69,11 +72,9 @@ implementation {
      *  nothing for other nodes.
      */
     void timer(void) {
-        if (!TOS_NODE_ID) {
-            // if we use one time shots, we do not need a busy flag or anything
-            // also: we cannot have timer fires while we are still busy
-            call Timer.startOneShot(BLINK_GENERATE_INTERVAL_MS);
-        }
+        // if we use one time shots, we do not need a busy flag or anything
+        // also: we cannot have timer fires while we are still busy
+        call Timer.startPeriodic(BLINK_GENERATE_INTERVAL_MS);
     }
 
     /**
@@ -83,11 +84,10 @@ implementation {
      * @param err SUCCESS if the component was successfully turned on, FAIL otherwise.
      */
     event void AMControl.startDone(error_t err) {
-        if (err == SUCCESS) {
-            /* dbg("BlinkC", "Radio channel is started correctly, starting timer\n"); */
-            // timer(); dont generate toggle instructions
-        } else {
+        if (err == FAIL) {
             call AMControl.start();
+        } else {
+            timer(); 
         }
     }
 
@@ -122,13 +122,13 @@ implementation {
      * and the choice is braodcasted over the network. 
      */
     event void Timer.fired() {
-        if (TOS_NODE_ID == 0) {
-            instr_t leds = (instr_t)selectRandomLed();
+        //if (TOS_NODE_ID == 0) {
+            //instr_t leds = (instr_t)selectRandomLed();
             /* dbg("BlinkC", "got led %d\n", led_idx); */
-            setLed(leds);
+            //setLed(2);
 //            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
 //transmitLed(msg);
-        }
+	    //}
     }
 
     /**
@@ -139,7 +139,7 @@ implementation {
     uint8_t selectRandomLed() {
         uint8_t leds = 1 << ((call Random.rand16()) % 3);
         dbg("BlinkC","new command is %u\n",leds);
-        assert(!(leds & ~7));
+        //assert(!(leds & ~7));
         return leds;
     }
   
@@ -149,9 +149,7 @@ implementation {
      * @param led Number of the LED to turn on.
      */
     void setLed(instr_t led) {
-        instr_t oldLM = ledMask;
         ledMask = (ledMask & (~led >> 3)) ^ led;
-        dbg("BlinkC", "Setting led from %u to %u, using instruction %u\n", oldLM, ledMask, led);
         call Leds.set(ledMask);
     }
 
@@ -162,9 +160,11 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     void transmitLed(BlinkMsg msg) {
-        // This differs from tutorial where it was NULL, check correctness
-        *(BlinkMsg *)(call Packet.getPayload(&pkt, 0)) = msg;
-        if (call AMSend.send(msg.dest, &pkt, sizeof(BlinkMsg)) == SUCCESS)
+        // TODO: in one line?
+        void* m = call Packet.getPayload(&pkt, 0);
+        *(BlinkMsg *)(m) = msg;
+        call CC2420Packet.setPower(&pkt,2);
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
             dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
 
@@ -179,11 +179,23 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt == msg) {
             if (error == SUCCESS) {
-              timer();
+		//timer();
             } else {
               while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
             }
         }
+    }
+
+
+    /**
+     * Check whether we are one of the receivers of the message in question.
+     * Our messages are multicast.
+     * 
+     * @param msg The message we want to check.
+     * @return 1 if we are one receiver.
+     */
+    char amIaReceiver(BlinkMsg* msg) {
+        return !!(msg->dests & (1 << TOS_NODE_ID));
     }
     
     /**
@@ -198,20 +210,17 @@ implementation {
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)){
-
             BlinkMsg* btrpkt = (BlinkMsg*) payload;
-            seqno_t sn = btrpkt->seqno;
-            /* dbg("BlinkC", "Message received\n"); */
+
+	    seqno_t sn = btrpkt->seqno;
 	    
             if(sn > curr_sn || (!sn && curr_sn)) {
-                /* dbg("BlinkC", "received led %d and broadcasted", btrpkt->led_idx); */
                 curr_sn = sn;
-                if ((btrpkt->dest == TOS_NODE_ID) || (btrpkt->dest == AM_BROADCAST_ADDR))
-                  setLed(btrpkt->instr);
+                if (amIaReceiver(btrpkt)){
+		    setLed(btrpkt->instr);
+                }
                 transmitLed(*btrpkt);
-            } else {
-                dbg("BlinkC", "A message was dumped, because sequential number was to small\n");
-	    }
+            }
         }
         return message;
     }
@@ -227,9 +236,16 @@ implementation {
      * @return The received message.
      */
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
-      if (len == sizeof(BlinkMsg)) {
-        transmitLed(*(BlinkMsg*)payload);
-      }
-      return message;
+        if (len == sizeof(BlinkMsg)) {
+            BlinkMsg* msg = (BlinkMsg *) payload;
+
+            if (amIaReceiver(m)) {
+                setLed(msg->instr);
+            }
+
+            transmitLed(*msg);
+            //note: m is not needed now anymore
+        }
+        return message;
     }
 }
