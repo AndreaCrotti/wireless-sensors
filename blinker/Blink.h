@@ -1,4 +1,3 @@
-
 /**
  * @file   Blink.h
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
@@ -12,24 +11,7 @@
 #ifndef BLINK_H
 #define BLINK_H
 
-
-/// type of the sequence number
-typedef uint8_t seqno_t;
-
-/// type of the sequence number suitable for use in messages
-typedef nx_uint8_t nx_seqno_t;
-
-/// type of the instruction
-typedef uint8_t instr_t;
-
-/// type of the instruction suitable for use in messages
-typedef nx_uint8_t nx_instr_t;
-
-/// type of the node id
-typedef uint16_t nodeid_t;
-
-/// type of the node id suitable for use in messages
-typedef nx_uint16_t nx_nodeid_t;
+#include "types.h"
 
 /// we only need the id number of the message and the index of the led to turn on
 typedef nx_struct BlinkMsg {
