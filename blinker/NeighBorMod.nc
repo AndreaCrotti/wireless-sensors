@@ -45,22 +45,21 @@ implementation {
         }
         
         // checking if multiple
-        assert(TIMEOUT % BEACON == 0);
+        assert(TIMEOUT % PERIOD == 0);
     }
 
-    
     event void Timer.fired() {
         // working with smaller int, safe because we're using seconds
         uint32_t delay = Timer.getdt() / PERIOD;
-
+        
+        // this can be checked at every period
+        // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
+        smart_check(delay);
 
         if ((delay % BEACON) == 0) {
             // start to broacast the beacon package
         }
         // choose one of the alternatives
-        if ((delay % TIMEOUT) == 0) {
-            simple_check(delay);
-        }
     }
     
     /** 
@@ -71,9 +70,12 @@ implementation {
     void smart_check(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
-            if ((delay - LAST_ARRIVAL[i]) >= 15) {
+            // in case it's still 0 we don't touch it at all, means that no answer arrived
+            if (LAST_ARRIVAL[i] == 0)
+                continue;
+
+            if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbor(i);
-                LAST_ARRIVAL[i] = 0;
             }
             // adding has no effect if already present of course
             else {
@@ -96,7 +98,6 @@ implementation {
         // This is the simple way, just replace with the last seen motes
         neighbors = last_seen;
         last_seen = 0;
-
     }
 
     /** 
@@ -106,6 +107,7 @@ implementation {
      */
     void removeNeighbor(uint8_t idx) {
         neighbors &= !(1 << idx);
+        dbg("NeighBor", "removing node %d to neighbors\n", idx);
     }
     
     /** 
@@ -115,6 +117,7 @@ implementation {
      */
     void addNeighbor(uint8_t idx) {
         neighbors |= (1 << idx);
+        dbg("NeighBor", "adding node %d to neighbors\n", idx);
     }
 
     // TODO: implement the receive part where it makes a distinction between
