@@ -19,9 +19,9 @@ module BlinkC {
     uses interface AMSend;
     uses interface Receive;
     // serial interface
-    //uses interface Packet as SerialPacket;
-    //uses interface AMPacket as SerialAMPacket;
-    //uses interface AMSend as SerialAMSend;
+    uses interface Packet as SerialPacket;
+    uses interface AMPacket as SerialAMPacket;
+    uses interface AMSend as SerialAMSend;
     uses interface Receive as SerialReceive;
 
     // used to control the ActiveMessageC component

@@ -6,6 +6,8 @@
 
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
+import java.awt.Component;
+
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 import java.awt.Dimension;
@@ -26,6 +28,13 @@ import javax.swing.JTextPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.GridLayout;
+import javax.swing.BoxLayout;
+import java.awt.ComponentOrientation;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import javax.swing.JTextField;
+import java.awt.Point;
 
 public class BlinkGUI extends JFrame {
 
@@ -60,7 +69,32 @@ public class BlinkGUI extends JFrame {
     private JPanel jPanel6 = null;
     private JTextArea DebugArea = null;
     private JLabel jLabel3 = null;
-    /**
+
+	private JScrollPane jScrollPane = null;
+
+	private JPanel jPanel7 = null;
+
+	private JButton connectButton = null;
+
+	private JPanel jPanel8 = null;
+
+	private JLabel jLabel4 = null;
+
+	private JTextField jTextField = null;
+
+	private JPanel jPanel9 = null;
+
+	private JLabel jLabel5 = null;
+
+	private JPanel jPanel91 = null;
+
+	private JTextField jTextField1 = null;
+
+	private JLabel jLabel51 = null;
+
+	private JButton disconnectButton = null;
+
+	/**
      * This method initializes jPanel	
      * 	
      * @return javax.swing.JPanel	
@@ -73,9 +107,9 @@ public class BlinkGUI extends JFrame {
             jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
             jPanel = new JPanel();
             jPanel.setLayout(new BorderLayout());
-            jPanel.add(getJPanel1(), BorderLayout.NORTH);
-            jPanel.add(getJPanel2(), BorderLayout.CENTER);
             jPanel.add(getJPanel6(), BorderLayout.SOUTH);
+            jPanel.add(getJPanel7(), BorderLayout.EAST);
+            jPanel.add(getJPanel8(), BorderLayout.CENTER);
         }
         return jPanel;
     }
@@ -476,7 +510,7 @@ public class BlinkGUI extends JFrame {
             jPanel6.setPreferredSize(new Dimension(30, 200));
             jPanel6.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
             jPanel6.add(jLabel3, BorderLayout.NORTH);
-            jPanel6.add(getDebugArea(), BorderLayout.CENTER);
+            jPanel6.add(getJScrollPane(), BorderLayout.CENTER);
         }
         return jPanel6;
     }
@@ -490,9 +524,8 @@ public class BlinkGUI extends JFrame {
         if (DebugArea == null) {
             DebugArea = new JTextArea();
             DebugArea.setText("");
-            DebugArea.setColumns(0);
+            DebugArea.setLineWrap(true);
             DebugArea.setEditable(false);
-            DebugArea.setPreferredSize(new Dimension(30, 30));
         }
         return DebugArea;
     }
@@ -528,7 +561,7 @@ public class BlinkGUI extends JFrame {
      * @return void
      */
     private void initialize() {
-        this.setSize(458, 389);
+        this.setSize(601, 388);
         this.setContentPane(getJPanel());
         this.setTitle("Mote Control Interface");
         // Minimizes the size of the window
@@ -538,15 +571,16 @@ public class BlinkGUI extends JFrame {
     }
     
     public void sendSelected(short ledMask){
-	JCheckBox[] cbAr = {getMoteChoice1(), getMoteChoice2(), getMoteChoice3(), getMoteChoice4(), getMoteChoice5()};
+    	JCheckBox[] cbAr = {getMoteChoice1(), getMoteChoice2(), getMoteChoice3(), getMoteChoice4(), getMoteChoice5()};
 					
         short destMask = 0;
-	for (int i = 0; i < cbAr.length; i++) {
-	    if(cbAr[i].isSelected()){
-		destMask += (1 << (i));
-	    }
-	}
+        for (int i = 0; i < cbAr.length; i++) {
+        	if(cbAr[i].isSelected()){
+        		destMask += (1 << (i));
+        	}
+        	}
         connector.sendLedMask(destMask, ledMask);
+        //connector.sendLedMask((short)-1, ledMask);
     }
 
     /**
@@ -557,5 +591,195 @@ public class BlinkGUI extends JFrame {
     	this.DebugArea.append(message + "\n");
     	this.DebugArea.setText(DebugArea.getText());
     }
+
+    public void connectClick(){
+    	String ip = getJTextField().getText();
+    	String port = getJTextField1().getText();
+    	
+    	connector.connect(ip, port);
+    	
+    	getConnectButton().setEnabled(false);
+    	getDisconnectButton().setEnabled(true);
+    }
+    
+    public void disconnectClick(){
+    	connector.disconnect();
+    	
+    	getConnectButton().setEnabled(true);
+    	getDisconnectButton().setEnabled(false);
+    }
+    
+	/**
+	 * This method initializes jScrollPane	
+	 * 	
+	 * @return javax.swing.JScrollPane	
+	 */
+	private JScrollPane getJScrollPane() {
+		if (jScrollPane == null) {
+			jScrollPane = new JScrollPane(getDebugArea());
+			//jScrollPane.setViewportView(getDebugArea());
+			jScrollPane.setViewportView(getDebugArea());
+		}
+		return jScrollPane;
+	}
+
+	/**
+	 * This method initializes jPanel7	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel7() {
+		if (jPanel7 == null) {
+			jLabel4 = new JLabel();
+			jLabel4.setText("Serial Connection:");
+			jLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+			jLabel4.setHorizontalTextPosition(SwingConstants.CENTER);
+			jLabel4.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+			jLabel4.setBounds(new Rectangle(47, 10, 112, 14));
+			jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
+			jPanel7 = new JPanel();
+			jPanel7.setLayout(null);
+			jPanel7.setPreferredSize(new Dimension(200, 10));
+			jPanel7.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+			jPanel7.add(jLabel4, null);
+			jPanel7.add(getConnectButton(), null);
+			jPanel7.add(getJPanel9(), null);
+			jPanel7.add(getJPanel91(), null);
+			jPanel7.add(getDisconnectButton(), null);
+		}
+		return jPanel7;
+	}
+
+	/**
+	 * This method initializes connectButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getConnectButton() {
+		if (connectButton == null) {
+			connectButton = new JButton();
+			connectButton.setText("Connect");
+			connectButton.setBounds(new Rectangle(55, 100, 87, 23));
+			connectButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					connectClick();
+				}
+			});
+		}
+		return connectButton;
+	}
+
+	/**
+	 * This method initializes jPanel8	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel8() {
+		if (jPanel8 == null) {
+			jPanel8 = new JPanel();
+			jPanel8.setLayout(new BorderLayout());
+			jPanel8.add(getJPanel1(), BorderLayout.NORTH);
+			jPanel8.add(getJPanel2(), BorderLayout.CENTER);
+		}
+		return jPanel8;
+	}
+
+	/**
+	 * This method initializes jTextField	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextField() {
+		if (jTextField == null) {
+			jTextField = new JTextField();
+			jTextField.setPreferredSize(new Dimension(100, 19));
+		}
+		return jTextField;
+	}
+
+	/**
+	 * This method initializes jPanel9	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel9() {
+		if (jPanel9 == null) {
+			GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
+			gridBagConstraints12.gridx = 0;
+			gridBagConstraints12.gridy = 0;
+			jLabel5 = new JLabel();
+			jLabel5.setText("IP:");
+			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
+			gridBagConstraints5.fill = GridBagConstraints.VERTICAL;
+			gridBagConstraints5.gridy = 0;
+			gridBagConstraints5.weightx = 1.0;
+			gridBagConstraints5.gridx = 1;
+			jPanel9 = new JPanel();
+			jPanel9.setLayout(new GridBagLayout());
+			jPanel9.setBounds(new Rectangle(37, 35, 131, 24));
+			jPanel9.add(getJTextField(), gridBagConstraints5);
+			jPanel9.add(jLabel5, gridBagConstraints12);
+		}
+		return jPanel9;
+	}
+
+	/**
+	 * This method initializes jPanel91	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel91() {
+		if (jPanel91 == null) {
+			GridBagConstraints gridBagConstraints121 = new GridBagConstraints();
+			gridBagConstraints121.gridx = 0;
+			gridBagConstraints121.gridy = 0;
+			jLabel51 = new JLabel();
+			jLabel51.setText("Port:");
+			GridBagConstraints gridBagConstraints51 = new GridBagConstraints();
+			gridBagConstraints51.fill = GridBagConstraints.VERTICAL;
+			gridBagConstraints51.gridy = 0;
+			gridBagConstraints51.weightx = 1.0;
+			gridBagConstraints51.gridx = 1;
+			jPanel91 = new JPanel();
+			jPanel91.setLayout(new GridBagLayout());
+			jPanel91.setBounds(new Rectangle(25, 62, 139, 29));
+			jPanel91.add(getJTextField1(), gridBagConstraints51);
+			jPanel91.add(jLabel51, gridBagConstraints121);
+		}
+		return jPanel91;
+	}
+
+	/**
+	 * This method initializes jTextField1	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextField1() {
+		if (jTextField1 == null) {
+			jTextField1 = new JTextField();
+			jTextField1.setPreferredSize(new Dimension(100, 19));
+		}
+		return jTextField1;
+	}
+
+	/**
+	 * This method initializes disconnectButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getDisconnectButton() {
+		if (disconnectButton == null) {
+			disconnectButton = new JButton();
+			disconnectButton.setBounds(new Rectangle(42, 129, 112, 23));
+			disconnectButton.setEnabled(false);
+			disconnectButton.setText("Disconnect");
+			disconnectButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					disconnectClick();
+				}
+			});
+		}
+		return disconnectButton;
+	}
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"
