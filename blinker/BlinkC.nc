@@ -166,11 +166,11 @@ implementation {
      * @param id The sequential ID of the message.
      * @param led_idx The ID of the LED.
      */
-    void transmitLed(BlinkMsg msg) {
+    void transmitMessage(BlinkMsg msg) {
         *(BlinkMsg*)(call Packet.getPayload(&pkt, 0)) = msg;
         call CC2420Packet.setPower(&pkt,2);
         if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
-            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
+           dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
 
     
@@ -211,6 +211,29 @@ implementation {
     char amIaReceiver(BlinkMsg* msg) {
         return !!(msg->dests & (1 << TOS_NODE_ID));
     }
+
+    void handleMessage(BlinkMsg* msg){
+	if(msg->type == 1){
+	    // Message is a led instruction
+	    setLed(msg->instr);
+	}else if(msg->type == 2){
+	    // Message is a sensing request
+	    if(msg->instr == 1){
+		call LightSensor.read();
+	    }else if(msg->instr == 2){
+		call InfraSensor.read();
+	    }else if(msg->instr == 3){
+		call HumSensor.read();
+	    }else if(msg->instr == 4){
+		call TempSensor.read();
+	    }
+	}else if(msg->type == 3){
+	    // Message contains sensing data
+	    // Send them back over the serial port
+	    message_t* m = (message_t*) msg;
+	    call SerialAMSend.send(AM_BROADCAST_ADDR, m, sizeof(BlinkMsg));
+	}
+    }
     
     /**
      * This event is triggered, whenever a message is received.
@@ -231,9 +254,9 @@ implementation {
             if(sn > curr_sn || (!sn && curr_sn)) {
                 curr_sn = sn;
                 if (amIaReceiver(btrpkt)){
-		    setLed(btrpkt->instr);
+		    handleMessage(btrpkt);
                 }
-                transmitLed(*btrpkt);
+                transmitMessage(*btrpkt);
             }
         }
         return message;
@@ -254,11 +277,12 @@ implementation {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
             if (amIaReceiver(msg)) {
-                setLed(msg->instr);
+                handleMessage(msg);
             }
+	    // Set the sender to the current Mote's ID
+	    msg->sender = (1 << TOS_NODE_ID);
 
-            transmitLed(*msg);
-            //note: m is not needed now anymore
+            transmitMessage(*msg);
         }
         return message;
     }

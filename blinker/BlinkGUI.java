@@ -94,6 +94,16 @@ public class BlinkGUI extends JFrame {
 
 	private JButton disconnectButton = null;
 
+	private JPanel sensingCmdPanel = null;
+
+	private JButton lightButton = null;
+
+	private JButton infraredButton = null;
+
+	private JButton humidityButton = null;
+
+	private JButton tempButton = null;
+
 	/**
      * This method initializes jPanel	
      * 	
@@ -214,6 +224,7 @@ public class BlinkGUI extends JFrame {
             jPanel2.add(jLabel1, BorderLayout.NORTH);
             jPanel2.add(getJPanel3(), BorderLayout.WEST);
             jPanel2.add(getJPanel4(), BorderLayout.EAST);
+            jPanel2.add(getSensingCmdPanel(), BorderLayout.CENTER);
         }
         return jPanel2;
     }
@@ -561,7 +572,7 @@ public class BlinkGUI extends JFrame {
      * @return void
      */
     private void initialize() {
-        this.setSize(601, 388);
+        this.setSize(732, 412);
         this.setContentPane(getJPanel());
         this.setTitle("Mote Control Interface");
         // Minimizes the size of the window
@@ -578,11 +589,28 @@ public class BlinkGUI extends JFrame {
         	if(cbAr[i].isSelected()){
         		destMask += (1 << (i));
         	}
-        	}
+        }
         connector.sendLedMask(destMask, ledMask);
         //connector.sendLedMask((short)-1, ledMask);
     }
 
+    /**
+     * Returns the currently chosen motes as a bitmask address.
+     * @return A bitmask.
+     */
+    public short getCurrentDests(){
+    	JCheckBox[] cbAr = {getMoteChoice1(), getMoteChoice2(), getMoteChoice3(), getMoteChoice4(), getMoteChoice5()};
+		
+        short destMask = 0;
+        for (int i = 0; i < cbAr.length; i++) {
+        	if(cbAr[i].isSelected()){
+        		destMask += (1 << (i));
+        	}
+        }
+        
+        return destMask;
+    }
+    
     /**
      * Prints messages to the debug window.
      * @param message
@@ -780,6 +808,100 @@ public class BlinkGUI extends JFrame {
 			});
 		}
 		return disconnectButton;
+	}
+
+	/**
+	 * This method initializes sensingCmdPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getSensingCmdPanel() {
+		if (sensingCmdPanel == null) {
+			sensingCmdPanel = new JPanel();
+			sensingCmdPanel.setLayout(new BoxLayout(getSensingCmdPanel(), BoxLayout.Y_AXIS));
+			sensingCmdPanel.add(getLightButton(), null);
+			sensingCmdPanel.add(getInfraredButton(), null);
+			sensingCmdPanel.add(getHumidityButton(), null);
+			sensingCmdPanel.add(getTempButton(), null);
+		}
+		return sensingCmdPanel;
+	}
+
+	/**
+	 * This method initializes lightButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLightButton() {
+		if (lightButton == null) {
+			lightButton = new JButton();
+			lightButton.setText("Get Light");
+			lightButton.setHorizontalTextPosition(SwingConstants.CENTER);
+			lightButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					short destMask = getCurrentDests();
+					connector.requestLightData(destMask);
+				}
+			});
+		}
+		return lightButton;
+	}
+
+	/**
+	 * This method initializes infraredButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getInfraredButton() {
+		if (infraredButton == null) {
+			infraredButton = new JButton();
+			infraredButton.setText("Get Infrared");
+			infraredButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					short destMask = getCurrentDests();
+					connector.requestInfraredData(destMask);
+				}
+			});
+		}
+		return infraredButton;
+	}
+
+	/**
+	 * This method initializes humidityButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getHumidityButton() {
+		if (humidityButton == null) {
+			humidityButton = new JButton();
+			humidityButton.setText("Get Humidity");
+			humidityButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					short destMask = getCurrentDests();
+					connector.requestHumidityData(destMask);
+				}
+			});
+		}
+		return humidityButton;
+	}
+
+	/**
+	 * This method initializes tempButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getTempButton() {
+		if (tempButton == null) {
+			tempButton = new JButton();
+			tempButton.setText("Get Temperature");
+			tempButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					short destMask = getCurrentDests();
+					connector.requestTemperatureData(destMask);
+				}
+			});
+		}
+		return tempButton;
 	}
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

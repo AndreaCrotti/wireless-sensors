@@ -81,6 +81,7 @@ public class BlinkConnector implements MessageListener {
     	
     	// Set the contents
     	message.set_dests(destination);
+    	message.set_type((short)1);
     	message.set_instr(mask);
     	message.set_seqno(this.seqNo++);
     	
@@ -92,6 +93,40 @@ public class BlinkConnector implements MessageListener {
             this.gui.print(e.getMessage());
     	}
     }
+    
+    public void requestLightData(short destination){
+    	requestData(destination, (short)1);
+    }
+    
+	public void requestInfraredData(short destination){
+		requestData(destination, (short)2);
+	}
+	
+	public void requestHumidityData(short destination){
+		requestData(destination, (short)3);
+	}
+	
+	public void requestTemperatureData(short destination){
+		requestData(destination, (short)4);
+	}
+	
+	public void requestData(short destination, short type){
+		// Create the message
+    	BlinkMsg message = new BlinkMsg();
+    	
+    	// Set the contents
+    	message.set_dests(destination);
+    	//message.set_sender(0);
+    	message.set_seqno(this.seqNo++);
+    	message.set_type((short)2);
+    	message.set_instr(type);
+    	
+    	try{
+            moteInterface.send(this.commID, message);
+    	} catch(Exception e) {
+            this.gui.print(e.getMessage());
+    	}
+	}
     
     /**
      * Implements the MessageListener interface.
