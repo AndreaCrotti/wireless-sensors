@@ -39,9 +39,9 @@ implementation {
     command void startSensing() {
         Timer.startPeriodic(PERIOD);
         int i;
-        // setup initially to -1
+        // setup initially to 0
         for (i = 0; i < MAX_MOTES; i++) {
-            LAST_ARRIVAL[i] = -1;
+            LAST_ARRIVAL[i] = 0;
         }
         
         // checking if multiple
@@ -50,9 +50,17 @@ implementation {
 
     
     event void Timer.fired() {
-        uint32_t delay = Timer.getdt();
+        // working with smaller int, safe because we're using seconds
+        uint32_t delay = Timer.getdt() / PERIOD;
 
-        simple_check(delay);
+
+        if ((delay % BEACON) == 0) {
+            // start to broacast the beacon package
+        }
+        // choose one of the alternatives
+        if ((delay % TIMEOUT) == 0) {
+            simple_check(delay);
+        }
     }
     
     /** 
@@ -63,7 +71,14 @@ implementation {
     void smart_check(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
-            
+            if ((delay - LAST_ARRIVAL[i]) >= 15) {
+                removeNeighbor(i);
+                LAST_ARRIVAL[i] = 0;
+            }
+            // adding has no effect if already present of course
+            else {
+                addNeighbor(i);
+            }
         }
     }
 
@@ -73,21 +88,15 @@ implementation {
      * @param delay 
      */
     void simple_check(uint32_t delay) {
-
-        if (delay % (BEACON * PERIOD) == 0) {
-            // start to broacast the beacon package
-        }
-        
-        if (delay % (TIMEOUT * PERIOD) == 0) {
-            // send a timeout package for who didn't answer?
-            // we must also keep a stack of all the motes that answered in the last
-            // 15 seconds to make sure we are not doing useless operations
-            // who didn't answer and is not in the list gets removed
+        // send a timeout package for who didn't answer?
+        // we must also keep a stack of all the motes that answered in the last
+        // 15 seconds to make sure we are not doing useless operations
+        // who didn't answer and is not in the list gets removed
             
-            // This is the simple way, just replace with the last seen motes
-            neighbors = last_seen;
-            last_seen = 0;
-        }
+        // This is the simple way, just replace with the last seen motes
+        neighbors = last_seen;
+        last_seen = 0;
+
     }
 
     /** 
