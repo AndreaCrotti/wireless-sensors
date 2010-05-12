@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -21,7 +23,7 @@ public class BlinkConnector implements MessageListener {
     private BlinkGUI gui;
     
     // The serial interface
-    MoteIF moteInterface;
+    MoteIF moteInterface = null;
     
     // A sequential number
     short seqNo = 1;
@@ -36,15 +38,35 @@ public class BlinkConnector implements MessageListener {
      */
     public BlinkConnector(MoteIF moteInterface){
     	this.moteInterface = moteInterface;
-    	this.moteInterface.registerListener(new BlinkMsg(), this);
+    	//this.moteInterface.registerListener(new BlinkMsg(), this);
     }
     
     /**
-     * Initializes the serial device and manages the communication.
+     * Connects to a mote via serial cable.
+     * 
+     * @param ip The IP-Address
+     * @param port The Port
      */
-    public void start(){
-        //TODO: Device initialization and communication as in TestSerial.java
-        
+    public void connect(String ip, String port){
+    	String source = "sf@" + ip + ":" + port;
+    	
+    	try{
+    		connect(source);
+    	}catch(IOException e){
+    		gui.print(e.getMessage());
+    	}
+    }
+    
+    public void connect(String source) throws IOException{
+    	PhoenixSource phoenix;
+		phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
+		
+		// Set the mote Interface
+		this.moteInterface = new MoteIF(phoenix);
+    }
+    
+    public void disconnect(){
+    	this.moteInterface = null;
     }
 
     /**
@@ -100,7 +122,7 @@ public class BlinkConnector implements MessageListener {
      * @param args Command-line arguments.
      */
     public static void main(String[] args) {
-        // Check the command line arguments
+    	// Check the command line arguments
     	String source = null;
         if (args.length == 2) {
           if (!args[0].equals("-comm")) {
@@ -124,7 +146,7 @@ public class BlinkConnector implements MessageListener {
         }
 
         MoteIF mif = new MoteIF(phoenix);
-        
+    	
     	// Create the Blink Connector
         BlinkConnector connector = new BlinkConnector(mif);
 
@@ -133,9 +155,6 @@ public class BlinkConnector implements MessageListener {
 
         // Connect the GUI to the connector
         connector.setGui(gui);
-
-        // Start the main cycle
-        // connector.start();
     }
 
 }

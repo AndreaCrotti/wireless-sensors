@@ -19,9 +19,9 @@ module BlinkC {
     uses interface AMSend;
     uses interface Receive;
     // serial interface
-    //uses interface Packet as SerialPacket;
-    //uses interface AMPacket as SerialAMPacket;
-    //uses interface AMSend as SerialAMSend;
+    uses interface Packet as SerialPacket;
+    uses interface AMPacket as SerialAMPacket;
+    uses interface AMSend as SerialAMSend;
     uses interface Receive as SerialReceive;
 
     // used to control the ActiveMessageC component
@@ -179,11 +179,20 @@ implementation {
             if (error == SUCCESS) {
 		//timer();
             } else {
-              while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
             }
         }
     }
-
+    
+    event void SerialAMSend.sendDone(message_t* msg, error_t error) {
+	if (&pkt == msg) {
+            if (error == SUCCESS) {
+		//timer();
+            } else {
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+            }
+        }
+    }
 
     /**
      * Check whether we are one of the receivers of the message in question.
@@ -237,7 +246,7 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-            if (amIaReceiver(m)) {
+            if (amIaReceiver(msg)) {
                 setLed(msg->instr);
             }
 
