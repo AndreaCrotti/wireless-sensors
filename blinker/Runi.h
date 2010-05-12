@@ -21,7 +21,7 @@ typedef nx_struct RuniMsg {
   nx_nodeid_t from;
 } RuniMsg;
 
-// transmissions include the initial transmission. Hence, 4 means up to 3 retransmissions
+// transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
 #define RUNI_MAX_TRANSMISSIONS 5
 
 // retransmit every second
