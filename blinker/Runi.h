@@ -14,11 +14,20 @@
 #include "types.h"
 
 /**
- * Packet struct that defines the message structure sent by the runi primitive for acknowledgements.
+ * Packet struct that defines the message structure sent by the runi primitive. It is APPENDED to the original payload.
  */
-typedef nx_struct RuniAckMsg {
+typedef nx_struct RuniMsg {
   nx_seqno_t seqno;
   nx_nodeid_t from;
 } RuniMsg;
+
+// transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
+#define RUNI_MAX_TRANSMISSIONS 5
+
+// retransmit every second
+#define RUNI_RTX_INTERVAL_MS 1000
+
+// how many seqnos are we supposed to save?
+#define RUNI_SEQNO_COUNT 10
 
 #endif
