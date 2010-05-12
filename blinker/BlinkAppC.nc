@@ -30,6 +30,14 @@ implementation {
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     components RandomC;
     components CC2420PacketC;
+
+    ////// The sensor components //////
+    // Humidity and temperature 
+    components new SensirionSht11C() as SensirionC;
+    // Infrared
+    components new HamamatsuS10871TsrC() as PhotoActiveC;
+    // Normal light
+    components new HamamatsuS1087ParC() as TotalSolarC;
     
     BlinkC -> MainC.Boot;
     
@@ -50,7 +58,12 @@ implementation {
     BlinkC.SerialAMSend -> SerialBlinkSender;
     BlinkC.SerialControl -> SerialActiveMessageC;
     BlinkC.SerialReceive -> SerialBlinkReceiver;
-
+    
+    // Linking the sensor components
+    BlinkC.LightSensor -> TotalSolarC;
+    BlinkC.InfraSensor -> PhotoActiveC;
+    BlinkC.TempSensor -> SensirionC.Temperature;
+    BlinkC.HumSensor -> SensirionC.Humidity;
     
     /// Connect the Random component for the LED choice
     BlinkC.Random -> RandomC;

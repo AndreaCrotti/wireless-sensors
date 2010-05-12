@@ -28,6 +28,12 @@ module BlinkC {
     uses interface SplitControl as AMControl;
     uses interface SplitControl as SerialControl;
     
+    // the sensor components
+    uses interface Read<uint16_t> as LightSensor;
+    uses interface Read<uint16_t> as InfraSensor;
+    uses interface Read<uint16_t> as TempSensor;
+    uses interface Read<uint16_t> as HumSensor;
+
     // additional needed components
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
@@ -35,6 +41,7 @@ module BlinkC {
     uses interface Random;
     uses interface ParameterInit<uint16_t> as SeedInit;
     uses interface CC2420Packet;
+
 }
 
 implementation {
@@ -256,5 +263,25 @@ implementation {
             //note: m is not needed now anymore
         }
         return message;
+    }
+
+    /**************************************************
+     * Sensor events
+     **************************************************/
+    
+    event void LightSensor.readDone(error_t result, uint16_t val){
+	
+    }
+
+    event void InfraSensor.readDone(error_t result, uint16_t val){
+	
+    }
+
+    event void TempSensor.readDone(error_t result, uint16_t val){
+	
+    }
+
+    event void HumSensor.readDone(error_t result, uint16_t val){
+	
     }
 }
