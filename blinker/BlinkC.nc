@@ -160,9 +160,7 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     void transmitLed(BlinkMsg msg) {
-        // TODO: in one line?
-        void* m = call Packet.getPayload(&pkt, 0);
-        *(BlinkMsg *)(m) = msg;
+        *(BlinkMsg*)(call Packet.getPayload(&pkt, 0)) = msg;
         call CC2420Packet.setPower(&pkt,2);
         if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
             dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
