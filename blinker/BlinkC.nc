@@ -179,7 +179,7 @@ implementation {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) != SUCCESS);
             }
         }
     }
@@ -189,7 +189,7 @@ implementation {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) != SUCCESS);
             }
         }
     }
