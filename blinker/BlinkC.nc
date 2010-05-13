@@ -267,16 +267,17 @@ implementation {
      * @return The received message.
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
+        BlinkMsg* btrpkt = (BlinkMsg*) payload;
+	seqno_t sn;
+	uint8_t senderID;
+        static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
-            BlinkMsg* btrpkt = (BlinkMsg*) payload;
-
-	    seqno_t sn = btrpkt->seqno;
-
-	    uint8_t senderID = getIDFromBM(btrpkt->sender);
+            sn = btrpkt->seqno;
+            senderID = getIDFromBM(btrpkt->sender);
 
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
+                call Leds.set(++called);
                 curr_sn[senderID] = sn;
-                setLed(0x38 | (0x07 & btrpkt->dests));
                 if (amIaReceiver(btrpkt)){
 		    handleMessage(btrpkt);
                 }
