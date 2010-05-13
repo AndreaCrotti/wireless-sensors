@@ -18,6 +18,8 @@ module RuniP {
     uses interface AMSend as AckSend;
     uses interface Receive as AckReceive;
     uses interface Timer;
+    uses interface Random;
+    uses interface ParameterInit<uint16_t> as SeedInit;
 
     // additional needed components
     uses interface Timer<TMilli> as Timer;
@@ -36,14 +38,14 @@ module RuniP {
 implementation {
   // member variables
   unsigned char transmissions = 0;
-  message_t* originalMessage;
+  message_t* originalMessage = NULL;
   uint8_t messagelength;
   am_addr_t messagedest;
   message_t pkt;
   message_t ackpkt;
-  seqno_t seqno;
   seqno_t receivedSeqno[RUNI_SEQNO_COUNT];
   uint8_t lastSeqnoIdx = RUNI_SEQNO_COUNT-1;
+  SendArguments sendAckArguments;
 
   // helper functions
 
@@ -76,6 +78,10 @@ implementation {
       signal AMSend.sendDone(originalMessge,err);
     }
   }
+  task void ackSend() {
+    if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS)
+      post ackSend();
+  }
   event message_t* PayloadReceive.receive(message_t* message, void* payload, uint8_t len) {
     RuniMsg* prm = payload + len-sizeof(RuniMsg);
     if (!prm->seqno)
@@ -84,7 +90,8 @@ implementation {
       .from = TOS_NODE_ID,
       .seqno = prm->seqno
     };
-    AckSend.send(prm->from,&ackpkt,sizeof(RuniMsg));
+    sendAckArguments = {.dest = prm->from, .msg = &ackpkt, .len = sizeof(RuniMsg)};
+    post ackSend();
 
     // in case the message we just acknowledged was already reported
     // to the user, we should not do that again!
@@ -112,6 +119,9 @@ implementation {
       return EBUSY; // EBUSY: "The underlying system is busy; retry later"
     if (dest == AM_BROADCAST_ADDR)
       return EINVAL; // EINVAL: "An invalid parameter was passed"
+
+    if (!originalMessage) // we have not been initialised yet
+      SeedInit.init(TOS_NODE_ID);
     messagedest = dest;
     void* i = Packet.getPayload(&pkt,0);
     messagelength = len+sizeof(RuniMsg);
@@ -122,7 +132,7 @@ implementation {
     // glue the original payload and our own together
     len = sizeof(RuniMsg);
     // it's important to pre-increment seqno, since 0 is invalid
-    RuniMsg rm = {.seqno = ++seqno, .from = TOS_NODE_ID};
+    RuniMsg rm = {.seqno = call Random.rand8(), .from = TOS_NODE_ID};
     RuniMsg* prm = &rm;
     while (len--)
       *i++ = *prm++;

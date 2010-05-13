@@ -30,4 +30,10 @@ typedef nx_struct RuniMsg {
 // how many seqnos are we supposed to save?
 #define RUNI_SEQNO_COUNT 10
 
+typedef struct {
+  am_addr_t dest,
+  message_t* msg,
+  uint8_t len
+} SendArguments;
+
 #endif
