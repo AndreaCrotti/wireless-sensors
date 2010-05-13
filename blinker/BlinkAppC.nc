@@ -28,7 +28,6 @@ implementation {
     components new AMReceiverC(AM_BLINK) as BlinkReceiver;
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
-    components RandomC;
     components CC2420PacketC;
 
     ////// The sensor components //////
@@ -64,9 +63,5 @@ implementation {
     BlinkC.InfraSensor -> PhotoActiveC;
     BlinkC.TempSensor -> SensirionC.Temperature;
     BlinkC.HumSensor -> SensirionC.Humidity;
-    
-    /// Connect the Random component for the LED choice
-    BlinkC.Random -> RandomC;
-    BlinkC.SeedInit -> RandomC;
 }
 
