@@ -29,6 +29,10 @@ implementation {
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     components CC2420PacketC;
+    
+    components new AMSenderC(AM_BEACON) as BeaconSender;
+    components new AMReceiverC(AM_BEACON) as BeaconReceiver;
+    components new TimerMilliC() as BeaconTimer;
 
     ////// The sensor components //////
     // Humidity and temperature 
@@ -37,12 +41,19 @@ implementation {
     components new HamamatsuS10871TsrC() as PhotoActiveC;
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
-
+    
+    components NeighborC;
     
     BlinkC -> MainC.Boot;
     
     BlinkC.Timer -> Timer;
     BlinkC.Leds -> LedsC;
+
+    /// Linking for the neighbor module
+    NeighborC.Packet -> BeaconSender.Packet;
+    NeighborC.AMSend -> BeaconSender.AMSend;
+    NeighborC.Receive -> BeaconReceiver;
+    NeighborC.Timer -> BeaconTimer;
 
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> BlinkSender.Packet;

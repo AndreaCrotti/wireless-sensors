@@ -41,6 +41,8 @@ module BlinkC {
     uses interface Leds;
     uses interface CC2420Packet;
 
+    // Neighbor
+    uses interface Init;
 }
 
 implementation {
