@@ -540,10 +540,10 @@ public class BlinkGUI extends JFrame {
      */
     public BlinkGUI(BlinkConnector connector) {
         super();
-        this.connector = connector;
         initialize();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
+        this.connector = connector;
     }
 
     /**

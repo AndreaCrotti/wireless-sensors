@@ -205,34 +205,50 @@ implementation {
      * @return 1 if we are one receiver.
      */
     char amIaReceiver(BlinkMsg* msg) {
+        /// !! is needed to avoid possible overflow in the casting to char
         return !!(msg->dests & (1 << TOS_NODE_ID));
     }
 
+    /** 
+     * Handle the message received calling the correct instructions
+     * 
+     * @param msg pointer to the message
+     */
     void handleMessage(BlinkMsg* msg){
-	if(msg->type == 1){
-	    // Message is a led instruction
+        message_t *m;
+        /// checking what message type
+        switch (msg->type) {
+        case MSG_INSTR:
 	    setLed(msg->instr);
-	}else if(msg->type == 2){
+            break;
+            
+        case MSG_SENS_REQ:
 	    // Message is a sensing request
 	    // store the message locally
 	    *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
 	    // fetch the sensor data
-	    if(msg->instr == 1){
+            switch(msg->instr) {
+            case LIGHT:
 		call LightSensor.read();
-	    }else if(msg->instr == 2){
+                break;
+            case INFRA:
 		call InfraSensor.read();
-	    }else if(msg->instr == 3){
+                break;
+            case HUMIDITY:
 		call HumSensor.read();
-	    }else if(msg->instr == 4){
+                break;
+            case TEMP:
 		call TempSensor.read();
-	    }
-	}else if(msg->type == 3){
+	    };
+            break;
+
+        case MSG_SENS_DATA:
 	    // Message contains sensing data
 	    // Send them back over the serial port
-	    message_t* m = (message_t*) msg;
-
+	    m = (message_t*) msg;
 	    call SerialAMSend.send(AM_BROADCAST_ADDR, m, sizeof(BlinkMsg));
-	}
+            break;
+	};
     }
     
     /**

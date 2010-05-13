@@ -37,6 +37,21 @@ enum {
   AM_SERIAL_BLINK = 7
 };
 
+/// Message type constants
+enum {
+    MSG_INSTR = 1,
+    MSG_SENS_REQ = 2,
+    MSG_SENS_DATA = 3
+};
+
+/// Sensing type constants
+enum {
+    LIGHT = 1,
+    INFRA = 2,
+    HUMIDITY = 3,
+    TEMP = 4
+};
+
 #define BLINK_GENERATE_INTERVAL_MS 1000
 #define AM_BLINKMSG AM_SERIAL_BLINK
 
