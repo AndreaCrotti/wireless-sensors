@@ -162,9 +162,11 @@ implementation {
      */
     void transmitMessage(BlinkMsg msg) {
         *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = msg;
+	// Set the transmission power
         call CC2420Packet.setPower(&pkt_radio_out, 2);
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS)
-           dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS){
+	    dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
+	}
     }
 
     
@@ -186,11 +188,9 @@ implementation {
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
-	setLed(2);
 	if (&pkt_serial_out == msg) {
             if (error == SUCCESS) {
 		//timer();
-		setLed(4);
             } else {
                 while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -244,7 +244,6 @@ implementation {
         case MSG_SENS_DATA:
 	    // Message contains sensing data
 	    // Send them back over the serial port
-	    setLed(1);
 	    *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
 	    call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
             break;
@@ -271,6 +270,7 @@ implementation {
 
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 curr_sn[senderID] = sn;
+                setLed(0x38 | (0x07 & btrpkt->dests));
                 if (amIaReceiver(btrpkt)){
 		    handleMessage(btrpkt);
                 }
@@ -281,11 +281,10 @@ implementation {
     }
 
     uint8_t getIDFromBM(nodeid_t bm){
-	nodeid_t local_bm = bm;
 	uint8_t counter = 0;
-	local_bm >>= 1;
-	while(local_bm != 0){
-	    local_bm >>= 1;
+	bm >>= 1;
+	while(bm != 0){
+	    bm >>= 1;
 	    counter++;
 	}
 	return counter;
