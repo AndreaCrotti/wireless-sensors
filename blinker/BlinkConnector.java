@@ -121,6 +121,8 @@ public class BlinkConnector implements MessageListener {
     	message.set_type((short)2);
     	message.set_instr(type);
     	
+    	this.gui.print("Requesting data type " + type + " from destination " + destination);
+    	
     	try{
             moteInterface.send(this.commID, message);
     	} catch(Exception e) {
@@ -133,10 +135,25 @@ public class BlinkConnector implements MessageListener {
      */
     public void messageReceived(int to, Message message) {
     	BlinkMsg msg = (BlinkMsg)message;
-        System.out.println("Got a packet!");
+    	
+    	int sender = getIDFromBM(msg.get_sender());
+    	short instr = msg.get_instr();
+    	int data = msg.get_data();
+    	
+        this.gui.print("Got sensing result of type " + instr + " from mote " + sender + " with result " + data);
     }
 
-
+    public int getIDFromBM(int bm){
+    	int local_bm = bm;
+    	int counter = 0;
+    	local_bm >>= 1;
+    	while(local_bm != 0){
+    	    local_bm >>= 1;
+    	    counter++;
+    	}
+    	return counter;
+    }
+    
     /**
      * Sets the Gui to this Class.
      * 

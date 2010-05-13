@@ -230,6 +230,7 @@ implementation {
 	    // Message contains sensing data
 	    // Send them back over the serial port
 	    message_t* m = (message_t*) msg;
+
 	    call SerialAMSend.send(AM_BROADCAST_ADDR, m, sizeof(BlinkMsg));
 	}
     }
@@ -288,12 +289,13 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-            if (amIaReceiver(msg)) {
-                handleMessage(msg);
-            }
 	    // Set the sender to the current Mote's ID
 	    msg->sender = (1 << TOS_NODE_ID);
 	    msg->seqno = own_sn++;
+
+            if (amIaReceiver(msg)) {
+                handleMessage(msg);
+            }
 
             transmitMessage(*msg);
         }
