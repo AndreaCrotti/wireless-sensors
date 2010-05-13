@@ -58,6 +58,10 @@ implementation {
         return call PayloadSend.send(messagedest,&pkt,messagelength);
     }
 
+    /** 
+     * Stop the communication
+     * 
+     */
     void stopRtx(void) {
         transmissions = 0;
         call Timer.stop();
@@ -78,10 +82,12 @@ implementation {
             signal AMSend.sendDone(originalMessge,err);
         }
     }
+    
     task void ackSend() {
         if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS)
             post ackSend();
     }
+
     event message_t* PayloadReceive.receive(message_t* message, void* payload, uint8_t len) {
         RuniMsg* prm = payload + len-sizeof(RuniMsg);
         if (!prm->seqno)
@@ -107,7 +113,9 @@ implementation {
         }
         return message;
     }
+    
     event void AckSend.sendDone(message_t* m, error_t err) {}
+
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         stopRtx();
         signal AMSend.sendDone(originalMessage,SUCCESS); // as far as we are concerned
@@ -117,11 +125,13 @@ implementation {
     command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) {
         if (transmissions)
             return EBUSY; // EBUSY: "The underlying system is busy; retry later"
+
         if (dest == AM_BROADCAST_ADDR)
             return EINVAL; // EINVAL: "An invalid parameter was passed"
 
         if (!originalMessage) // we have not been initialised yet
             SeedInit.init(TOS_NODE_ID);
+        
         messagedest = dest;
         void* i = Packet.getPayload(&pkt,0);
         messagelength = len+sizeof(RuniMsg);
@@ -129,30 +139,36 @@ implementation {
         // i.e. that's the stuff on the stack
         while (len--)
             *i++ = *msg++;
+
         // glue the original payload and our own together
         len = sizeof(RuniMsg);
         // it's important to pre-increment seqno, since 0 is invalid
         RuniMsg rm = {.seqno = call Random.rand8(), .from = TOS_NODE_ID};
         RuniMsg* prm = &rm;
+
         while (len--)
             *i++ = *prm++;
+
         originalMessage = msg;
         error_t result = retransmit();
         call Timer.startPeriodic(RUNI_RTX_INTERVAL_MS);
+
         if (result != SUCCESS)
             stopRtx();
         return result;    
     }
+    
     command error_t AMSend.cancel(message_t* msg) {
         stopRtx();
         return call PayloadSend.cancel(msg);
     }
+    
     command uint8_t AMSend.maxPayloadLength() {
         return call PayloadSend.maxPayloadLength();
     }
+    
     command void* AMSend.getPayload(message_t* m, uint8_t len) {
         return call PayloadSend.getPayload(m,len);
     }
-
 }
 

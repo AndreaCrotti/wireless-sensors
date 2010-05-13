@@ -21,6 +21,7 @@ module NeighborC {
     uses interface Timer<TMilli> as Timer;
     
     provides interface Init;
+    /* provides interface Neighbor; */
 }
 
 // use a task to post the event that makes the list of neighbors update
