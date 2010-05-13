@@ -117,7 +117,7 @@ public class BlinkConnector implements MessageListener {
     	// Set the contents
     	message.set_dests(destination);
     	//message.set_sender(0);
-    	message.set_seqno(this.seqNo++);
+    	//message.set_seqno(this.seqNo++);
     	message.set_type((short)2);
     	message.set_instr(type);
     	

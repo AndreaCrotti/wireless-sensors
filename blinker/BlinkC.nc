@@ -48,6 +48,9 @@ implementation {
     uint8_t selectRandomLed();
     void transmitLed(BlinkMsg);
     char amIaReceiver(BlinkMsg *);
+    void sendSensingData(instr_t sensingInstr, data_t sensingData);
+    uint8_t getIDFromBM(nodeid_t bm);
+
     
 
     //// variables to control the channel ////
@@ -55,8 +58,14 @@ implementation {
     message_t pkt_radio_out;
     // The current outgoing serial message
     message_t pkt_serial_out;
-    // The current sequential ID
-    seqno_t curr_sn = 0;
+    // The last incoming sensing message
+    message_t pkt_sensing_in;
+    // The current sensing message
+    message_t pkt_sensing_out;
+    // An array of sequential numbers of the other motes
+    seqno_t curr_sn[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    // own sequential numbers
+    seqno_t own_sn = 1;
     // led mask
     uint8_t ledMask = 0;
     
@@ -205,6 +214,9 @@ implementation {
 	    setLed(msg->instr);
 	}else if(msg->type == 2){
 	    // Message is a sensing request
+	    // store the message locally
+	    *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
+	    // fetch the sensor data
 	    if(msg->instr == 1){
 		call LightSensor.read();
 	    }else if(msg->instr == 2){
@@ -237,9 +249,11 @@ implementation {
             BlinkMsg* btrpkt = (BlinkMsg*) payload;
 
 	    seqno_t sn = btrpkt->seqno;
-	    
-            if(sn > curr_sn || (!sn && curr_sn)) {
-                curr_sn = sn;
+
+	    uint8_t senderID = getIDFromBM(btrpkt->sender);
+
+            if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
+                curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
 		    handleMessage(btrpkt);
                 }
@@ -247,6 +261,17 @@ implementation {
             }
         }
         return message;
+    }
+
+    uint8_t getIDFromBM(nodeid_t bm){
+	nodeid_t local_bm = bm;
+	uint8_t counter = 0;
+	local_bm >>= 1;
+	while(local_bm != 0){
+	    local_bm >>= 1;
+	    counter++;
+	}
+	return counter;
     }
 
     /**
@@ -268,6 +293,7 @@ implementation {
             }
 	    // Set the sender to the current Mote's ID
 	    msg->sender = (1 << TOS_NODE_ID);
+	    msg->seqno = own_sn++;
 
             transmitMessage(*msg);
         }
@@ -279,18 +305,47 @@ implementation {
      **************************************************/
     
     event void LightSensor.readDone(error_t result, uint16_t val){
-	
+	if(result == SUCCESS){
+	    sendSensingData(1, val);
+	}
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
-	
+	if(result == SUCCESS){
+	    sendSensingData(2, val);
+	}
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
-	
+	if(result == SUCCESS){
+	    sendSensingData(3, val);
+	}
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
-	
+	if(result == SUCCESS){
+	    sendSensingData(4, val);
+	}
     }
+    
+    void sendSensingData(instr_t sensingInstr, data_t sensingData){
+	// get a message
+	BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
+	// get the request message
+	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
+	// Add new contents
+	newMsg->dests = request->sender;
+	newMsg->sender = (1 << TOS_NODE_ID);
+	newMsg->seqno = own_sn++;
+	newMsg->type = 3;
+	newMsg->instr = sensingInstr;
+	newMsg->data = sensingData;
+	
+	if (amIaReceiver(newMsg)) {
+	    handleMessage(newMsg);
+	}else{
+	    transmitMessage(*newMsg);
+	}
+    }
+
 }
