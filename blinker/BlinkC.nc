@@ -63,7 +63,7 @@ implementation {
     // The current sensing message
     message_t pkt_sensing_out;
     // An array of sequential numbers of the other motes
-    seqno_t curr_sn[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    seqno_t curr_sn[MAX_MOTES] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     // own sequential numbers
     seqno_t own_sn = 1;
     // led mask
