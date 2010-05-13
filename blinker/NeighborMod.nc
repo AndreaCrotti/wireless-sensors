@@ -21,7 +21,7 @@ module NeighBorMod {
     // maybe seconds could be also enough
     uses interface Timer<TMilli> as Timer;
     
-    provides interface startDiscovery();
+    /* provides interface startDiscovery; */
 }
 
 // use a task to post the event that makes the list of neighbors update
@@ -38,7 +38,7 @@ implementation {
     /// structure keeping the message to forward
     message_t pkt;
 
-    void simple_check(uint32_t);
+    void check_timeout(uint32_t);
     void init_msgs();
     
     // 2 seconds every beacon, 15 seconds is the timeout
@@ -72,7 +72,7 @@ implementation {
     }
     
     /** 
-     * Broadcast the beacon message
+     * Broadcast the beacon message through the radio
      * 
      */
     command void broadcast_beacon() {
@@ -137,15 +137,5 @@ implementation {
     void addNeighbor(uint8_t idx) {
         neighbors |= (1 << idx);
         dbg("NeighBor", "adding node %d to neighbors\n", idx);
-    }
-
-    // TODO: implement the receive part where it makes a distinction between
-    // a broadcast beacon message and a ACK to the beacon
-    
-    
-
-    event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
-        // in the payload there could be contained the type of the message
-        // in case it's a ACK we can add a neighbor, removing is actually never done automatically
     }
 }
