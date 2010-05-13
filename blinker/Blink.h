@@ -32,10 +32,15 @@ typedef nx_struct BlinkMsg {
   nx_data_t data;
 } BlinkMsg;
 
+/// constants representing the communication channels used
 enum {
-  AM_BLINK = 6,
-  AM_SERIAL_BLINK = 7,
-  AM_BEACON = 8
+    AM_BLINK = 6,
+    AM_SERIAL_BLINK = 7,
+    AM_BEACON = 8
+};
+
+enum {
+    AM_BLINKMSG = AM_SERIAL_BLINK
 };
 
 /// Message type constants
@@ -54,6 +59,5 @@ enum {
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 1000
-#define AM_BLINKMSG AM_SERIAL_BLINK
 
 #endif

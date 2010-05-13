@@ -8,10 +8,10 @@
  **/
 
 configuration RuniC {
-  provides interface Runi;
+    provides interface Runi;
 }
 implementation {
-  components RuniP;
+    components RuniP;
 
-  Runi = RuniP;
+    Runi = RuniP;
 }

@@ -81,7 +81,6 @@ implementation {
         call AMControl.start();
         call SerialControl.start();
 
-        // start the timer of the NeighBourMod
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;

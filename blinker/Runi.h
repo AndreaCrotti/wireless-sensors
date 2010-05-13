@@ -17,8 +17,8 @@
  * Packet struct that defines the message structure sent by the runi primitive. It is APPENDED to the original payload.
  */
 typedef nx_struct RuniMsg {
-  nx_seqno_t seqno;
-  nx_nodeid_t from;
+    nx_seqno_t seqno;
+    nx_nodeid_t from;
 } RuniMsg;
 
 // transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
@@ -31,9 +31,9 @@ typedef nx_struct RuniMsg {
 #define RUNI_SEQNO_COUNT 10
 
 typedef struct {
-  am_addr_t dest,
-  message_t* msg,
-  uint8_t len
-} SendArguments;
+    am_addr_t dest,
+        message_t* msg,
+        uint8_t len
+        } SendArguments;
 
 #endif
