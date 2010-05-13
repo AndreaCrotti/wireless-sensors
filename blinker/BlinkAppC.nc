@@ -37,6 +37,7 @@ implementation {
     components new HamamatsuS10871TsrC() as PhotoActiveC;
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
+
     
     BlinkC -> MainC.Boot;
     
