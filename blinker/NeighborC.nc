@@ -5,7 +5,7 @@
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date   Tue May 11 17:16:24 2010
  * 
- * @brief  Module to keep the neighbour list of every mote.
+ * @brief  Module to keep the neighbor list of every mote.
  * We use the RADIO package to send beacons through the wireless
  * The neighbor list is simply a 16 bit integer mask
  * 
@@ -30,17 +30,16 @@ implementation {
     uint16_t neighbors = 0;
     
     /// array keeping the last arrival time of the motes
-    uint8_t LAST_ARRIVAL[MAX_MOTES];
+    nodeid_t LAST_ARRIVAL[MAX_MOTES];
     /// structure keeping the message to forward
     message_t pkt;
 
     void check_timeout(uint32_t);
     void init_msgs();
     void broadcast_beacon();
-    void addNeighbor(uint8_t);
-    void removeNeighbor(uint8_t);
+    void addNeighbor(nodeid_t);
+    void removeNeighbor(nodeid_t);
     
-    // 2 seconds every beacon, 15 seconds is the timeout
     command error_t Init.init() {
         int i;
         call Timer.startPeriodic(PERIOD);
@@ -48,9 +47,7 @@ implementation {
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
         }
-        
-        /* // checking if multiple */
-        /* assert(TIMEOUT % PERIOD == 0); */
+
         // create a message with the correct message created
         ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)))->src_node = TOS_NODE_ID;
         return SUCCESS;
@@ -69,6 +66,17 @@ implementation {
             broadcast_beacon();
         }
     }
+
+    /** 
+     * Check if the a node is in the neighbors list
+     * 
+     * @param id 
+     * 
+     * @return 0 if not in list, the id itself otherwise
+     */
+    /* command char is_neighbor(nodeid_t id) { */
+    /*     return neighbors & (1 << id); */
+    /* } */
     
     /** 
      * Broadcast the beacon message through the radio
@@ -113,6 +121,7 @@ implementation {
         }
     }
 
+    // nothing need to be done given for this non reliable protocol
     event void AMSend.sendDone(message_t* msg, error_t error) {
     }
 
@@ -121,7 +130,7 @@ implementation {
      * 
      * @param idx index of the mote
      */
-    void removeNeighbor(uint8_t idx) {
+    void removeNeighbor(nodeid_t idx) {
         neighbors &= ~(1 << idx);
         dbg("NeighBor", "removing node %d to neighbors\n", idx);
     }
@@ -131,7 +140,7 @@ implementation {
      * 
      * @param idx 
      */
-    void addNeighbor(uint8_t idx) {
+    void addNeighbor(nodeid_t idx) {
         neighbors |= (1 << idx);
         dbg("NeighBor", "adding node %d to neighbors\n", idx);
     }
