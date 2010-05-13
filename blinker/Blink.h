@@ -34,7 +34,8 @@ typedef nx_struct BlinkMsg {
 
 enum {
   AM_BLINK = 6,
-  AM_SERIAL_BLINK = 7
+  AM_SERIAL_BLINK = 7,
+  AM_BEACON = 8
 };
 
 /// Message type constants

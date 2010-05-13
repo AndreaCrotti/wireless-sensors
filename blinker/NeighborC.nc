@@ -11,7 +11,7 @@
  * 
  */
 
-module NeighBorMod {
+module NeighborC {
     // radio part
     uses interface Packet;
     uses interface AMSend;
@@ -20,7 +20,7 @@ module NeighBorMod {
     // maybe seconds could be also enough
     uses interface Timer<TMilli> as Timer;
     
-    /* provides interface startDiscovery; */
+    provides interface Init;
 }
 
 // use a task to post the event that makes the list of neighbors update
@@ -36,11 +36,14 @@ implementation {
 
     void check_timeout(uint32_t);
     void init_msgs();
+    void broadcast_beacon();
+    void addNeighbor(uint8_t);
+    void removeNeighbor(uint8_t);
     
     // 2 seconds every beacon, 15 seconds is the timeout
-    command void startDiscovery() {
-        Timer.startPeriodic(PERIOD);
+    command error_t Init.init() {
         int i;
+        call Timer.startPeriodic(PERIOD);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
@@ -49,12 +52,13 @@ implementation {
         /* // checking if multiple */
         /* assert(TIMEOUT % PERIOD == 0); */
         // create a message with the correct message created
-        *(BeaconMsg *) Package.getPayload(&pkt, 0) = {.src_node = NODE_ID}; 
+        ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)))->src_node = TOS_NODE_ID;
+        return SUCCESS;
     }
 
     event void Timer.fired() {
         // working with smaller int, safe because we're using seconds
-        uint32_t delay = Timer.getdt() / PERIOD;
+        uint32_t delay = (call Timer.getdt()) / PERIOD;
         
         // this can be checked at every period
         // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
@@ -70,22 +74,19 @@ implementation {
      * Broadcast the beacon message through the radio
      * 
      */
-    command void broadcast_beacon() {
-        
+    void broadcast_beacon() {
         // setting to the global variable, make sure it's a pointer
-        broadcast = &beacon;
-        
         if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg)) == SUCCESS) 
             dbg("NeighBor", "broadcasting beacon message\n");
     }
 
     event message_t *Receive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BeaconMsg)) {
-            BeaconMsg* msg = (BeaconMsg *) payload;
+            BeaconMsg* beacon = (BeaconMsg *) payload;
             // when should this get called?
-            uint32_t time = Timer.getdt();
-            LAST_ARRIVAL[msg->src_node] = time;
-            dbg("NeighBor", "got beacon %d at time %d\n", msg->src_node, time);
+            uint32_t time = call Timer.getdt();
+            LAST_ARRIVAL[beacon->src_node] = time;
+            dbg("NeighBor", "got beacon %d at time %d\n", beacon->src_node, time);
         }
         return msg;
     }
@@ -110,6 +111,9 @@ implementation {
                 addNeighbor(i);
             }
         }
+    }
+
+    event void AMSend.sendDone(message_t* msg, error_t error) {
     }
 
     /** 
