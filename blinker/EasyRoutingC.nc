@@ -1,7 +1,7 @@
-#include "NeighBor.h"
+#include "EasyRouting.h"
 
 /**
- * @file   NeighBourMod.nc
+ * @file   EasyRouting.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date   Tue May 11 17:16:24 2010
  * 
@@ -11,7 +11,7 @@
  * 
  */
 
-module NeighborC {
+module EasyRoutingC {
     // radio part
     uses interface Packet;
     uses interface AMSend;

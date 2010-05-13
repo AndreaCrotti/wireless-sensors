@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef NEIGHBOR_H
-#define NEIGHBOR_H
+#ifndef EASY_ROUTING_H
+#define EASY_ROUTING_H
 
 enum {
     BEACON = 2,

@@ -42,7 +42,7 @@ implementation {
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
     
-    components NeighborC;
+    components EasyRoutingC;
     
     BlinkC -> MainC.Boot;
     
@@ -50,10 +50,10 @@ implementation {
     BlinkC.Leds -> LedsC;
 
     /// Linking for the neighbor module
-    NeighborC.Packet -> BeaconSender.Packet;
-    NeighborC.AMSend -> BeaconSender.AMSend;
-    NeighborC.Receive -> BeaconReceiver;
-    NeighborC.Timer -> BeaconTimer;
+    EasyRoutingC.Packet -> BeaconSender.Packet;
+    EasyRoutingC.AMSend -> BeaconSender.AMSend;
+    EasyRoutingC.Receive -> BeaconReceiver;
+    EasyRoutingC.Timer -> BeaconTimer;
 
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> BlinkSender.Packet;
