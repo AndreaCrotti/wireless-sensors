@@ -340,13 +340,13 @@ implementation {
 	}
     }
 
-    event void TempSensor.readDone(error_t result, uint16_t val){
+    event void HumSensor.readDone(error_t result, uint16_t val){
 	if(result == SUCCESS){
 	    sendSensingData(3, val);
 	}
     }
 
-    event void HumSensor.readDone(error_t result, uint16_t val){
+    event void TempSensor.readDone(error_t result, uint16_t val){
 	if(result == SUCCESS){
 	    sendSensingData(4, val);
 	}
