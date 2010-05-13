@@ -1,9 +1,3 @@
-/**
- * TODO: Rewrite code in a more modular way.
- * 
- */
-
-
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -542,21 +536,7 @@ public class BlinkGUI extends JFrame {
     }
 
     /**
-     * @param args
-     */
-    /*public static void main(String[] args) {
-    // TODO Auto-generated method stub
-    SwingUtilities.invokeLater(new Runnable() {
-    public void run() {
-    BlinkGUI thisClass = new BlinkGUI();
-    thisClass.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    thisClass.setVisible(true);
-    }
-    });
-    }*/
-
-    /**
-     * This is the default constructor
+     * Default constructor of the GUI, takes the connector as argument
      */
     public BlinkGUI(BlinkConnector connector) {
         super();
