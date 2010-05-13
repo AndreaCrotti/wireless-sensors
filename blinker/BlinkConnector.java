@@ -85,7 +85,7 @@ public class BlinkConnector implements MessageListener {
     	message.set_instr(mask);
     	message.set_seqno(this.seqNo++);
     	
-    	gui.print("Sended message with mask " + mask + " and destination "+ destination);
+    	gui.print("Sended message with mask " + mask + " and destination "+ destination + " seq number " + message.get_seqno());
     	
     	try{
             moteInterface.send(this.commID, message);

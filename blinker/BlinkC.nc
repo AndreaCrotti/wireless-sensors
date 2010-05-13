@@ -141,13 +141,6 @@ implementation {
      * and the choice is braodcasted over the network. 
      */
     event void Timer.fired() {
-        //if (TOS_NODE_ID == 0) {
-            //instr_t leds = (instr_t)selectRandomLed();
-            /* dbg("BlinkC", "got led %d\n", led_idx); */
-            //setLed(2);
-//            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
-//transmitLed(msg);
-	    //}
     }
 
     /**
@@ -156,6 +149,7 @@ implementation {
      * @param led Number of the LED to turn on.
      */
     void setLed(instr_t led) {
+        // XORing between actual ledmask and led passed in
         ledMask = (ledMask & (~led >> 3)) ^ led;
         call Leds.set(ledMask);
     }
@@ -327,7 +321,6 @@ implementation {
     /**************************************************
      * Sensor events
      **************************************************/
-    
     event void LightSensor.readDone(error_t result, uint16_t val){
 	if(result == SUCCESS){
 	    sendSensingData(1, val);
@@ -367,7 +360,7 @@ implementation {
 	
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
-	}else{
+	} else {
 	    transmitMessage(*newMsg);
 	}
     }

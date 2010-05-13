@@ -1,17 +1,19 @@
-#include "NeighBor.h"
+#include "EasyRouting.h"
 
 /**
- * @file   NeighBourMod.nc
+ * @file   EasyRouting.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date   Tue May 11 17:16:24 2010
  * 
- * @brief  Module to keep the neighbor list of every mote.
+ * @brief  Module to keep the neighbour list of every mote.
  * We use the RADIO package to send beacons through the wireless
- * The neighbor list is simply a 16 bit integer mask
+ * The neighbour list is simply a 16 bit integer mask
+ * This EasyRouting protocol uses a reliable protocol for commands
+ * and an unreliable protocol for discovering the neighbours.
  * 
  */
 
-module NeighborC {
+module EasyRoutingC {
     // radio part
     uses interface Packet;
     uses interface AMSend;
@@ -21,13 +23,14 @@ module NeighborC {
     uses interface Timer<TMilli> as Timer;
     
     provides interface Init;
+    /* provides interface Neighbour; */
 }
 
-// use a task to post the event that makes the list of neighbors update
+// use a task to post the event that makes the list of neighbours update
 
 implementation {
     // could that be bigger in case of more motes?
-    uint16_t neighbors = 0;
+    uint16_t neighbours = 0;
     
     /// array keeping the last arrival time of the motes
     nodeid_t LAST_ARRIVAL[MAX_MOTES];
@@ -37,8 +40,8 @@ implementation {
     void check_timeout(uint32_t);
     void init_msgs();
     void broadcast_beacon();
-    void addNeighbor(nodeid_t);
-    void removeNeighbor(nodeid_t);
+    void addNeighbour(nodeid_t);
+    void removeNeighbour(nodeid_t);
     
     command error_t Init.init() {
         int i;
@@ -68,24 +71,22 @@ implementation {
     }
 
     /** 
-     * Check if the a node is in the neighbors list
+     * Check if the a node is in the neighbours list
      * 
      * @param id 
      * 
      * @return 0 if not in list, the id itself otherwise
      */
-    /* command char is_neighbor(nodeid_t id) { */
-    /*     return neighbors & (1 << id); */
+    /* command char is_neighbour(nodeid_t id) { */
+    /*     return neighbours & (1 << id); */
     /* } */
     
     /** 
-     * Broadcast the beacon message through the radio
+     * Broadcast the beacon message, we don't care
      * 
      */
     void broadcast_beacon() {
-        // setting to the global variable, make sure it's a pointer
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg)) == SUCCESS) 
-            dbg("NeighBor", "broadcasting beacon message\n");
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
     event message_t *Receive.receive(message_t *msg, void *payload, uint8_t len) {
@@ -94,7 +95,6 @@ implementation {
             // when should this get called?
             uint32_t time = call Timer.getdt();
             LAST_ARRIVAL[beacon->src_node] = time;
-            dbg("NeighBor", "got beacon %d at time %d\n", beacon->src_node, time);
         }
         return msg;
     }
@@ -112,11 +112,11 @@ implementation {
                 continue;
 
             if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
-                removeNeighbor(i);
+                removeNeighbour(i);
             }
             // adding has no effect if already present of course
             else {
-                addNeighbor(i);
+                addNeighbour(i);
             }
         }
     }
@@ -130,9 +130,8 @@ implementation {
      * 
      * @param idx index of the mote
      */
-    void removeNeighbor(nodeid_t idx) {
-        neighbors &= ~(1 << idx);
-        dbg("NeighBor", "removing node %d to neighbors\n", idx);
+    void removeNeighbour(nodeid_t idx) {
+        neighbours &= ~(1 << idx);
     }
     
     /** 
@@ -140,8 +139,7 @@ implementation {
      * 
      * @param idx 
      */
-    void addNeighbor(nodeid_t idx) {
-        neighbors |= (1 << idx);
-        dbg("NeighBor", "adding node %d to neighbors\n", idx);
+    void addNeighbour(nodeid_t idx) {
+        neighbours |= (1 << idx);
     }
 }
