@@ -139,7 +139,6 @@ public class BlinkConnector implements MessageListener {
     	int sender = getIDFromBM(msg.get_sender());
     	short instr = msg.get_instr();
     	int data = msg.get_data();
-    	int converted;
     	
     	switch (instr) {
 		case 1:
@@ -157,8 +156,6 @@ public class BlinkConnector implements MessageListener {
 		default:
 			break;
 		}
-    	
-        this.gui.print("Got sensing result of type " + instr + " from mote " + sender + " with result " + data);
     }
     
     public int convertLight(int data){
