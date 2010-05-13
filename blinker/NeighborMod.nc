@@ -21,25 +21,34 @@ module NeighBorMod {
     // maybe seconds could be also enough
     uses interface Timer<TMilli> as Timer;
     
-    provides interface startSensing();
+    provides interface startDiscovery();
 }
 
 // use a task to post the event that makes the list of neighbors update
 
 implementation {
-    // this could be bigger in case we have more motes?
+    // could that be bigger in case of more motes?
     uint16_t neighbors = 0;
-    // motes that answered in the last TIMEOUT period
-    uint16_t last_seen = 0;
     
+    /// array keeping the last arrival time of the motes
     uint8_t LAST_ARRIVAL[MAX_MOTES];
-    void simple_check(uint32_t);
+    /// TODO: set it up directly here if possible
+    BeaconMsg beacon;
 
+    /// structure keeping the message to forward
+    message_t pkt;
+
+    void simple_check(uint32_t);
+    void init_msgs();
+    
     // 2 seconds every beacon, 15 seconds is the timeout
-    command void startSensing() {
+    command void startDiscovery() {
+        // set up the beacon message, it will always be the same
+        beacon.src_node = NODE_ID;
+        
         Timer.startPeriodic(PERIOD);
         int i;
-        // setup initially to 0
+        // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
         }
@@ -54,20 +63,46 @@ implementation {
         
         // this can be checked at every period
         // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
-        smart_check(delay);
+        check_timeout(delay);
 
+        /// send a beacon every BEACON seconds
         if ((delay % BEACON) == 0) {
-            // start to broacast the beacon package
+            broadcast_beacon();
         }
-        // choose one of the alternatives
     }
     
     /** 
-     * Use the LAST_ARRIVAL array to determine when we're actually having a timeout
+     * Broadcast the beacon message
+     * 
+     */
+    command void broadcast_beacon() {
+        // create a message with the correct message created
+        BeaconMsg *broadcast = (BeaconMsg *) Package.getPayload(&pkt, 0);
+        
+        // setting to the global variable, make sure it's a pointer
+        broadcast = &beacon;
+
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg)) == SUCCESS) 
+            dbg("NeighBor", "broadcasting beacon message\n");
+    }
+
+    event message_t *Receive.receive(message_t *msg, void *payload, uint8_t len) {
+        if (len == sizeof(BeaconMsg)) {
+            BeaconMsg* msg = (BeaconMsg *) payload;
+            // when should this get called?
+            uint32_t time = Timer.getdt();
+            LAST_ARRIVAL[msg->src_node] = time;
+            dbg("NeighBor", "got beacon %d at time %d\n", msg->src_node, time);
+        }
+        return msg;
+    }
+
+    /** 
+     * Check for every mote if there is a timeout
      * 
      * @param delay time passed from Timer start
      */
-    void smart_check(uint32_t delay) {
+    void check_timeout(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
             // in case it's still 0 we don't touch it at all, means that no answer arrived
@@ -82,22 +117,6 @@ implementation {
                 addNeighbor(i);
             }
         }
-    }
-
-    /** 
-     * Simply set the neighbors list as the last seen motes
-     * 
-     * @param delay 
-     */
-    void simple_check(uint32_t delay) {
-        // send a timeout package for who didn't answer?
-        // we must also keep a stack of all the motes that answered in the last
-        // 15 seconds to make sure we are not doing useless operations
-        // who didn't answer and is not in the list gets removed
-            
-        // This is the simple way, just replace with the last seen motes
-        neighbors = last_seen;
-        last_seen = 0;
     }
 
     /** 
@@ -121,7 +140,9 @@ implementation {
     }
 
     // TODO: implement the receive part where it makes a distinction between
-    // a broacast beacon message and a ACK to the beacon
+    // a broadcast beacon message and a ACK to the beacon
+    
+    
 
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         // in the payload there could be contained the type of the message
