@@ -209,8 +209,14 @@ implementation {
         return !!(msg->dests & (1 << TOS_NODE_ID));
     }
 
+    /** 
+     * Handle the message received calling the correct instructions
+     * 
+     * @param msg pointer to the message
+     */
     void handleMessage(BlinkMsg* msg){
         message_t *m;
+        /// checking what message type
         switch (msg->type) {
         case MSG_INSTR:
 	    setLed(msg->instr);
