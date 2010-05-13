@@ -14,7 +14,6 @@
 module NeighBorMod {
     // radio part
     uses interface Packet;
-    uses interface AMPacket;
     uses interface AMSend;
     uses interface Receive;
 
@@ -32,9 +31,6 @@ implementation {
     
     /// array keeping the last arrival time of the motes
     uint8_t LAST_ARRIVAL[MAX_MOTES];
-    /// TODO: set it up directly here if possible
-    BeaconMsg beacon;
-
     /// structure keeping the message to forward
     message_t pkt;
 
@@ -43,9 +39,6 @@ implementation {
     
     // 2 seconds every beacon, 15 seconds is the timeout
     command void startDiscovery() {
-        // set up the beacon message, it will always be the same
-        beacon.src_node = NODE_ID;
-        
         Timer.startPeriodic(PERIOD);
         int i;
         // set all to 0 initially
@@ -53,8 +46,10 @@ implementation {
             LAST_ARRIVAL[i] = 0;
         }
         
-        // checking if multiple
-        assert(TIMEOUT % PERIOD == 0);
+        /* // checking if multiple */
+        /* assert(TIMEOUT % PERIOD == 0); */
+        // create a message with the correct message created
+        *(BeaconMsg *) Package.getPayload(&pkt, 0) = {.src_node = NODE_ID}; 
     }
 
     event void Timer.fired() {
@@ -76,12 +71,10 @@ implementation {
      * 
      */
     command void broadcast_beacon() {
-        // create a message with the correct message created
-        BeaconMsg *broadcast = (BeaconMsg *) Package.getPayload(&pkt, 0);
         
         // setting to the global variable, make sure it's a pointer
         broadcast = &beacon;
-
+        
         if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg)) == SUCCESS) 
             dbg("NeighBor", "broadcasting beacon message\n");
     }

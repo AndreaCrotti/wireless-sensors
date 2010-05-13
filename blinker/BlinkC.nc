@@ -1,4 +1,5 @@
 #include "Blink.h"
+#include "Constants.h"
 
 /**
  * Implementation of the first task.
@@ -51,8 +52,6 @@ implementation {
     void sendSensingData(instr_t sensingInstr, data_t sensingData);
     uint8_t getIDFromBM(nodeid_t bm);
 
-    
-
     //// variables to control the channel ////
     // The current outgoing radio message
     message_t pkt_radio_out;
@@ -63,7 +62,7 @@ implementation {
     // The current sensing message
     message_t pkt_sensing_out;
     // An array of sequential numbers of the other motes
-    seqno_t curr_sn[MAX_MOTES] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    seqno_t curr_sn[MAX_MOTES];
     // own sequential numbers
     seqno_t own_sn = 1;
     // led mask
@@ -73,6 +72,7 @@ implementation {
      * This event is called, after the device was booted and we start AMControl here.
      */
     event void Boot.booted() {
+        int i;
         /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
@@ -80,6 +80,9 @@ implementation {
         call SerialControl.start();
 
         // start the timer of the NeighBourMod
+        // initialize the curr_sn
+        for (i = 0; i < MAX_MOTES; i++)
+            curr_sn[i] = 0;
     }
 
     /**
