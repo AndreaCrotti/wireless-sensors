@@ -40,7 +40,7 @@ enum {
 };
 
 enum {
-    AM_BLINKMSG = 7
+    AM_BLINKMSG = AM_SERIAL_BLINK
 };
 
 /// Message type constants
@@ -59,6 +59,5 @@ enum {
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 1000
-#define AM_BLINKMSG AM_SERIAL_BLINK
 
 #endif
