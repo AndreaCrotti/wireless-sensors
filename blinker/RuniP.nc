@@ -21,7 +21,7 @@ module RuniP {
     uses interface Random;
     uses interface ParameterInit<uint16_t> as SeedInit;
 
-    // additional needed components
+    // additional components
     uses interface Timer<TMilli> as Timer;
     uses interface CC2420Packet;
 

@@ -227,16 +227,16 @@ implementation {
 	    *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
 	    // fetch the sensor data
             switch(msg->instr) {
-            case LIGHT:
+            case SENS_LIGHT:
 		call LightSensor.read();
                 break;
-            case INFRA:
+            case SENS_INFRA:
 		call InfraSensor.read();
                 break;
-            case HUMIDITY:
+            case SENS_HUMIDITY:
 		call HumSensor.read();
                 break;
-            case TEMP:
+            case SENS_TEMP:
 		call TempSensor.read();
 	    };
             break;

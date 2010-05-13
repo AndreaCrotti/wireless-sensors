@@ -52,10 +52,10 @@ enum {
 
 /// Sensing type constants
 enum {
-    LIGHT = 1,
-    INFRA = 2,
-    HUMIDITY = 3,
-    TEMP = 4
+    SENS_LIGHT = 1,
+    SENS_INFRA = 2,
+    SENS_HUMIDITY = 3,
+    SENS_TEMP = 4
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 1000
