@@ -34,7 +34,7 @@ typedef nx_struct BlinkMsg {
 
 enum {
   AM_BLINK = 6,
-  AM_SERIAL_BLINK
+  AM_SERIAL_BLINK = 7
 };
 
 #define BLINK_GENERATE_INTERVAL_MS 1000

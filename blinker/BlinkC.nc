@@ -38,8 +38,6 @@ module BlinkC {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-    uses interface Random;
-    uses interface ParameterInit<uint16_t> as SeedInit;
     uses interface CC2420Packet;
 
 }
@@ -53,8 +51,10 @@ implementation {
     
 
     //// variables to control the channel ////
-    // The current message
-    message_t pkt;
+    // The current outgoing radio message
+    message_t pkt_radio_out;
+    // The current outgoing serial message
+    message_t pkt_serial_out;
     // The current sequential ID
     seqno_t curr_sn = 0;
     // led mask
@@ -67,7 +67,6 @@ implementation {
         /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
-        call SeedInit.init(13);
         call AMControl.start();
         call SerialControl.start();
 
@@ -139,18 +138,6 @@ implementation {
     }
 
     /**
-     * Selects a LED number randomly.
-     *
-     * @return An interger between 0 and 2
-     */
-    uint8_t selectRandomLed() {
-        uint8_t leds = 1 << ((call Random.rand16()) % 3);
-        dbg("BlinkC","new command is %u\n",leds);
-        //assert(!(leds & ~7));
-        return leds;
-    }
-  
-    /**
      * Applies an instruction to the leds.
      *
      * @param led Number of the LED to turn on.
@@ -167,9 +154,9 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     void transmitMessage(BlinkMsg msg) {
-        *(BlinkMsg*)(call Packet.getPayload(&pkt, 0)) = msg;
-        call CC2420Packet.setPower(&pkt,2);
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
+        *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = msg;
+        call CC2420Packet.setPower(&pkt_radio_out, 2);
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS)
            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
     }
 
@@ -182,21 +169,21 @@ implementation {
      *   ECANCEL if it was cancelled 
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
-        if (&pkt == msg) {
+        if (&pkt_radio_out == msg) {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) != SUCCESS);
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
         }
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
-	if (&pkt == msg) {
+	if (&pkt_serial_out == msg) {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) != SUCCESS);
+                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
         }
     }

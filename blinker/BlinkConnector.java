@@ -52,7 +52,7 @@ public class BlinkConnector implements MessageListener {
     	
     	try{
     		connect(source);
-    	}catch(IOException e){
+    	}catch(Exception e){
     		gui.print(e.getMessage());
     	}
     }
