@@ -139,8 +139,44 @@ public class BlinkConnector implements MessageListener {
     	int sender = getIDFromBM(msg.get_sender());
     	short instr = msg.get_instr();
     	int data = msg.get_data();
+    	int converted;
+    	
+    	switch (instr) {
+		case 1:
+			this.gui.print("Mote " + sender + " sensed Light: " + convertLight(data));
+			break;
+		case 2:
+			this.gui.print("Mote " + sender + " sensed Infrared: " + convertInfrared(data));
+			break;
+		case 3:
+			this.gui.print("Mote " + sender + " sensed Humidity: " + convertHumidity(data) + "%");
+			break;
+		case 4:
+			this.gui.print("Mote " + sender + " sensed Temperature: " + convertTemp(data) + "°C");
+			break;
+		default:
+			break;
+		}
     	
         this.gui.print("Got sensing result of type " + instr + " from mote " + sender + " with result " + data);
+    }
+    
+    public int convertLight(int data){
+    	return data;
+    }
+    
+    public int convertInfrared(int data){
+    	return data;
+    }
+    
+    public double convertHumidity(int data){
+    	double hum_lin = -0.0000028*data*data + 0.0405*data-4;
+
+    	return hum_lin;
+    }
+    
+    public double convertTemp(int data){
+    	return (-38.4 + 0.0098 * data);
     }
 
     public int getIDFromBM(int bm){
