@@ -188,9 +188,11 @@ implementation {
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
+	setLed(2);
 	if (&pkt_serial_out == msg) {
             if (error == SUCCESS) {
 		//timer();
+		setLed(4);
             } else {
                 while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -215,7 +217,6 @@ implementation {
      * @param msg pointer to the message
      */
     void handleMessage(BlinkMsg* msg){
-        message_t *m;
         /// checking what message type
         switch (msg->type) {
         case MSG_INSTR:
@@ -245,8 +246,9 @@ implementation {
         case MSG_SENS_DATA:
 	    // Message contains sensing data
 	    // Send them back over the serial port
-	    m = (message_t*) msg;
-	    call SerialAMSend.send(AM_BROADCAST_ADDR, m, sizeof(BlinkMsg));
+	    setLed(1);
+	    *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
+	    call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
             break;
 	};
     }

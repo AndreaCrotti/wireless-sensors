@@ -38,7 +38,7 @@ public class BlinkConnector implements MessageListener {
      */
     public BlinkConnector(MoteIF moteInterface){
     	this.moteInterface = moteInterface;
-    	//this.moteInterface.registerListener(new BlinkMsg(), this);
+    	this.moteInterface.registerListener(new BlinkMsg(), this);
     }
     
     /**
