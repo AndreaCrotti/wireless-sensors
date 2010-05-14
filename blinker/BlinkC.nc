@@ -50,8 +50,8 @@ implementation {
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     char amIaReceiver(BlinkMsg *);
-    void sendSensingData(instr_t sensingInstr, data_t sensingData);
-    uint8_t getIDFromBM(nodeid_t bm);
+    void sendSensingData(instr_t, data_t);
+    uint8_t getIDFromBM(nodeid_t);
 
     //// variables to control the channel ////
     // The current outgoing radio message
@@ -95,10 +95,7 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     task void transmitMessage() {
-        call CC2420Packet.setPower(&pkt_radio_out, 2); 
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS){
-	    dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", (msg).seqno, (msg).instr);
-	}
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
 
 
