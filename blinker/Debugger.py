@@ -12,9 +12,8 @@ import sys
 from DebugMsg import *
 import tinyos.packet
 import tinyos.message
-import 
 
-class Debugger(DebugMsg):
+class Debugger():
     """Extending the DebugMsg class to parse the debugging output"""
     def __init__(self):
         

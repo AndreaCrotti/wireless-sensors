@@ -250,7 +250,7 @@ implementation {
             break;
         };
     }
-
+    
     /**
      * This event is triggered, whenever a message is received.
      * If the message is new to the mote, it sets his LED to the LED number specified in
@@ -265,7 +265,7 @@ implementation {
         BlinkMsg* btrpkt = (BlinkMsg*) payload;
 	seqno_t sn;
 	uint8_t senderID;
-        DbgMsg debug_msg;
+        DebugMsg debug_msg;
         static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
@@ -321,7 +321,7 @@ implementation {
                 handleMessage(msg);
             }
 
-        *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
             post transmitMessage();
         }
         return message;
