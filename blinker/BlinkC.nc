@@ -181,7 +181,7 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt_radio_out == msg) {
             if (error == SUCCESS) {
-		//timer();
+                //timer();
             } else {
                 //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -189,9 +189,9 @@ implementation {
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
-	if (&pkt_serial_out == msg) {
+        if (&pkt_serial_out == msg) {
             if (error == SUCCESS) {
-		//timer();
+                //timer();
             } else {
                 //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -219,36 +219,36 @@ implementation {
         /// checking what message type
         switch (msg->type) {
         case MSG_INSTR:
-	    setLed(msg->instr);
+            setLed(msg->instr);
             break;
             
         case MSG_SENS_REQ:
-	    // Message is a sensing request
-	    // store the message locally
-	    *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
-	    // fetch the sensor data
+            // Message is a sensing request
+            // store the message locally
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
+            // fetch the sensor data
             switch(msg->instr) {
             case SENS_LIGHT:
-		call LightSensor.read();
+                call LightSensor.read();
                 break;
             case SENS_INFRA:
-		call InfraSensor.read();
+                call InfraSensor.read();
                 break;
             case SENS_HUMIDITY:
-		call HumSensor.read();
+                call HumSensor.read();
                 break;
             case SENS_TEMP:
-		call TempSensor.read();
-	    };
+                call TempSensor.read();
+            };
             break;
 
         case MSG_SENS_DATA:
-	    // Message contains sensing data
-	    // Send them back over the serial port
-	    *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
-	    call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+            // Message contains sensing data
+            // Send them back over the serial port
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
+            call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
             break;
-	};
+        };
     }
 
     /**
@@ -275,11 +275,12 @@ implementation {
             //*(BlinkMsg*)(call Packet.getPayload(&debug_pkt,0));
 	    //call SerialAMSend.send(AM_BROADCAST_ADDR, &debug_pkt, sizeof(BlinkMsg));
 
+            // possibly problema
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 call Leds.set(++called);
                 curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
-		    handleMessage(btrpkt);
+                    handleMessage(btrpkt);
                 }
                 *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
                 post transmitMessage();
@@ -289,13 +290,13 @@ implementation {
     }
 
     uint8_t getIDFromBM(nodeid_t bm){
-	uint8_t counter = 0;
-	bm >>= 1;
-	while(bm != 0){
-	    bm >>= 1;
-	    counter++;
-	}
-	return counter;
+        uint8_t counter = 0;
+        bm >>= 1;
+        while(bm != 0){
+            bm >>= 1;
+            counter++;
+        }
+        return counter;
     }
 
     /**
@@ -312,9 +313,9 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-	    // Set the sender to the current Mote's ID
-	    msg->sender = (1 << TOS_NODE_ID);
-	    msg->seqno = own_sn++;
+            // Set the sender to the current Mote's ID
+            msg->sender = (1 << TOS_NODE_ID);
+            msg->seqno = own_sn++;
 
             if (amIaReceiver(msg)) {
                 handleMessage(msg);
@@ -330,27 +331,27 @@ implementation {
      * Sensor events
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(1, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(1, val);
+        }
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(2, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(2, val);
+        }
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(3, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(3, val);
+        }
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(4, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(4, val);
+        }
     }
     
     void sendSensingData(instr_t sensingInstr, data_t sensingData){
