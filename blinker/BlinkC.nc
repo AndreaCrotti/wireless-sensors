@@ -162,11 +162,11 @@ implementation {
      */
     void transmitMessage(BlinkMsg msg) {
         *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = msg;
-	// Set the transmission power
+        // Set the transmission power
         call CC2420Packet.setPower(&pkt_radio_out, 2);
         if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS){
-	    dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
-	}
+            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
+        }
     }
 
     
@@ -180,7 +180,7 @@ implementation {
     event void AMSend.sendDone(message_t* msg, error_t error) {
         if (&pkt_radio_out == msg) {
             if (error == SUCCESS) {
-		//timer();
+                //timer();
             } else {
                 while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -188,9 +188,9 @@ implementation {
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
-	if (&pkt_serial_out == msg) {
+        if (&pkt_serial_out == msg) {
             if (error == SUCCESS) {
-		//timer();
+                //timer();
             } else {
                 while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
@@ -218,36 +218,36 @@ implementation {
         /// checking what message type
         switch (msg->type) {
         case MSG_INSTR:
-	    setLed(msg->instr);
+            setLed(msg->instr);
             break;
             
         case MSG_SENS_REQ:
-	    // Message is a sensing request
-	    // store the message locally
-	    *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
-	    // fetch the sensor data
+            // Message is a sensing request
+            // store the message locally
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
+            // fetch the sensor data
             switch(msg->instr) {
             case SENS_LIGHT:
-		call LightSensor.read();
+                call LightSensor.read();
                 break;
             case SENS_INFRA:
-		call InfraSensor.read();
+                call InfraSensor.read();
                 break;
             case SENS_HUMIDITY:
-		call HumSensor.read();
+                call HumSensor.read();
                 break;
             case SENS_TEMP:
-		call TempSensor.read();
-	    };
+                call TempSensor.read();
+            };
             break;
 
         case MSG_SENS_DATA:
-	    // Message contains sensing data
-	    // Send them back over the serial port
-	    *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
-	    call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+            // Message contains sensing data
+            // Send them back over the serial port
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
+            call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
             break;
-	};
+        };
     }
     
     /**
@@ -262,18 +262,19 @@ implementation {
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
         BlinkMsg* btrpkt = (BlinkMsg*) payload;
-	seqno_t sn;
-	uint8_t senderID;
+        seqno_t sn;
+        uint8_t senderID;
         static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
             senderID = getIDFromBM(btrpkt->sender);
 
+            // possibly problema
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 call Leds.set(++called);
                 curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
-		    handleMessage(btrpkt);
+                    handleMessage(btrpkt);
                 }
                 transmitMessage(*btrpkt);
             }
@@ -282,13 +283,13 @@ implementation {
     }
 
     uint8_t getIDFromBM(nodeid_t bm){
-	uint8_t counter = 0;
-	bm >>= 1;
-	while(bm != 0){
-	    bm >>= 1;
-	    counter++;
-	}
-	return counter;
+        uint8_t counter = 0;
+        bm >>= 1;
+        while(bm != 0){
+            bm >>= 1;
+            counter++;
+        }
+        return counter;
     }
 
     /**
@@ -305,9 +306,9 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-	    // Set the sender to the current Mote's ID
-	    msg->sender = (1 << TOS_NODE_ID);
-	    msg->seqno = own_sn++;
+            // Set the sender to the current Mote's ID
+            msg->sender = (1 << TOS_NODE_ID);
+            msg->seqno = own_sn++;
 
             if (amIaReceiver(msg)) {
                 handleMessage(msg);
@@ -322,47 +323,47 @@ implementation {
      * Sensor events
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(1, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(1, val);
+        }
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(2, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(2, val);
+        }
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(3, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(3, val);
+        }
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
-	if(result == SUCCESS){
-	    sendSensingData(4, val);
-	}
+        if(result == SUCCESS){
+            sendSensingData(4, val);
+        }
     }
     
     void sendSensingData(instr_t sensingInstr, data_t sensingData){
-	// get a message
-	BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
-	// get the request message
-	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
-	// Add new contents
-	newMsg->dests = request->sender;
-	newMsg->sender = (1 << TOS_NODE_ID);
-	newMsg->seqno = own_sn++;
-	newMsg->type = 3;
-	newMsg->instr = sensingInstr;
-	newMsg->data = sensingData;
-	
-	if (amIaReceiver(newMsg)) {
-	    handleMessage(newMsg);
-	} else {
-	    transmitMessage(*newMsg);
-	}
+        // get a message
+        BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
+        // get the request message
+        BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
+        // Add new contents
+        newMsg->dests = request->sender;
+        newMsg->sender = (1 << TOS_NODE_ID);
+        newMsg->seqno = own_sn++;
+        newMsg->type = 3;
+        newMsg->instr = sensingInstr;
+        newMsg->data = sensingData;
+        
+        if (amIaReceiver(newMsg)) {
+            handleMessage(newMsg);
+        } else {
+            transmitMessage(*newMsg);
+        }
     }
 
 }
