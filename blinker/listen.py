@@ -4,6 +4,7 @@ A simple Python script that listens on a SF for TestSerial messages.
 TODO: check if it's exiting automatically
 TODO: try to send something from the mote to see if communication is working or not
 TODO: create a class that handles the content and outputs it accordingly
+TODO: understand why is not actually listening but exiting quickly
 """
 
 from DebugMsg import *
@@ -13,7 +14,7 @@ from sys import argv
 SERVER = "137.226.59.145"
 DEF_PORT = "9001"
 
-class Debugger:
+class Debugger(object):
     def __init__(self, port):
         # manages the mote interface
         self.mif = MoteIF.MoteIF()
