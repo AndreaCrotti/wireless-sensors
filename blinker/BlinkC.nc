@@ -49,7 +49,6 @@ implementation {
   
     void setLed(uint8_t);
     uint8_t selectRandomLed();
-    void transmitLed(BlinkMsg);
     char amIaReceiver(BlinkMsg *);
     void sendSensingData(instr_t sensingInstr, data_t sensingData);
     uint8_t getIDFromBM(nodeid_t bm);
@@ -69,6 +68,9 @@ implementation {
     seqno_t own_sn = 1;
     // led mask
     uint8_t ledMask = 0;
+
+    // debug message packet
+    message_t debug_pkt;
     
     /**
      * This event is called, after the device was booted and we start AMControl here.
@@ -85,6 +87,20 @@ implementation {
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
     }
+
+    /**
+     * Broadcast a led number over the radio network.
+     *
+     * @param id The sequential ID of the message.
+     * @param led_idx The ID of the LED.
+     */
+    task void transmitMessage() {
+        call CC2420Packet.setPower(&pkt_radio_out, 2); 
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS){
+	    dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", (msg).seqno, (msg).instr);
+	}
+    }
+
 
     /**
      *  Helper function to start a one-shot timer for node 0 and do
@@ -154,21 +170,6 @@ implementation {
         call Leds.set(ledMask);
     }
 
-    /**
-     * Broadcast a led number over the radio network.
-     *
-     * @param id The sequential ID of the message.
-     * @param led_idx The ID of the LED.
-     */
-    void transmitMessage(BlinkMsg msg) {
-        *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = msg;
-	// Set the transmission power
-        call CC2420Packet.setPower(&pkt_radio_out, 2);
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg)) == SUCCESS){
-	    dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
-	}
-    }
-
     
     /**
      * When the sending is completed successfully, we set the busy-flag to false.
@@ -182,7 +183,7 @@ implementation {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
+                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
         }
     }
@@ -192,7 +193,7 @@ implementation {
             if (error == SUCCESS) {
 		//timer();
             } else {
-                while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
+                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
         }
     }
@@ -249,7 +250,7 @@ implementation {
             break;
 	};
     }
-    
+
     /**
      * This event is triggered, whenever a message is received.
      * If the message is new to the mote, it sets his LED to the LED number specified in
@@ -264,10 +265,15 @@ implementation {
         BlinkMsg* btrpkt = (BlinkMsg*) payload;
 	seqno_t sn;
 	uint8_t senderID;
+        DbgMsg debug_msg;
         static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
             senderID = getIDFromBM(btrpkt->sender);
+            //debug_msg.name = *"sSidnT";
+            //debug_msg.data = {sn, curr_sn[senderID], senderID, btrpkt->dests, TOS_NODE_ID, 1};
+            //*(BlinkMsg*)(call Packet.getPayload(&debug_pkt,0));
+	    //call SerialAMSend.send(AM_BROADCAST_ADDR, &debug_pkt, sizeof(BlinkMsg));
 
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 call Leds.set(++called);
@@ -275,7 +281,8 @@ implementation {
                 if (amIaReceiver(btrpkt)){
 		    handleMessage(btrpkt);
                 }
-                transmitMessage(*btrpkt);
+                *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
+                post transmitMessage();
             }
         }
         return message;
@@ -313,7 +320,8 @@ implementation {
                 handleMessage(msg);
             }
 
-            transmitMessage(*msg);
+        *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
+            post transmitMessage();
         }
         return message;
     }
@@ -361,7 +369,8 @@ implementation {
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
 	} else {
-	    transmitMessage(*newMsg);
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
+	    post transmitMessage();
 	}
     }
 
