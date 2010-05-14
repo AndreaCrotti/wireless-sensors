@@ -71,7 +71,8 @@ implementation {
     event void Timer.fired() {
         if (transmissions < RUNI_MAX_TRANSMISSIONS) {
             retransmit();
-        } else {
+        }
+        else {
             stopRtx();
             signal AMSend.sendDone(originalMessage,ENOACK);
         }
@@ -118,7 +119,7 @@ implementation {
 
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         stopRtx();
-        signal AMSend.sendDone(originalMessage,SUCCESS); // as far as we are concerned
+        signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
     }
 
     // provided interfaces
