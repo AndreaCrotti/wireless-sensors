@@ -26,15 +26,34 @@ implementation {
     components SerialActiveMessageC;
     components new AMSenderC(AM_BLINK) as BlinkSender;
     components new AMReceiverC(AM_BLINK) as BlinkReceiver;
-    //components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
+    components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
-    components RandomC;
     components CC2420PacketC;
+    
+    components new AMSenderC(AM_BEACON) as BeaconSender;
+    components new AMReceiverC(AM_BEACON) as BeaconReceiver;
+    components new TimerMilliC() as BeaconTimer;
+
+    ////// The sensor components //////
+    // Humidity and temperature 
+    components new SensirionSht11C() as SensirionC;
+    // Infrared
+    components new HamamatsuS10871TsrC() as PhotoActiveC;
+    // Normal light
+    components new HamamatsuS1087ParC() as TotalSolarC;
+    
+    components EasyRoutingC;
     
     BlinkC -> MainC.Boot;
     
     BlinkC.Timer -> Timer;
     BlinkC.Leds -> LedsC;
+
+    /// Linking for the neighbor module
+    EasyRoutingC.Packet -> BeaconSender.Packet;
+    EasyRoutingC.AMSend -> BeaconSender.AMSend;
+    EasyRoutingC.Receive -> BeaconReceiver;
+    EasyRoutingC.Timer -> BeaconTimer;
 
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> BlinkSender.Packet;
@@ -45,15 +64,16 @@ implementation {
     BlinkC.CC2420Packet -> CC2420PacketC;
 
     /// serial communication
-    //BlinkC.SerialPacket -> SerialBlinkSender;
-    //BlinkC.SerialAMPacket -> SerialBlinkSender;
-    //BlinkC.SerialAMSend -> SerialBlinkSender;
+    BlinkC.SerialPacket -> SerialBlinkSender;
+    BlinkC.SerialAMPacket -> SerialBlinkSender;
+    BlinkC.SerialAMSend -> SerialBlinkSender;
     BlinkC.SerialControl -> SerialActiveMessageC;
     BlinkC.SerialReceive -> SerialBlinkReceiver;
-
     
-    /// Connect the Random component for the LED choice
-    BlinkC.Random -> RandomC;
-    BlinkC.SeedInit -> RandomC;
+    // Linking the sensor components
+    BlinkC.LightSensor -> TotalSolarC;
+    BlinkC.InfraSensor -> PhotoActiveC;
+    BlinkC.TempSensor -> SensirionC.Temperature;
+    BlinkC.HumSensor -> SensirionC.Humidity;
 }
 

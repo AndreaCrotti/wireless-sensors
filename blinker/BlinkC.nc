@@ -1,4 +1,5 @@
 #include "Blink.h"
+#include "Constants.h"
 
 /**
  * Implementation of the first task.
@@ -19,53 +20,84 @@ module BlinkC {
     uses interface AMSend;
     uses interface Receive;
     // serial interface
-    //uses interface Packet as SerialPacket;
-    //uses interface AMPacket as SerialAMPacket;
-    //uses interface AMSend as SerialAMSend;
+    uses interface Packet as SerialPacket;
+    uses interface AMPacket as SerialAMPacket;
+    uses interface AMSend as SerialAMSend;
     uses interface Receive as SerialReceive;
 
     // used to control the ActiveMessageC component
     uses interface SplitControl as AMControl;
     uses interface SplitControl as SerialControl;
     
+    // the sensor components
+    uses interface Read<uint16_t> as LightSensor;
+    uses interface Read<uint16_t> as InfraSensor;
+    uses interface Read<uint16_t> as TempSensor;
+    uses interface Read<uint16_t> as HumSensor;
+
     // additional needed components
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-    uses interface Random;
-    uses interface ParameterInit<uint16_t> as SeedInit;
     uses interface CC2420Packet;
+
+    // Neighbor
+    uses interface Init;
 }
 
 implementation {
   
     void setLed(uint8_t);
     uint8_t selectRandomLed();
-    void transmitLed(BlinkMsg);
     char amIaReceiver(BlinkMsg *);
-    
+    void sendSensingData(instr_t, data_t);
+    uint8_t getIDFromBM(nodeid_t);
 
     //// variables to control the channel ////
-    // The current message
-    message_t pkt;
-    // The current sequential ID
-    seqno_t curr_sn = 0;
+    // The current outgoing radio message
+    message_t pkt_radio_out;
+    // The current outgoing serial message
+    message_t pkt_serial_out;
+    // The last incoming sensing message
+    message_t pkt_sensing_in;
+    // The current sensing message
+    message_t pkt_sensing_out;
+    // An array of sequential numbers of the other motes
+    seqno_t curr_sn[MAX_MOTES];
+    // own sequential numbers
+    seqno_t own_sn = 1;
     // led mask
     uint8_t ledMask = 0;
+
+    // debug message packet
+    message_t debug_pkt;
     
     /**
      * This event is called, after the device was booted and we start AMControl here.
      */
     event void Boot.booted() {
+        int i;
         /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
-        call SeedInit.init(13);
         call AMControl.start();
         call SerialControl.start();
 
-        // start the timer of the NeighBourMod
+        // initialize the curr_sn
+        for (i = 0; i < MAX_MOTES; i++)
+            curr_sn[i] = 0;
     }
+
+    /**
+     * Broadcast a led number over the radio network.
+     *
+     * @param id The sequential ID of the message.
+     * @param led_idx The ID of the LED.
+     */
+    task void transmitMessage() {
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
+    }
+
 
     /**
      *  Helper function to start a one-shot timer for node 0 and do
@@ -122,53 +154,21 @@ implementation {
      * and the choice is braodcasted over the network. 
      */
     event void Timer.fired() {
-        //if (TOS_NODE_ID == 0) {
-            //instr_t leds = (instr_t)selectRandomLed();
-            /* dbg("BlinkC", "got led %d\n", led_idx); */
-            //setLed(2);
-//            BlinkMsg msg;// = {.instr = leds, .seqno = ++curr_sn, .dest = AM_BROADCAST_ADDR };
-//transmitLed(msg);
-	    //}
     }
 
-    /**
-     * Selects a LED number randomly.
-     *
-     * @return An interger between 0 and 2
-     */
-    uint8_t selectRandomLed() {
-        uint8_t leds = 1 << ((call Random.rand16()) % 3);
-        dbg("BlinkC","new command is %u\n",leds);
-        //assert(!(leds & ~7));
-        return leds;
-    }
-  
     /**
      * Applies an instruction to the leds.
      *
      * @param led Number of the LED to turn on.
      */
     void setLed(instr_t led) {
+        // XORing between actual ledmask and led passed in
         ledMask = (ledMask & (~led >> 3)) ^ led;
         call Leds.set(ledMask);
     }
 
-    /**
-     * Broadcast a led number over the radio network.
-     *
-     * @param id The sequential ID of the message.
-     * @param led_idx The ID of the LED.
-     */
-    void transmitLed(BlinkMsg msg) {
-        // TODO: in one line?
-        void* m = call Packet.getPayload(&pkt, 0);
-        *(BlinkMsg *)(m) = msg;
-        call CC2420Packet.setPower(&pkt,2);
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkMsg)) == SUCCESS)
-            dbg("BlinkC", "Broadcasting message with sequential number %i and led number %i\n", msg.seqno, msg.instr);
-    }
 
-    
+    // FIXME: those two functions are doing nothing at the moment
     /**
      * When the sending is completed successfully, we set the busy-flag to false.
      *
@@ -177,15 +177,24 @@ implementation {
      *   ECANCEL if it was cancelled 
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
-        if (&pkt == msg) {
+        if (&pkt_radio_out == msg) {
             if (error == SUCCESS) {
-		//timer();
+                //timer();
             } else {
-              while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == FAIL);
+                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
             }
         }
     }
-
+    
+    event void SerialAMSend.sendDone(message_t* msg, error_t error) {
+        if (&pkt_serial_out == msg) {
+            if (error == SUCCESS) {
+                //timer();
+            } else {
+                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
+            }
+        }
+    }
 
     /**
      * Check whether we are one of the receivers of the message in question.
@@ -195,7 +204,49 @@ implementation {
      * @return 1 if we are one receiver.
      */
     char amIaReceiver(BlinkMsg* msg) {
+        /// !! is needed to avoid possible overflow in the casting to char
         return !!(msg->dests & (1 << TOS_NODE_ID));
+    }
+
+    /** 
+     * Handle the message received calling the correct instructions
+     * 
+     * @param msg pointer to the message
+     */
+    void handleMessage(BlinkMsg* msg){
+        /// checking what message type
+        switch (msg->type) {
+        case MSG_INSTR:
+            setLed(msg->instr);
+            break;
+            
+        case MSG_SENS_REQ:
+            // Message is a sensing request
+            // store the message locally
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
+            // fetch the sensor data
+            switch(msg->instr) {
+            case SENS_LIGHT:
+                call LightSensor.read();
+                break;
+            case SENS_INFRA:
+                call InfraSensor.read();
+                break;
+            case SENS_HUMIDITY:
+                call HumSensor.read();
+                break;
+            case SENS_TEMP:
+                call TempSensor.read();
+            };
+            break;
+
+        case MSG_SENS_DATA:
+            // Message contains sensing data
+            // Send them back over the serial port
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
+            call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+            break;
+        };
     }
     
     /**
@@ -209,20 +260,41 @@ implementation {
      * @return The received message.
      */
     event message_t* Receive.receive(message_t* message, void* payload, uint8_t len) {
+        BlinkMsg* btrpkt = (BlinkMsg*) payload;
+	seqno_t sn;
+	uint8_t senderID;
+        DebugMsg debug_msg;
+        static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
-            BlinkMsg* btrpkt = (BlinkMsg*) payload;
+            sn = btrpkt->seqno;
+            senderID = getIDFromBM(btrpkt->sender);
+            //debug_msg.name = *"sSidnT";
+            //debug_msg.data = {sn, curr_sn[senderID], senderID, btrpkt->dests, TOS_NODE_ID, 1};
+            //*(BlinkMsg*)(call Packet.getPayload(&debug_pkt,0));
+	    //call SerialAMSend.send(AM_BROADCAST_ADDR, &debug_pkt, sizeof(BlinkMsg));
 
-	    seqno_t sn = btrpkt->seqno;
-	    
-            if(sn > curr_sn || (!sn && curr_sn)) {
-                curr_sn = sn;
+            // possibly problema
+            if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
+                call Leds.set(++called);
+                curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
-		    setLed(btrpkt->instr);
+                    handleMessage(btrpkt);
                 }
-                transmitLed(*btrpkt);
+                *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
+                post transmitMessage();
             }
         }
         return message;
+    }
+
+    uint8_t getIDFromBM(nodeid_t bm){
+        uint8_t counter = 0;
+        bm >>= 1;
+        while(bm != 0){
+            bm >>= 1;
+            counter++;
+        }
+        return counter;
     }
 
     /**
@@ -239,13 +311,66 @@ implementation {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
 
-            if (amIaReceiver(m)) {
-                setLed(msg->instr);
+            // Set the sender to the current Mote's ID
+            msg->sender = (1 << TOS_NODE_ID);
+            msg->seqno = own_sn++;
+
+            if (amIaReceiver(msg)) {
+                handleMessage(msg);
             }
 
-            transmitLed(*msg);
-            //note: m is not needed now anymore
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
+            post transmitMessage();
         }
         return message;
     }
+
+    /**************************************************
+     * Sensor events
+     **************************************************/
+    event void LightSensor.readDone(error_t result, uint16_t val){
+        if(result == SUCCESS){
+            sendSensingData(1, val);
+        }
+    }
+
+    event void InfraSensor.readDone(error_t result, uint16_t val){
+        if(result == SUCCESS){
+            sendSensingData(2, val);
+        }
+    }
+
+    event void HumSensor.readDone(error_t result, uint16_t val){
+        if(result == SUCCESS){
+            sendSensingData(3, val);
+        }
+    }
+
+    event void TempSensor.readDone(error_t result, uint16_t val){
+        if(result == SUCCESS){
+            sendSensingData(4, val);
+        }
+    }
+    
+    void sendSensingData(instr_t sensingInstr, data_t sensingData){
+	// get a message
+	BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
+	// get the request message
+	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
+	// Add new contents
+	newMsg->dests = request->sender;
+	newMsg->sender = (1 << TOS_NODE_ID);
+	newMsg->seqno = own_sn++;
+	newMsg->type = 3;
+	newMsg->instr = sensingInstr;
+	newMsg->data = sensingData;
+	
+	if (amIaReceiver(newMsg)) {
+	    handleMessage(newMsg);
+	} else {
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
+	    post transmitMessage();
+	}
+    }
+
 }

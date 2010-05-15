@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[ "$1" = "" ] && echo "Port?" && exit 1
+
+java BlinkConnector -comm sf@137.226.59.145:$1

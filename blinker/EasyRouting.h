@@ -8,24 +8,18 @@
  * 
  */
 
-#ifndef NEIGHBOR_H
-#define NEIGHBOR_H
+#ifndef EASY_ROUTING_H
+#define EASY_ROUTING_H
 
 enum {
     BEACON = 2,
     TIMEOUT = 15,
-    PERIOD = 1000,
-    AM_BLINK = 6,
+    PERIOD = 1000
 };
-
 
 /// structure of the beacon message, both for brooacast and receiving
 typedef nx_struct BeaconMsg {
     nx_uint8_t src_node;
-    /// type can be
-    /// 0: broadcast beacon
-    /// 1: answer
-    nx_uint8_t type;
 } BeaconMsg;
 
 #endif
