@@ -167,7 +167,8 @@ implementation {
         call Leds.set(ledMask);
     }
 
-    
+
+    // FIXME: those two functions are doing nothing at the moment
     /**
      * When the sending is completed successfully, we set the busy-flag to false.
      *

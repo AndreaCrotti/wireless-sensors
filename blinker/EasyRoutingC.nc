@@ -13,6 +13,10 @@
  * 
  */
 
+// TODO: providing an interface for radio communication which in truth will just call the reliable
+// communication module
+// TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
+
 module EasyRoutingC {
     // radio part
     uses interface Packet;
@@ -23,7 +27,9 @@ module EasyRoutingC {
     uses interface Timer<TMilli> as Timer;
     
     provides interface Init;
-    /* provides interface Neighbour; */
+    /* provides interface AMSend; */
+    /* provides interface Receive; */
+
 }
 
 // use a task to post the event that makes the list of neighbours update
@@ -60,29 +66,52 @@ implementation {
         // working with smaller int, safe because we're using seconds
         uint32_t delay = (call Timer.getdt()) / PERIOD;
         
-        // this can be checked at every period
+        // motes in timeout can be checked at every 
         // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
-        check_timeout(delay);
-
-        /// send a beacon every BEACON seconds
         if ((delay % BEACON) == 0) {
             broadcast_beacon();
         }
+        // Does it make any difference if called before or after the IF?
+        check_timeout();
     }
 
     /** 
-     * Check if the a node is in the neighbours list
+     * Implementation of send call using the neighbour list as destination
      * 
-     * @param id 
+     * @param dest Destination of the message, we can just skip it
+     * @param msg 
+     * @param len 
      * 
-     * @return 0 if not in list, the id itself otherwise
-     */
-    /* command char is_neighbour(nodeid_t id) { */
-    /*     return neighbours & (1 << id); */
+     * @return status of the call
+    /*  *\/ */
+    /* command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) { */
+    /*     // we should just discard the destination since we look in our own neighbour table */
+    /*     // just modify the message with the correct stuff and then call or post the sending */
+        
+    /*     // assign the correct bitmask */
+    /*     msg->dests; */
+
+    /*     // change the name for easier understanding */
+    /*     call AMSend.send(dest, msg, len); */
+    /*     return SUCCESS; */
+    /* } */
+
+    /* // necessary commands just calling the lower layer commands */
+    /* command error_t AMSend.cancel(message_t* msg) { */
+    /*     return call AMSend.cancel(msg); */
     /* } */
     
+    /* command uint8_t AMSend.maxPayloadLength() { */
+    /*     return call AMSend.maxPayloadLength(); */
+    /* } */
+    
+    /* command void* AMSend.getPayload(message_t* m, uint8_t len) { */
+    /*     return call AMSend.getPayload(m, len); */
+    /* } */
+
+
     /** 
-     * Broadcast the beacon message, we don't care
+     * Broadcast the beacon in the non reliable way of communication
      * 
      */
     void broadcast_beacon() {
