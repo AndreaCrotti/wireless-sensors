@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: instance
-# key: instance
-# --
-instance ${1:${2:(Class var)} => }${3:definition} where
-	 $0
