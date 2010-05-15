@@ -1,5 +1,7 @@
 * TODO What exactly has to be sent?
 * TODO Every single function/variable has to be commented or not?
+* TODO Get tinyos up and running on a virtual machine or whatever else
+  [[http://docs.tinyos.net/index.php/Getting_started][installing guide]]
 
 * Organization
   - weekly tasks
@@ -14,11 +16,6 @@
   - humidity sensor
   - usb port
 
-* TODO Get tinyos up and running on a virtual machine or whatever else
-  [[http://docs.tinyos.net/index.php/Getting_started][installing guide]]
-
-* Programming in NESC
-  An extension of C language.
 
 * From Mail
   The main goal of the sensor networks lab is to give you a hands-on
@@ -93,9 +90,23 @@
 ** Simulator
    A simulator is given by [[http://docs.tinyos.net/index.php/TOSSIM][TOSSIM]], a python/C application to simulate networks of components
 
-* Netc
-  - Interfaces
-  - Components
+** Programming hints
+   1) It's dangerous to signal events from commands, as you might cause a very long call loop...
+   2) Keep tasks short
+   3) Keep code synchronous when possible. Async only if timing is very important.
+   4) Keep atomic sections short, and use as few as possible.
+   5) Only one component should be able to modify a pointer's data at a time.
+   6) Allocate all states components.
+   7) Conserve memory by using enums rather than const variables.
+   8) Auto-wire Init to MainC in the top-level configuration
+   9) If a component is a usable abstraction, name it with an ending "C", when private use "P".
+   10) Use /as/ liberally
+   11) Never ignore warnings
+   12) Define separate functions to split responsibility
+   13) #define a string to use in the header file
+   14) Never use "packad" attribute
+   15) Always use platform independent types when defining message formats
+   16) When performing many computation on a platform independent type, it's better to work on a platform dependent copy of it
 
 * Tasks
 ** First task
@@ -103,6 +114,12 @@
 
    In TOSSIM we can run only one program at a time.
 
+** Second task
+   1. You have to use the same program from your last task and modify it a bit - the data structures and add serial communication support.
+   2. TinyOS provides all the tools for serial and ethernet communication. Read the tutorial 4 of tinyos completely. and then have a look at TestSerial.java in apps/tests/testserial folder to understand how to use TinyOS APIs etc....
+   3. You major task is to take that TestSerial.java file and add gui support in it and modify the data structures.
+   4. You GUI shall communicate with just one Root node (say "Leia") and then that node shall forward the packets over the radio.
+   5. Compile your program with "make telosb"
 
 * Dictionary
   | ACR  | meaning |
