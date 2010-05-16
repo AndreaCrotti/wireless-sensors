@@ -39,23 +39,25 @@ implementation {
     // member variables
     unsigned char transmissions = 0;
     message_t* originalMessage = NULL;
-    uint8_t messagelength;
-    am_addr_t messagedest;
     message_t pkt;
     message_t ackpkt;
     seqno_t receivedSeqno[RUNI_SEQNO_COUNT];
     uint8_t lastSeqnoIdx = RUNI_SEQNO_COUNT-1;
-    SendArguments sendAckArguments;
 
     // helper functions
 
+    SendArguments sendPayloadArguments;
+    task void payloadSend() {
+        if (transmissions && (call PayloadSend.send(sendPayloadArguments.dest,sendPayloadArguments.msg,sendPayloadArguments.len) != SUCCESS))
+            post payloadSend();
+    }
     /**
      * Will perform no check whatsoever and just plain retransmit the message.
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
-    error_t retransmit(void) {
+    void retransmit(void) {
         transmissions++;
-        return call PayloadSend.send(messagedest,&pkt,messagelength);
+        post payloadSend();
     }
 
     /** 
@@ -84,12 +86,17 @@ implementation {
         }
     }
     
+    SendArguments sendAckArguments;
+    char ackSendBusy = 0;
     task void ackSend() {
         if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS)
             post ackSend();
     }
 
     event message_t* PayloadReceive.receive(message_t* message, void* payload, uint8_t len) {
+        if (ackSendBusy)
+            // this is somewhat ugly, but right now, we just cannot handle the transmission, so we will wait for the next one
+            return message;
         RuniMsg* prm = payload + len-sizeof(RuniMsg);
         if (!prm->seqno)
             return message; // drop invalid packet (invalid seqno)
@@ -97,6 +104,8 @@ implementation {
             .from = TOS_NODE_ID,
             .seqno = prm->seqno
         };
+
+        ackSendBusy = 1;
         sendAckArguments = {.dest = prm->from, .msg = &ackpkt, .len = sizeof(RuniMsg)};
         post ackSend();
 
@@ -115,7 +124,9 @@ implementation {
         return message;
     }
     
-    event void AckSend.sendDone(message_t* m, error_t err) {}
+    event void AckSend.sendDone(message_t* m, error_t err) {
+      ackSendBusy = 0;
+    }
 
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         stopRtx();
@@ -133,9 +144,8 @@ implementation {
         if (!originalMessage) // we have not been initialised yet
             SeedInit.init(TOS_NODE_ID);
         
-        messagedest = dest;
+        sendPayloadArguments = {.dest = dest, .msg = &pkt, .len = len+sizeof(RuniMsg)};
         void* i = Packet.getPayload(&pkt,0);
-        messagelength = len+sizeof(RuniMsg);
         // no side effect because only the local copy of the value 'msg', 'len' is changed
         // i.e. that's the stuff on the stack
         while (len--)
@@ -151,12 +161,10 @@ implementation {
             *i++ = *prm++;
 
         originalMessage = msg;
-        error_t result = retransmit();
+        retransmit();
         call Timer.startPeriodic(RUNI_RTX_INTERVAL_MS);
 
-        if (result != SUCCESS)
-            stopRtx();
-        return result;    
+        return SUCCESS;
     }
     
     command error_t AMSend.cancel(message_t* msg) {

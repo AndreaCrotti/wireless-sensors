@@ -32,8 +32,8 @@ typedef nx_struct RuniMsg {
 
 typedef struct {
     am_addr_t dest,
-        message_t* msg,
-        uint8_t len
-        } SendArguments;
+    message_t* msg,
+    uint8_t len
+} SendArguments;
 
 #endif
