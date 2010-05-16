@@ -1,3 +1,7 @@
+/**
+ * TODO: Also the master mote should be controllable without a working GUI environment
+ */
+
 public class OutputMaker {
     private BlinkGUI gui;
     private BlinkConsole console;
@@ -16,7 +20,7 @@ public class OutputMaker {
 
     public void print(String message) {
         // Adding port number to distinguish from where the message is coming from
-        String msg = "PORT: " + idx + "\n" + message;
+        String msg = "PORT: " + port + "\n" + message;
 
         if (has_gui)
             gui.print(msg);
