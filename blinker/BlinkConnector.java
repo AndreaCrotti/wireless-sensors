@@ -247,13 +247,14 @@ public class BlinkConnector implements MessageListener {
      */
     public static void main(String[] args) {
         // Check the command line arguments
-        String source = null;
+	String ip = null;
+	String[] debug_ports = new String[args.length - 2];
+	String master_port = null;
         if (args.length < 2)
             usage();
         else {
-            String ip = args[0];
-            String master_port = args[1];
-            String[] debug_ports = new String[args.length - 2];
+            ip = args[0];
+            master_port = args[1];
 
             for (int i = 2; i < args.length; i++) {
                 debug_ports[i-2] = args[i];
