@@ -211,16 +211,16 @@ public class BlinkConnector implements MessageListener {
 
     private static void usage() {
         System.err.println("usage: BlinkConnector <ip addr> <port master node> [port debug node1] ...");
-	System.exit(1);
+        System.exit(1);
     }           
     
     /**
-     * Creates a new connector
+     * Creates a new connector (started automatically?)
      * @param String destination IP
      * @param String port where the mote is listening
      * @param boolean debug mode set or not 
      */
-    private static BlinkConnector makeConnector (String ip, String port, boolean debug) {
+    private static void makeConnector (String ip, String port, boolean debug) {
         String source = "sf@" + ip  + ":" + port;
         System.out.println("Making connector for source" + source);
         PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
@@ -236,7 +236,6 @@ public class BlinkConnector implements MessageListener {
         
         // FIXME: fix this convoluted ! stuff, make it more coherent
         connector.setOutput(new OutputMaker(!debug, connector));
-        return connector;
     }
 
     /**
@@ -247,21 +246,25 @@ public class BlinkConnector implements MessageListener {
      */
     public static void main(String[] args) {
         // Check the command line arguments
-	String ip = null;
-	String[] debug_ports = null; 
-	String master_port = null;
+        String ip = null;
+        String[] debug_ports = null; 
+        String master_port = null;
+
         if (args.length < 2)
             usage();
+            
         else {
             ip = args[0];
             master_port = args[1];
             debug_ports = new String[args.length - 2];
+            
+            
             for (int i = 2; i < args.length; i++) {
                 debug_ports[i-2] = args[i];
             }
         }
         // create the connector for the master mote
-        BlinkConnector master = makeConnector(ip, master_port, false);
+        makeConnector(ip, master_port, false);
 
         for (String port : debug_ports) {
             // those are in debug mode
