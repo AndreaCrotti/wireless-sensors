@@ -24,16 +24,14 @@ typedef nx_struct RuniMsg {
 // transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
 #define RUNI_MAX_TRANSMISSIONS 5
 
-// retransmit every second
-#define RUNI_RTX_INTERVAL_MS 1000
+// retransmit every second +- 100
+#define RUNI_RTX_INTERVAL_MS 900
+// add a random number from [0..200) to every tx timer interval
+#define RUNI_RTX_DELTA_MS 200
+// wait a random number of milliseconds in [0..300) to acknowledge the multicast
+#define RUNI_ACK_DELTA_MS 300
 
 // how many seqnos are we supposed to save?
 #define RUNI_SEQNO_COUNT 10
-
-typedef struct {
-    am_addr_t dest,
-    message_t* msg,
-    uint8_t len
-} SendArguments;
 
 #endif

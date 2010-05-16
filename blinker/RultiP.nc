@@ -1,7 +1,7 @@
-#include "Runi.h"
+#include "Rulti.h"
 
 /**
- * Implementation of the reliable one-hop unicast primitive.
+ * Implementation of the reliable one-hop multicast primitive.
  * We will transmit a message repeatedly until we receive an acknowledgement.
  * 
  * @file BlinkP.nc
@@ -9,7 +9,7 @@
  * @date So 2. Mai 21:14:53 CEST 2010
  **/
 
-module RuniP {
+module RultiP {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
     uses interface AMPacket;
@@ -41,8 +41,8 @@ implementation {
     message_t* originalMessage = NULL;
     message_t pkt;
     message_t ackpkt;
-    seqno_t receivedSeqno[RUNI_SEQNO_COUNT];
-    uint8_t lastSeqnoIdx = RUNI_SEQNO_COUNT-1;
+    seqno_t receivedSeqno[RULTI_SEQNO_COUNT];
+    uint8_t lastSeqnoIdx = RULTI_SEQNO_COUNT-1;
 
     // helper functions
 
@@ -71,7 +71,7 @@ implementation {
 
     // used interfaces
     event void RtxTimer.fired() {
-        if (transmissions < RUNI_MAX_TRANSMISSIONS) {
+        if (transmissions < RULTI_MAX_TRANSMISSIONS) {
             retransmit();
         }
         else {
@@ -100,31 +100,31 @@ implementation {
         if (ackSendBusy)
             // this is somewhat ugly, but right now, we just cannot handle the transmission, so we will wait for the next one
             return message;
-        RuniMsg* prm = payload + len-sizeof(RuniMsg);
+        RultiMsg* prm = payload + len-sizeof(RultiMsg);
         if (!prm->seqno)
             return message; // drop invalid packet (invalid seqno)
-        *(RuniMsg*)(call Packet.getPayload(&ackpkt, 0)) = {
+        *(RultiMsg*)(call Packet.getPayload(&ackpkt, 0)) = {
             .from = TOS_NODE_ID,
             .seqno = prm->seqno
         };
 
         ackSendBusy = 1;
-        sendAckArguments = {.dest = prm->from, .msg = &ackpkt, .len = sizeof(RuniMsg)};
+        sendAckArguments = {.dest = prm->from, .msg = &ackpkt, .len = sizeof(RultiMsg)};
         uint16_t timeDelta = Random.rand16();
-        call AckTimer.startOneShot(timeDelta % RUNI_ACK_DELTA_MS);
+        call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
 
         // in case the message we just acknowledged was already reported
         // to the user, we should not do that again!
         char duplicate = 0;
         uint8_t i = 0;
-        while (i < RUNI_SEQNO_COUNT) {
+        while (i < RULTI_SEQNO_COUNT) {
             if (duplicate = (receivedSeqno[i] == prm->seqno))
-                i = RUNI_SEQNO_COUNT;
+                i = RULTI_SEQNO_COUNT;
             else
                 i++;
         }
         if (!duplicate) {
-            lastSeqnoIdx = (lastSeqnoIdx+1)%RUNI_SEQNO_COUNT;
+            lastSeqnoIdx = (lastSeqnoIdx+1)%RULTI_SEQNO_COUNT;
             receivedSeqno[lastSeqnoIdx] = rm->seqno;
             signal Receive.receive(message,payload,len);
         }
@@ -151,7 +151,7 @@ implementation {
         if (!originalMessage) // we have not been initialised yet
             SeedInit.init(TOS_NODE_ID);
         
-        sendPayloadArguments = {.dest = dest, .msg = &pkt, .len = len+sizeof(RuniMsg)};
+        sendPayloadArguments = {.dest = dest, .msg = &pkt, .len = len+sizeof(RultiMsg)};
         void* i = Packet.getPayload(&pkt,0);
         // no side effect because only the local copy of the value 'msg', 'len' is changed
         // i.e. that's the stuff on the stack
@@ -159,10 +159,10 @@ implementation {
             *i++ = *msg++;
 
         // glue the original payload and our own together
-        len = sizeof(RuniMsg);
+        len = sizeof(RultiMsg);
         // it's important to pre-increment seqno, since 0 is invalid
-        RuniMsg rm = {.seqno = call Random.rand8(), .from = TOS_NODE_ID};
-        RuniMsg* prm = &rm;
+        RultiMsg rm = {.seqno = call Random.rand8(), .from = TOS_NODE_ID};
+        RultiMsg* prm = &rm;
 
         while (len--)
             *i++ = *prm++;
@@ -170,7 +170,7 @@ implementation {
         originalMessage = msg;
         retransmit();
         uint16_t timeDelta = call Random.rand16();
-        call RtxTimer.startPeriodic(RUNI_RTX_INTERVAL_MS + (timeDelta % RUNI_RTX_DELTA_MS));
+        call RtxTimer.startPeriodic(RULTI_RTX_INTERVAL_MS + (timeDelta % RULTI_RTX_DELTA_MS));
 
         return SUCCESS;
     }
