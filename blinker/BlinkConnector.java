@@ -210,8 +210,8 @@ public class BlinkConnector implements MessageListener {
     }
 
     private static void usage() {
-        // System.err.println("usage: BlinkConnector [-comm <source>]");
         System.err.println("usage: BlinkConnector <ip addr> <port master node> [port debug node1] ...");
+	System.exit(1);
     }           
     
     /**
@@ -248,14 +248,14 @@ public class BlinkConnector implements MessageListener {
     public static void main(String[] args) {
         // Check the command line arguments
 	String ip = null;
-	String[] debug_ports = new String[args.length - 2];
+	String[] debug_ports = null; 
 	String master_port = null;
         if (args.length < 2)
             usage();
         else {
             ip = args[0];
             master_port = args[1];
-
+            debug_ports = new String[args.length - 2];
             for (int i = 2; i < args.length; i++) {
                 debug_ports[i-2] = args[i];
             }
