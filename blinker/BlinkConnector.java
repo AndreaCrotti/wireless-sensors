@@ -235,7 +235,7 @@ public class BlinkConnector implements MessageListener {
             connector = new BlinkConnector(mif, new DebugMsg());
         
         // FIXME: fix this convoluted ! stuff, make it more coherent
-        connector.setOutput(new OutputMaker(!debug, connector));
+        connector.setOutput(new OutputMaker(!debug, connector, port));
     }
 
     /**
@@ -263,11 +263,12 @@ public class BlinkConnector implements MessageListener {
                 debug_ports[i-2] = args[i];
             }
         }
+        
         // create the connector for the master mote
         makeConnector(ip, master_port, false);
 
+        // Connects all the other motes in debug mode only
         for (String port : debug_ports) {
-            // those are in debug mode
             makeConnector(ip, port, true);
         }
         
