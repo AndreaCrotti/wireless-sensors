@@ -1,5 +1,5 @@
 COMPONENT=BlinkAppC
-BUILD_EXTRA_DEPS += BlinkGUI.class DebugMsg.py
+BUILD_EXTRA_DEPS += BlinkGUI.class BlinkConsole.class DebugMsg.py
 # BUILD_EXTRA_DEPS += BlinkConnector.class
 CLEAN_EXTRA = *.class BlinkMsg.java DebugMsg.py
 VERSION = 1.6
@@ -10,6 +10,9 @@ CFLAGS += -DCC2420_DEF_RFPOWER=1
 GOALS += dist
 
 BlinkGUI.class: $(wildcard *.java) BlinkMsg.java
+	javac -target $(VERSION) -source $(VERSION) *.java
+
+BlinkConsole.class: $(wildcard *.java) BlinkMsg.java
 	javac -target $(VERSION) -source $(VERSION) *.java
 
 BlinkMsg.java:

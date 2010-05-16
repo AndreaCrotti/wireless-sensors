@@ -72,7 +72,7 @@ implementation {
             broadcast_beacon();
         }
         // Does it make any difference if called before or after the IF?
-        check_timeout();
+        check_timeout(delay);
     }
 
     /** 
@@ -83,7 +83,7 @@ implementation {
      * @param len 
      * 
      * @return status of the call
-    /*  *\/ */
+    /* 
     /* command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) { */
     /*     // we should just discard the destination since we look in our own neighbour table */
     /*     // just modify the message with the correct stuff and then call or post the sending */

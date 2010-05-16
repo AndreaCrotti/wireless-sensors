@@ -229,7 +229,7 @@ public class BlinkConnector implements MessageListener {
         BlinkConnector connector = new BlinkConnector(mif);
 
         // Create the Output
-        output = new OutputMaker(true, connector);
+        OutputMaker output = new OutputMaker(true, connector);
 
         // Connect the GUI to the connector
         connector.setOutput(output);
@@ -240,9 +240,9 @@ public class BlinkConnector implements MessageListener {
      * @param String First node attached to the serial forwarder with BlinkMsg structure
      * @param String[] all the other motes attached with DebugMsg structure
      */
-    private static void debugMode (String source, String[] others) {
+    private void debugMode (String source, String[] others) {
         // Create a non gui java output
-        output = new OutputMaker(false, connector);
+        // OutputMaker output = new OutputMaker(false, connector);
     }
 
     /**

@@ -9,7 +9,7 @@ public class OutputMaker {
         if (has_gui)
             gui = new BlinkGUI(connector);
         else
-            console = new BlinkConsole(connector);
+            console = new BlinkConsole();
     }
 
     public void print(String message) {
