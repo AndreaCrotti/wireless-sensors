@@ -20,7 +20,7 @@ import net.tinyos.util.PrintStreamMessenger;
 public class BlinkConnector implements MessageListener {
 
     // A reference the the user interface
-    private BlinkGUI gui;
+    private OutputMaker output;
     
     // The serial interface
     MoteIF moteInterface = null;
@@ -53,7 +53,7 @@ public class BlinkConnector implements MessageListener {
         try{
             connect(source);
         } catch(Exception e){
-            gui.print(e.getMessage());
+            output.print(e.getMessage());
         }
     }
     
@@ -86,12 +86,12 @@ public class BlinkConnector implements MessageListener {
         message.set_instr(mask);
         message.set_seqno(this.seqNo++);
         
-        gui.print("Sended message with mask " + mask + " and destination "+ destination + " seq number " + message.get_seqno());
+        output.print("Sended message with mask " + mask + " and destination "+ destination + " seq number " + message.get_seqno());
         
         try {
             moteInterface.send(this.commID, message);
         } catch(Exception e) {
-            this.gui.print(e.getMessage());
+            this.output.print(e.getMessage());
         }
     }
     
@@ -122,12 +122,12 @@ public class BlinkConnector implements MessageListener {
         message.set_type((short)2);
         message.set_instr(type);
         
-        this.gui.print("Requesting data type " + type + " from destination " + destination);
+        this.output.print("Requesting data type " + type + " from destination " + destination);
         
         try {
             moteInterface.send(this.commID, message);
         } catch(Exception e) {
-            this.gui.print(e.getMessage());
+            this.output.print(e.getMessage());
         }
     }
     
@@ -143,16 +143,16 @@ public class BlinkConnector implements MessageListener {
         
         switch (instr) {
         case 1:
-            this.gui.print("Mote " + sender + " sensed Light: " + convertLight(data));
+            this.output.print("Mote " + sender + " sensed Light: " + convertLight(data));
             break;
         case 2:
-            this.gui.print("Mote " + sender + " sensed Infrared: " + convertInfrared(data));
+            this.output.print("Mote " + sender + " sensed Infrared: " + convertInfrared(data));
             break;
         case 3:
-            this.gui.print("Mote " + sender + " sensed Humidity: " + convertHumidity(data) + "%");
+            this.output.print("Mote " + sender + " sensed Humidity: " + convertHumidity(data) + "%");
             break;
         case 4:
-            this.gui.print("Mote " + sender + " sensed Temperature: " + convertTemp(data) + "°C");
+            this.output.print("Mote " + sender + " sensed Temperature: " + convertTemp(data) + "°C");
             break;
         default:
             break;
@@ -200,12 +200,12 @@ public class BlinkConnector implements MessageListener {
     }
     
     /**
-     * Sets the Gui to this Class.
+     * Sets the Output to this Class.
      * 
-     * @param gui A BlinkGui Instance.
+     * @param output A OutputMaker Instance.
      */
-    public void setGui(BlinkGUI gui){
-        this.gui = gui;
+    public void setOutput(OutputMaker output){
+        this.output = output;
     }
 
     private static void usage() {
@@ -228,11 +228,11 @@ public class BlinkConnector implements MessageListener {
         // Create the Blink Connector
         BlinkConnector connector = new BlinkConnector(mif);
 
-        // Create the Gui
-        BlinkGUI gui = new BlinkGUI(connector);
+        // Create the Output
+        output = new OutputMaker(true, connector);
 
         // Connect the GUI to the connector
-        connector.setGui(gui);
+        connector.setOutput(output);
     }
 
     /**
@@ -241,7 +241,8 @@ public class BlinkConnector implements MessageListener {
      * @param String[] all the other motes attached with DebugMsg structure
      */
     private static void debugMode (String source, String[] others) {
-        
+        // Create a non gui java output
+        output = new OutputMaker(false, connector);
     }
 
     /**
