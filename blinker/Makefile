@@ -1,7 +1,7 @@
 COMPONENT=BlinkAppC
 BUILD_EXTRA_DEPS += BlinkGUI.class BlinkConsole.class DebugMsg.py
 # BUILD_EXTRA_DEPS += BlinkConnector.class
-CLEAN_EXTRA = *.class BlinkMsg.java DebugMsg.py
+CLEAN_EXTRA = *.class BlinkMsg.java DebugMsg.py DebugMsg.java
 VERSION = 1.6
 # This is the group of communication
 DEFAULT_LOCAL_GROUP = 0x55
@@ -17,6 +17,10 @@ BlinkConsole.class: $(wildcard *.java) BlinkMsg.java
 
 BlinkMsg.java:
 	mig java -target=null $(CFLAGS) -java-classname=BlinkMsg Blink.h BlinkMsg -o $@
+
+DebugMsg.java:
+	mig java -target=null $(CFLAGS) -java-classname=DebugMsg Blink.h DebugMsg -o $@
+
 
 # FIXME: this it's not getting called yet
 DebugMsg.py:
