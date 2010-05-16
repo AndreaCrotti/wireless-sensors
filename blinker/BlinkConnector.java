@@ -159,15 +159,19 @@ public class BlinkConnector implements MessageListener {
         }
     }
     
-    public int convertLight(int data){
+    /**
+     * Those three functions convert the values got from the sensor to a usable
+     * value.
+     */
+    public int convertLight(int data) {
         return data;
     }
     
-    public int convertInfrared(int data){
+    public int convertInfrared(int data) {
         return data;
     }
     
-    public double convertHumidity(int data){
+    public double convertHumidity(int data) {
         double hum_lin = -0.0000028*data*data + 0.0405*data-4;
 
         return hum_lin;
@@ -177,6 +181,13 @@ public class BlinkConnector implements MessageListener {
         return (-38.4 + 0.0098 * data);
     }
 
+    /**
+     * Get the ID of a mote from the bitmask
+     * Works when only one bit is set to 1
+     * 
+     * @param int bitmask to convert
+     * @return index of the mote
+     */
     public int getIDFromBM(int bm){
         int local_bm = bm;
         int counter = 0;
@@ -201,6 +212,38 @@ public class BlinkConnector implements MessageListener {
         System.err.println("usage: BlinkConnector [-comm <source>]");
     }           
     
+    private static void normalMode (String source) {
+        PhoenixSource phoenix;
+        
+        // Why not just exit when the source is null?
+        if (source == null) {
+            phoenix = BuildSource.makePhoenix(PrintStreamMessenger.err);
+        }
+        else {
+            phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
+        }
+
+        MoteIF mif = new MoteIF(phoenix);
+        
+        // Create the Blink Connector
+        BlinkConnector connector = new BlinkConnector(mif);
+
+        // Create the Gui
+        BlinkGUI gui = new BlinkGUI(connector);
+
+        // Connect the GUI to the connector
+        connector.setGui(gui);
+    }
+
+    /**
+     * Enter in debugMode
+     * @param String First node attached to the serial forwarder with BlinkMsg structure
+     * @param String[] all the other motes attached with DebugMsg structure
+     */
+    private static void debugMode (String source, String[] others) {
+        
+    }
+
     /**
      * This function starts the program.
      * Both the connector class and the corresponding GUI are created and BlinkConnector.start() is called.
@@ -222,25 +265,5 @@ public class BlinkConnector implements MessageListener {
             System.exit(1);
         }
         
-        PhoenixSource phoenix;
-        
-        if (source == null) {
-            phoenix = BuildSource.makePhoenix(PrintStreamMessenger.err);
-        }
-        else {
-            phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
-        }
-
-        MoteIF mif = new MoteIF(phoenix);
-        
-        // Create the Blink Connector
-        BlinkConnector connector = new BlinkConnector(mif);
-
-        // Create the Gui
-        BlinkGUI gui = new BlinkGUI(connector);
-
-        // Connect the GUI to the connector
-        connector.setGui(gui);
     }
-
 }
