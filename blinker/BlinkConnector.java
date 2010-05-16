@@ -35,10 +35,11 @@ public class BlinkConnector implements MessageListener {
      * Constructor of the BlinkConnector class.
      * 
      * @param moteInterface The interface to a node.
+     * @param Message type of the message to listen to
      */
-    public BlinkConnector(MoteIF moteInterface){
+    public BlinkConnector(MoteIF moteInterface, Message message){
         this.moteInterface = moteInterface;
-        this.moteInterface.registerListener(new BlinkMsg(), this);
+        this.moteInterface.registerListener(message, this);
     }
     
     /**
@@ -209,40 +210,32 @@ public class BlinkConnector implements MessageListener {
     }
 
     private static void usage() {
-        System.err.println("usage: BlinkConnector [-comm <source>]");
+        System.err.println("usage: BlinkConnector <ip addr> <port master node> [port debug node1] ...");
+        System.exit(1);
     }           
     
-    private static void normalMode (String source) {
-        PhoenixSource phoenix;
-        
-        // Why not just exit when the source is null?
-        if (source == null) {
-            phoenix = BuildSource.makePhoenix(PrintStreamMessenger.err);
-        }
-        else {
-            phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
-        }
-
-        MoteIF mif = new MoteIF(phoenix);
-        
-        // Create the Blink Connector
-        BlinkConnector connector = new BlinkConnector(mif);
-
-        // Create the Output
-        OutputMaker output = new OutputMaker(true, connector);
-
-        // Connect the GUI to the connector
-        connector.setOutput(output);
-    }
-
     /**
-     * Enter in debugMode
-     * @param String First node attached to the serial forwarder with BlinkMsg structure
-     * @param String[] all the other motes attached with DebugMsg structure
+     * Creates a new connector (started automatically?)
+     * @param String destination IP
+     * @param String port where the mote is listening
+     * @param boolean debug mode set or not 
      */
-    private void debugMode (String source, String[] others) {
-        // Create a non gui java output
-        // OutputMaker output = new OutputMaker(false, connector);
+    private static void makeConnector (String ip, String port, boolean debug) {
+        String source = "sf@" + ip  + ":" + port;
+        System.out.println("Making connector for source" + source);
+        PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
+        
+        MoteIF mif = new MoteIF(phoenix);
+        BlinkConnector connector;
+
+        // works fine because both messages are of same super type
+        if (debug)
+            connector = new BlinkConnector(mif, new BlinkMsg());
+        else
+            connector = new BlinkConnector(mif, new DebugMsg());
+        
+        // FIXME: fix this convoluted ! stuff, make it more coherent
+        connector.setOutput(new OutputMaker(!debug, connector, port));
     }
 
     /**
@@ -253,17 +246,30 @@ public class BlinkConnector implements MessageListener {
      */
     public static void main(String[] args) {
         // Check the command line arguments
-        String source = null;
-        if (args.length == 2) {
-            if (!args[0].equals("-comm")) {
-                usage();
-                System.exit(1);
-            }
-            source = args[1];
-        }
-        else if (args.length != 0) {
+        String ip = null;
+        String[] debug_ports = null; 
+        String master_port = null;
+
+        if (args.length < 2)
             usage();
-            System.exit(1);
+            
+        else {
+            ip = args[0];
+            master_port = args[1];
+            debug_ports = new String[args.length - 2];
+            
+            
+            for (int i = 2; i < args.length; i++) {
+                debug_ports[i-2] = args[i];
+            }
+        }
+        
+        // create the connector for the master mote
+        makeConnector(ip, master_port, false);
+
+        // Connects all the other motes in debug mode only
+        for (String port : debug_ports) {
+            makeConnector(ip, port, true);
         }
         
     }
