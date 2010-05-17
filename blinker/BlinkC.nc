@@ -16,12 +16,10 @@
 module BlinkC {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
-    uses interface AMPacket;
     uses interface AMSend;
     uses interface Receive;
     // serial interface
-    uses interface Packet as SerialPacket;
-    uses interface AMPacket as SerialAMPacket;
+    //uses interface AMPacket as SerialAMPacket;
     uses interface AMSend as SerialAMSend;
     uses interface Receive as SerialReceive;
 
@@ -39,7 +37,6 @@ module BlinkC {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-   // uses interface CC2420Packet;
 
     // Neighbor
     uses interface Init;

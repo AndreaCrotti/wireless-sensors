@@ -55,7 +55,7 @@ implementation {
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
     void retransmit(void) {
-        Leds.led0Toggle();
+        call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
     }
@@ -77,7 +77,7 @@ implementation {
      * \param sendAckArguments [logical] the exact values to pass to the AMSend.send command.
      */
     task void ackSend() {
-        Leds.led2Toggle();
+        call Leds.led2Toggle();
         if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS) {
             //timeDelta = call Random.rand16();
             //call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
@@ -182,8 +182,8 @@ implementation {
      * Receiving an acknowledgement tells us that one of our receivers actually received the message.
      */
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
-        Leds.led1Toggle();
         RultiMsg* prm = payload;
+        call Leds.led1Toggle();
         if (len != sizeof(RultiMsg))
             return message;
         if (!(prm->to & (1<<TOS_NODE_ID)))
@@ -197,6 +197,7 @@ implementation {
             stopRtx();
             signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
         }
+	return message;
     }
 
     /* ******************************** provided interfaces ******************************** */

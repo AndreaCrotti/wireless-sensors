@@ -24,14 +24,14 @@ implementation {
     components new TimerMilliC() as Timer;
     components ActiveMessageC;
     components SerialActiveMessageC;
-    components new AMSenderC(AM_BLINK) as BlinkSender;
-    components new AMReceiverC(AM_BLINK) as BlinkReceiver;
+    //components new AMSenderC(AM_BLINK) as BlinkSender;
+    //components new AMReceiverC(AM_BLINK) as BlinkReceiver;
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     //components CC2420PacketC;
     
-    components new AMSenderC(AM_BEACON) as BeaconSender;
-    components new AMReceiverC(AM_BEACON) as BeaconReceiver;
+    //components new AMSenderC(AM_BEACON) as BeaconSender;
+    //components new AMReceiverC(AM_BEACON) as BeaconReceiver;
     components new AMSenderC(AM_RULTI_RTX) as RultiRtxSender;
     components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver;
     components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
@@ -50,7 +50,7 @@ implementation {
     components new HamamatsuS1087ParC() as TotalSolarC;
     
     components RultiP;
-    components EasyRoutingC;
+    //components EasyRoutingC;
     
     BlinkC -> MainC.Boot;
     
@@ -62,29 +62,30 @@ implementation {
     RultiP.PayloadSend -> RultiRtxSender.AMSend;
     RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
     RultiP.AckSend -> RultiAckSender.AMSend;
-    RultiP.AckReceive -> RultiAckReceive.Receive;
+    RultiP.AckReceive -> RultiAckReceiver.Receive;
     RultiP.RtxTimer -> RultiRtxTimer;
     RultiP.AckTimer -> RultiAckTimer;
-    RultiP.Random -> RandomC;
-    RultiP.SeedInit -> RandomC;
-
+    RultiP.Random -> RultiRandom;
+    RultiP.SeedInit -> RultiRandom;
+    RultiP.Leds -> LedsC;
+    
     /// Linking for the neighbor module
+    /*
     EasyRoutingC.Packet -> BeaconSender.Packet;
-    EasyRoutingC.AMSend -> BeaconSender.AMSend;
-    EasyRoutingC.Receive -> BeaconReceiver;
+    EasyRoutingC.BeaconSend -> BeaconSender.AMSend;
+    EasyRoutingC.BeaconReceive -> BeaconReceiver;
+    EasyRoutingC.RelSend -> RultiP.AMSend;
+    EasyRoutingC.RelReceive -> RultiP.Receive;
     EasyRoutingC.Timer -> BeaconTimer;
-
+    */
+    
     /// Linking all our interfaces to the correct components
-    BlinkC.Packet -> BlinkSender.Packet;
-    BlinkC.AMPacket -> BlinkSender.AMPacket;
-    BlinkC.AMSend -> BlinkSender.AMSend;
+    BlinkC.Packet -> RultiRtxSender.Packet;
+    BlinkC.AMSend -> RultiP.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
-    BlinkC.Receive -> BlinkReceiver;
-    //BlinkC.CC2420Packet -> CC2420PacketC;
+    BlinkC.Receive -> RultiP;
 
     /// serial communication
-    BlinkC.SerialPacket -> SerialBlinkSender;
-    BlinkC.SerialAMPacket -> SerialBlinkSender;
     BlinkC.SerialAMSend -> SerialBlinkSender;
     BlinkC.SerialControl -> SerialActiveMessageC;
     BlinkC.SerialReceive -> SerialBlinkReceiver;
