@@ -43,7 +43,9 @@ enum {
     AM_BLINK = 6,
     AM_SERIAL_BLINK = 7,
     AM_BEACON = 8,
-    AM_DEBUGMSG = 9
+    AM_DEBUGMSG = 9,
+    AM_RULTI_RTX,
+    AM_RULTI_ACK
 };
 
 enum {

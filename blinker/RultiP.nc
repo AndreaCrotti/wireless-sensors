@@ -12,7 +12,6 @@
 module RultiP {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
-    uses interface AMPacket;
     uses interface AMSend as PayloadSend;
     uses interface Receive as PayloadSend;
     uses interface AMSend as AckSend;
@@ -28,13 +27,6 @@ module RultiP {
     provides interface AMSend;
     provides interface Receive;
 }
-/*
- * TODO TODO TODO TODO TODO TODO TODO
- * TODO                          TODO
- * TODO      DOCUMENT THIS!      TODO
- * TODO                          TODO
- * TODO TODO TODO TODO TODO TODO TODO
- */
 implementation {
     // member variables
     unsigned char transmissions = 0;

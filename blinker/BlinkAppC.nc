@@ -28,11 +28,18 @@ implementation {
     components new AMReceiverC(AM_BLINK) as BlinkReceiver;
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
-    components CC2420PacketC;
+    //components CC2420PacketC;
     
     components new AMSenderC(AM_BEACON) as BeaconSender;
     components new AMReceiverC(AM_BEACON) as BeaconReceiver;
+    components new AMSenderC(AM_RULTI_RTX) as RultiRtxSender;
+    components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver;
+    components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
+    components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver;
+    components RandomC as RultiRandom;
     components new TimerMilliC() as BeaconTimer;
+    components new TimerMilliC() as RultiRtxTimer;
+    components new TimerMilliC() as RultiAckTimer;
 
     ////// The sensor components //////
     // Humidity and temperature 
@@ -42,12 +49,24 @@ implementation {
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
     
+    components RultiC;
     components EasyRoutingC;
     
     BlinkC -> MainC.Boot;
     
     BlinkC.Timer -> Timer;
     BlinkC.Leds -> LedsC;
+
+    /// Wirering for the reliable multi-cast module
+    RultiC.Packet -> RultiRtxSender.Packet;
+    RultiC.PayloadSend -> RultiRtxSender.AMSend;
+    RultiC.PayloadReceive -> RultiRtxReceiver.Receive;
+    RultiC.AckSend -> RultiAckSender.AMSend;
+    RultiC.AckReceive -> RultiAckReceive.Receive;
+    RultiC.RtxTimer -> RultiRtxTimer;
+    RultiC.AckTimer -> RultiAckTimer;
+    RultiC.Random -> RandomC;
+    RultiC.SeedInit -> RandomC;
 
     /// Linking for the neighbor module
     EasyRoutingC.Packet -> BeaconSender.Packet;
@@ -61,7 +80,7 @@ implementation {
     BlinkC.AMSend -> BlinkSender.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> BlinkReceiver;
-    BlinkC.CC2420Packet -> CC2420PacketC;
+    //BlinkC.CC2420Packet -> CC2420PacketC;
 
     /// serial communication
     BlinkC.SerialPacket -> SerialBlinkSender;

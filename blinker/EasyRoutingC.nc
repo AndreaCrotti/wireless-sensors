@@ -20,8 +20,11 @@
 module EasyRoutingC {
     // radio part
     uses interface Packet;
-    uses interface AMSend;
-    uses interface Receive;
+    uses interface AMSend as BeaconSend;
+    uses interface Receive as BeaconReceive;
+
+    uses interface AMSend as RelSend;
+    uses interface Receive as RelReceive;
 
     // maybe seconds could be also enough
     uses interface Timer<TMilli> as Timer;
@@ -83,7 +86,7 @@ implementation {
      * @param len 
      * 
      * @return status of the call
-    /* 
+     */ 
     /* command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) { */
     /*     // we should just discard the destination since we look in our own neighbour table */
     /*     // just modify the message with the correct stuff and then call or post the sending */

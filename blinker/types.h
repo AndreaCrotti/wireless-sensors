@@ -44,11 +44,11 @@ typedef nx_uint16_t nx_data_t;
 
 /// A structure to temporally store arguments to send
 /// logically the parameter of a send-task
-typedef struct {
-    am_addr_t dest;
-    message_t* msg;
-    uint8_t len;
-} SendArguments;
+//typedef struct {
+//    am_addr_t dest;
+//    message_t* msg;
+//    uint8_t len;
+//} SendArguments;
 
 
 #endif

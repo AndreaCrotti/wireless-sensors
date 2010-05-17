@@ -39,7 +39,7 @@ module BlinkC {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-    uses interface CC2420Packet;
+   // uses interface CC2420Packet;
 
     // Neighbor
     uses interface Init;
