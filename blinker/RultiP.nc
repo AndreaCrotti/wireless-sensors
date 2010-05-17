@@ -220,6 +220,7 @@ implementation {
             char* i = call Packet.getPayload(&pkt,0);
             char* j = call Packet.getPayload(msg,0);
             char* end = i+len;
+            // memcopy
             while (i<end)
                 *i++ = *j++;
 
@@ -230,7 +231,7 @@ implementation {
             // note 1: 'receivers' points to the actual place in the message_t buffer that holds the value of the 'to' field
             //         thereby, when we get an acknowledgement and flip the appropriate bit, it will be set to zero in the message
             //         as well. Hence, on retransmission, the receivers that have acknowledged the message will not "receive" it again.
-            // note 2: this is no problem, since that operation is atomar. hence we cannot end up with invalid memory.
+            // note 2: this is no problem, since that operation is atomic. hence we cannot end up with invalid memory.
             // note 3: it is not crucial that the message is not retransmitted to verified receivers. however, it saves bandwidth and collisions.
             receivers = &(((RultiMsg*)i)->to);
         } while(0);
