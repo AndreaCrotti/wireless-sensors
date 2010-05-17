@@ -181,6 +181,7 @@ implementation {
             stopRtx();
             signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
         }
+	return message;
     }
 
     /* ******************************** provided interfaces ******************************** */

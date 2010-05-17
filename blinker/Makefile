@@ -1,5 +1,5 @@
 COMPONENT=BlinkAppC
-BUILD_EXTRA_DEPS += BlinkGUI.class BlinkConsole.class BlinkMsg.java DebugMsg.java
+BUILD_EXTRA_DEPS += DebugMsg.java BlinkGUI.class BlinkConsole.class BlinkMsg.java
 # BUILD_EXTRA_DEPS += BlinkConnector.class
 CLEAN_EXTRA = *.class BlinkMsg.java DebugMsg.py DebugMsg.java
 JAVA_VERSION = 1.6
