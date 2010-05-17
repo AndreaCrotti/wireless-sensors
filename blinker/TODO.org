@@ -2,3 +2,4 @@
 * Set up the hook in github
 * Test the TOSSIM live (remove the power setting if necessary)
 * Set up a correct DEBUG struct in Blink.h and see how to handle it
+* See if better to rename msg/newmsg stuff into less confusing names

@@ -19,8 +19,8 @@ module BlinkC {
     uses interface Packet;
     uses interface AMSend;
     uses interface Receive;
+
     // serial interface
-    //uses interface AMPacket as SerialAMPacket;
     uses interface AMSend as SerialAMSend;
     uses interface Receive as SerialReceive;
 
@@ -39,7 +39,6 @@ module BlinkC {
     uses interface Boot;
     uses interface Leds;
 
-    // Neighbor
     uses interface Init;
 }
 
@@ -123,7 +122,6 @@ implementation {
 
     /**
      * Called, when the radio module has stopped.
-     * - not used -
      */
     event void AMControl.stopDone(error_t err) {
     }
@@ -141,15 +139,12 @@ implementation {
 
     /**
      * Called, when the serial module has stopped.
-     * - not used -
      */
     event void SerialControl.stopDone(error_t err) {
     }
 
-    /**
-     * This event is triggered whenever the timer fires.
-     * If the mote has ID 0, a LED is randomly choosen and activated,
-     * and the choice is braodcasted over the network. 
+    /** 
+     * triggered when the timer fires
      */
     event void Timer.fired() {
     }
@@ -377,6 +372,7 @@ implementation {
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
 	} else {
+            // assign to the payload of the our global packet the new message created
             *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
 	    post transmitMessage();
 	}
