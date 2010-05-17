@@ -34,6 +34,7 @@ typedef nx_struct BlinkMsg {
 
 /// a debug struct to allow serial-debugging
 typedef nx_struct DebugMsg {
+    // name for every field of data
     nx_uint8_t name[14];
     nx_uint8_t data[14];
 } DebugMsg;

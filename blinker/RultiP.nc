@@ -44,7 +44,7 @@ implementation {
     /**
      * Send the payload. If sending fails, the task will be reposted.
      *
-     * \param sendPayloadArgumenst [logical] the exact values to pass to the AMSend.send command.
+     * @param sendPayloadArgumenst [logical] the exact values to pass to the AMSend.send command.
      */
     task void payloadSend() {
         if (transmissions && (call PayloadSend.send(sendPayloadArguments.dest,sendPayloadArguments.msg,sendPayloadArguments.len) != SUCCESS))
@@ -216,7 +216,7 @@ implementation {
         sendPayloadArguments.dest = AM_BROADCAST_ADDR;
         sendPayloadArguments.msg = &pkt;
         sendPayloadArguments.len = len+sizeof(RultiMsg);
-        do {
+        {
             char* i = call Packet.getPayload(&pkt,0);
             char* j = call Packet.getPayload(msg,0);
             char* end = i+len;
@@ -234,7 +234,7 @@ implementation {
             // note 2: this is no problem, since that operation is atomic. hence we cannot end up with invalid memory.
             // note 3: it is not crucial that the message is not retransmitted to verified receivers. however, it saves bandwidth and collisions.
             receivers = &(((RultiMsg*)i)->to);
-        } while(0);
+        }
         originalMessage = msg;
         retransmit();
         call RtxTimer.startPeriodic(RULTI_RTX_INTERVAL_MS + (call Random.rand16() % RULTI_RTX_DELTA_MS));

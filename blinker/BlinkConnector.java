@@ -38,6 +38,7 @@ public class BlinkConnector implements MessageListener {
      * @param Message type of the message to listen to
      */
     public BlinkConnector(MoteIF moteInterface, Message message){
+        // we get as input the more generic message from Message
         this.moteInterface = moteInterface;
         this.moteInterface.registerListener(message, this);
     }
@@ -77,7 +78,7 @@ public class BlinkConnector implements MessageListener {
      * @param destination
      * @param mask
      */
-    public void sendLedMask(short destination, short mask){
+    public void sendLedMask(short destination, short mask) {
         // Create the message
         BlinkMsg message = new BlinkMsg();
         
@@ -136,6 +137,8 @@ public class BlinkConnector implements MessageListener {
      * Implements the MessageListener interface.
      */
     public void messageReceived(int to, Message message) {
+        // add a check on the type of message received
+
         BlinkMsg msg = (BlinkMsg)message;
         
         int sender = getIDFromBM(msg.get_sender());
@@ -220,7 +223,7 @@ public class BlinkConnector implements MessageListener {
      * @param String port where the mote is listening
      * @param boolean debug mode set or not 
      */
-    private static void makeConnector (String ip, String port, boolean debug) {
+    private static void makeConnector (String ip, String port, boolean debug, boolean gui) {
         String source = "sf@" + ip  + ":" + port;
         System.out.println("Making connector for source" + source);
         PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
@@ -235,7 +238,7 @@ public class BlinkConnector implements MessageListener {
             connector = new BlinkConnector(mif, new BlinkMsg());
         
         // FIXME: convoluted ! stuff, make it more coherent
-        connector.setOutput(new OutputMaker(!debug, connector, port));
+        connector.setOutput(new OutputMaker(gui, connector, port));
     }
 
     /**
@@ -265,11 +268,11 @@ public class BlinkConnector implements MessageListener {
         }
         
         // create the connector for the master mote
-        makeConnector(ip, master_port, false);
+        makeConnector(ip, master_port, false, true);
 
         // Connects all the other motes in debug mode only
         for (String port : debug_ports) {
-            makeConnector(ip, port, true);
+            makeConnector(ip, port, true, false);
         }
         
     }
