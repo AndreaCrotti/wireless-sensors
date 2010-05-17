@@ -18,7 +18,6 @@
 // TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
 
 module EasyRoutingC {
-    // radio part
     uses interface Packet;
     uses interface AMSend as BeaconSend;
     uses interface Receive as BeaconReceive;
