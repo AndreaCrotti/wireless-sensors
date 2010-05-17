@@ -53,5 +53,11 @@ typedef struct {
     uint8_t len;
 } SendArguments;
 
+typedef struct {
+    message_t* message;
+    void* payload;
+    uint8_t len;
+} ReceiveArguments;
+
 
 #endif

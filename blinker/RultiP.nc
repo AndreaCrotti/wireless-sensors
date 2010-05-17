@@ -78,8 +78,17 @@ implementation {
      */
     task void ackSend() {
         Leds.led2Toggle();
-        if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS)
-            post ackSend();
+        if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS) {
+            //timeDelta = call Random.rand16();
+            //call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
+        }
+    }
+    /**
+     * A task to signal the provided receive.
+     */
+    ReceiveArguments signalReceiveArguments;
+    task void signalReceive() {
+        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
     }
 
 
@@ -155,7 +164,10 @@ implementation {
             if (!duplicate) {
                 lastSeqnoIdx = (lastSeqnoIdx+1)%RULTI_SEQNO_COUNT;
                 receivedSeqno[lastSeqnoIdx] = prm->seqno;
-                signal Receive.receive(message,payload,len);
+                signalReceiveArguments.message = message;
+                signalReceiveArguments.payload = payload;
+                signalReceiveArguments.len = len;
+                post signalReceive();
             }
         } while (0); // take THIS, nesC!
         return message;
