@@ -15,6 +15,7 @@ public class OutputMaker {
         if (has_gui)
             gui = new BlinkGUI(connector);
         else
+            // Not passing the connector since we can only output from the console at the moment
             console = new BlinkConsole();
     }
 
