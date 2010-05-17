@@ -9,14 +9,14 @@
  * and set the led also.
  * 
  * @file   BlinkAppC.nc
- * @author Andrea Crotti and Marius Grysla
- * @author Oscar Dustmann
+ * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
+ *
  * @date   So 2. Mai 21:11:02 CEST 2010
  * 
  */
 
 configuration BlinkAppC {
-
+    // here I have to put some configuration wiring to allow for splitting
 }
 
 implementation {

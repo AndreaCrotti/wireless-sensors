@@ -261,23 +261,20 @@ implementation {
         BlinkMsg* btrpkt = (BlinkMsg*) payload;
 	seqno_t sn;
 	uint8_t senderID;
-        DebugMsg debug_msg;
+
         static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
             senderID = getIDFromBM(btrpkt->sender);
-            //debug_msg.name = *"sSidnT";
-            //debug_msg.data = {sn, curr_sn[senderID], senderID, btrpkt->dests, TOS_NODE_ID, 1};
-            //*(BlinkMsg*)(call Packet.getPayload(&debug_pkt,0));
-	    //call SerialAMSend.send(AM_BROADCAST_ADDR, &debug_pkt, sizeof(BlinkMsg));
 
-            // possibly problema
+            // check if the message was already seen or handle the received message
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 call Leds.set(++called);
                 curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
                     handleMessage(btrpkt);
                 }
+                
                 *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
                 post transmitMessage();
             }
@@ -285,6 +282,14 @@ implementation {
         return message;
     }
 
+    /** 
+     * Returns the mote index from the bitmask.
+     * Works correctly assuming that only one bit is set
+     * 
+     * @param bm bitmask
+     * 
+     * @return index if the mote
+     */
     uint8_t getIDFromBM(nodeid_t bm){
         uint8_t counter = 0;
         bm >>= 1;
@@ -324,7 +329,7 @@ implementation {
     }
 
     /**************************************************
-     * Sensor events
+     * Sensor events, they simply pass the value      *
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
@@ -350,6 +355,12 @@ implementation {
         }
     }
     
+    /** 
+     * Sensing data handling
+     * 
+     * @param sensingInstr Instruction to execute on the mote
+     * @param sensingData data
+     */
     void sendSensingData(instr_t sensingInstr, data_t sensingData){
 	// get a message
 	BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));

@@ -55,7 +55,7 @@ implementation {
      * Will perform no check whatsoever and just plain retransmit the message.
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
-    void retransmit(void) {
+    void transmit(void) {
         call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
@@ -100,7 +100,7 @@ implementation {
      */
     event void RtxTimer.fired() {
         if (transmissions < RULTI_MAX_TRANSMISSIONS) {
-            retransmit();
+            transmit();
         } else {
             stopRtx();
             signal AMSend.sendDone(originalMessage,ENOACK);
@@ -237,7 +237,7 @@ implementation {
             receivers = &(((RultiMsg*)i)->to);
         }
         originalMessage = msg;
-        retransmit();
+        transmit();
         call RtxTimer.startPeriodic(RULTI_RTX_INTERVAL_MS + (call Random.rand16() % RULTI_RTX_DELTA_MS));
 
         return SUCCESS;

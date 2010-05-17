@@ -32,21 +32,13 @@ typedef nx_struct BlinkMsg {
     nx_data_t data;
 } BlinkMsg;
 
-/// a debug struct to allow serial-debugging
-typedef nx_struct DebugMsg {
-    // name for every field of data
-    nx_uint8_t name[14];
-    nx_uint8_t data[14];
-} DebugMsg;
-
 /// constants representing the communication channels used
 enum {
     AM_BLINK = 6,
     AM_SERIAL_BLINK = 7,
     AM_BEACON = 8,
-    AM_DEBUGMSG = 9,
-    AM_RULTI_RTX,
-    AM_RULTI_ACK
+    AM_RULTI_RTX = 9,
+    AM_RULTI_ACK = 10
 };
 
 enum {
