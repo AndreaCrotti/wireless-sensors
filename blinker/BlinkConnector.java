@@ -230,9 +230,9 @@ public class BlinkConnector implements MessageListener {
 
         // works fine because both messages are of same super type
         if (debug)
-            connector = new BlinkConnector(mif, new BlinkMsg());
-        else
             connector = new BlinkConnector(mif, new DebugMsg());
+        else
+            connector = new BlinkConnector(mif, new BlinkMsg());
         
         // FIXME: convoluted ! stuff, make it more coherent
         connector.setOutput(new OutputMaker(!debug, connector, port));

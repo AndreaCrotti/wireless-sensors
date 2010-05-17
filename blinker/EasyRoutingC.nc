@@ -18,7 +18,6 @@
 // TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
 
 module EasyRoutingC {
-    // radio part
     uses interface Packet;
     uses interface AMSend as BeaconSend;
     uses interface Receive as BeaconReceive;
@@ -114,27 +113,6 @@ implementation {
             }
         }
         return SUCCESS;
-    }
-
-    // necessary commands just calling the lower layer commands
-    command error_t AMSend.cancel(message_t* msg) {
-        return call AMSend.cancel(msg);
-    }
-    
-    command uint8_t AMSend.maxPayloadLength() {
-        return call AMSend.maxPayloadLength();
-    }
-    
-    command void* AMSend.getPayload(message_t* m, uint8_t len) {
-        return call AMSend.getPayload(m, len);
-    }
-
-    /** 
-     * Broadcast the beacon in the non reliable way of communication
-     * 
-     */
-    void broadcast_beacon() {
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
     /** 
