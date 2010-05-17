@@ -115,6 +115,19 @@ implementation {
         return SUCCESS;
     }
 
+    // Just calling the lower layer
+    command error_t AMSend.cancel(message_t* msg) {
+        return call AMSend.cancel(msg);
+    }
+
+    command uint8_t AMSend.maxPayloadLength() {
+        return call AMSend.maxPayloadLength();
+    }
+
+    command void* AMSend.getPayload(message_t* m, uint8_t len) {
+        return call AMSend.getPayload(m, len);
+    }
+
     /** 
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
@@ -133,6 +146,7 @@ implementation {
             // just forward the message
             signal Receive.receive(msg, payload, len);
         }
+        return msg;
     }
 
     /** 
