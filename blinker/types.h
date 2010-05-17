@@ -12,6 +12,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include "AM.h"
+#include "message.h"
+
 /// type of the sequence number
 typedef uint8_t seqno_t;
 /// type of the sequence number suitable for use in messages
@@ -44,11 +47,11 @@ typedef nx_uint16_t nx_data_t;
 
 /// A structure to temporally store arguments to send
 /// logically the parameter of a send-task
-//typedef struct {
-//    am_addr_t dest;
-//    message_t* msg;
-//    uint8_t len;
-//} SendArguments;
+typedef struct {
+    am_addr_t dest;
+    message_t* msg;
+    uint8_t len;
+} SendArguments;
 
 
 #endif

@@ -13,7 +13,7 @@ module RultiP {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
     uses interface AMSend as PayloadSend;
-    uses interface Receive as PayloadSend;
+    uses interface Receive as PayloadReceive;
     uses interface AMSend as AckSend;
     uses interface Receive as AckReceive;
     uses interface Random;
@@ -35,7 +35,7 @@ implementation {
     message_t ackpkt;
     seqno_t receivedSeqno[RULTI_SEQNO_COUNT];
     uint8_t lastSeqnoIdx = RULTI_SEQNO_COUNT-1;
-    nodes_t* receivers;
+    nx_nodes_t* receivers;
 
     /* ******************************** private helpers ******************************** */
 
@@ -99,7 +99,7 @@ implementation {
     event void PayloadSend.sendDone(message_t* m, error_t err) {
         if (err != SUCCESS) {
             stopRtx();
-            signal AMSend.sendDone(originalMessge,err);
+            signal AMSend.sendDone(originalMessage,err);
         }
     }
     /**
@@ -112,42 +112,49 @@ implementation {
      * Event will be triggered we notice a payload. We still have to check if it is valid and is adressed to us.
      */
     event message_t* PayloadReceive.receive(message_t* message, void* payload, uint8_t len) {
+        RultiMsg* prm;
+        RultiMsg* pld;
+        uint16_t timeDelta;
         if (ackSendBusy)
             // this is somewhat ugly, but right now, we just cannot handle the transmission, so we will wait for the next one
             return message;
-        RultiMsg* prm = payload + len-sizeof(RultiMsg);
+        prm = payload + len-sizeof(RultiMsg);
         if (!(prm->to & (1<<TOS_NODE_ID)))
             // that transmission was not for us
             return message;
         if (!prm->seqno)
             // drop invalid packet (invalid seqno)
             return message;
-        *(RultiMsg*)(call Packet.getPayload(&ackpkt, 0)) = {
-            .seqno = prm->seqno,
-            .from = TOS_NODE_ID,
-            .to = (1<<prm->from)
-        };
+        pld = (RultiMsg*)(call Packet.getPayload(&ackpkt, 0));
+        pld->seqno = prm->seqno;
+        pld->from = TOS_NODE_ID;
+        pld->to = (1<<prm->from);
+
 
         ackSendBusy = 1;
-        sendAckArguments = {.dest = prm->from, .msg = &ackpkt, .len = sizeof(RultiMsg)};
-        uint16_t timeDelta = Random.rand16();
+        sendAckArguments.dest = prm->from;
+        sendAckArguments.msg = &ackpkt;
+        sendAckArguments.len = sizeof(RultiMsg);
+        timeDelta = call Random.rand16();
         call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
 
-        // in case the message we just acknowledged was already reported
-        // to the user, we should not do that again!
-        char duplicate = 0;
-        uint8_t i = 0;
-        while (i < RULTI_SEQNO_COUNT) {
-            if (duplicate = (receivedSeqno[i] == prm->seqno))
-                i = RULTI_SEQNO_COUNT;
-            else
-                i++;
-        }
-        if (!duplicate) {
-            lastSeqnoIdx = (lastSeqnoIdx+1)%RULTI_SEQNO_COUNT;
-            receivedSeqno[lastSeqnoIdx] = rm->seqno;
-            signal Receive.receive(message,payload,len);
-        }
+        do {
+            // in case the message we just acknowledged was already reported
+            // to the user, we should not do that again!
+            char duplicate = 0;
+            uint8_t i = 0;
+            while (i < RULTI_SEQNO_COUNT) {
+                if ((duplicate = (receivedSeqno[i] == prm->seqno)))
+                    i = RULTI_SEQNO_COUNT;
+                else
+                    i++;
+            }
+            if (!duplicate) {
+                lastSeqnoIdx = (lastSeqnoIdx+1)%RULTI_SEQNO_COUNT;
+                receivedSeqno[lastSeqnoIdx] = prm->seqno;
+                signal Receive.receive(message,payload,len);
+            }
+        } while (0); // take THIS, nesC!
         return message;
     }
     /**
@@ -160,9 +167,9 @@ implementation {
      * Receiving an acknowledgement tells us that one of our receivers actually received the message.
      */
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
+        RultiMsg* prm = payload;
         if (len != sizeof(RultiMsg))
             return message;
-        RultiMsg* prm = payload;
         if (!(prm->to & (1<<TOS_NODE_ID)))
             // the message was not for us
             return message;
@@ -187,29 +194,32 @@ implementation {
             return EBUSY; // EBUSY: "The underlying system is busy; retry later"
 
         if (!originalMessage) // we have not been initialised yet
-            SeedInit.init(TOS_NODE_ID);
+            call SeedInit.init(TOS_NODE_ID);
         
-        sendPayloadArguments = {.dest = AM_BROADCAST_ADDR, .msg = &pkt, .len = len+sizeof(RultiMsg)};
-        void* i = Packet.getPayload(&pkt,0);
-        void* j = Packet.getPayload(msg,0);
-        void* end = i+len;
-        while (i<end)
-            *i++ = *j++;
+        sendPayloadArguments.dest = AM_BROADCAST_ADDR;
+        sendPayloadArguments.msg = &pkt;
+        sendPayloadArguments.len = len+sizeof(RultiMsg);
+        do {
+            char* i = call Packet.getPayload(&pkt,0);
+            char* j = call Packet.getPayload(msg,0);
+            char* end = i+len;
+            while (i<end)
+                *i++ = *j++;
 
-        // it's important to pre-increment seqno, since 0 is invalid
-        RultiMsg rm = {.seqno = call Random.rand8(), .from = TOS_NODE_ID, .to = dest};
-        *(RultiMsg*)i = rm;
-        // note 1: 'receivers' points to the actual place in the message_t buffer that holds the value of the 'to' field
-        //         thereby, when we get an acknowledgement and flip the appropriate bit, it will be set to zero in the message
-        //         as well. Hence, on retransmission, the receivers that have acknowledged the message will not "receive" it again.
-        // note 2: this is no problem, since that operation is atomar. hence we cannot end up with invalid memory.
-        // note 3: it is not crucial that the message is not retransmitted to verified receivers. however, it saves bandwidth and collisions.
-        receivers = &(((RultiMsg*)i)->to);
+            while (!(((RultiMsg*)i)->seqno = (seqno_t)(call Random.rand16()))); // 0 is not a valid sequence number
+            ((RultiMsg*)i)->from = TOS_NODE_ID;
+            ((RultiMsg*)i)->to = dest;
 
+            // note 1: 'receivers' points to the actual place in the message_t buffer that holds the value of the 'to' field
+            //         thereby, when we get an acknowledgement and flip the appropriate bit, it will be set to zero in the message
+            //         as well. Hence, on retransmission, the receivers that have acknowledged the message will not "receive" it again.
+            // note 2: this is no problem, since that operation is atomar. hence we cannot end up with invalid memory.
+            // note 3: it is not crucial that the message is not retransmitted to verified receivers. however, it saves bandwidth and collisions.
+            receivers = &(((RultiMsg*)i)->to);
+        } while(0);
         originalMessage = msg;
         retransmit();
-        uint16_t timeDelta = call Random.rand16();
-        call RtxTimer.startPeriodic(RULTI_RTX_INTERVAL_MS + (timeDelta % RULTI_RTX_DELTA_MS));
+        call RtxTimer.startPeriodic(RULTI_RTX_INTERVAL_MS + (call Random.rand16() % RULTI_RTX_DELTA_MS));
 
         return SUCCESS;
     }

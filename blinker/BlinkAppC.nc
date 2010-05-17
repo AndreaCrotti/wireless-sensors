@@ -49,7 +49,7 @@ implementation {
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
     
-    components RultiC;
+    components RultiP;
     components EasyRoutingC;
     
     BlinkC -> MainC.Boot;
@@ -58,15 +58,15 @@ implementation {
     BlinkC.Leds -> LedsC;
 
     /// Wirering for the reliable multi-cast module
-    RultiC.Packet -> RultiRtxSender.Packet;
-    RultiC.PayloadSend -> RultiRtxSender.AMSend;
-    RultiC.PayloadReceive -> RultiRtxReceiver.Receive;
-    RultiC.AckSend -> RultiAckSender.AMSend;
-    RultiC.AckReceive -> RultiAckReceive.Receive;
-    RultiC.RtxTimer -> RultiRtxTimer;
-    RultiC.AckTimer -> RultiAckTimer;
-    RultiC.Random -> RandomC;
-    RultiC.SeedInit -> RandomC;
+    RultiP.Packet -> RultiRtxSender.Packet;
+    RultiP.PayloadSend -> RultiRtxSender.AMSend;
+    RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
+    RultiP.AckSend -> RultiAckSender.AMSend;
+    RultiP.AckReceive -> RultiAckReceive.Receive;
+    RultiP.RtxTimer -> RultiRtxTimer;
+    RultiP.AckTimer -> RultiAckTimer;
+    RultiP.Random -> RandomC;
+    RultiP.SeedInit -> RandomC;
 
     /// Linking for the neighbor module
     EasyRoutingC.Packet -> BeaconSender.Packet;
