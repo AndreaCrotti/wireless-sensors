@@ -30,9 +30,8 @@ module EasyRoutingC {
     uses interface Timer<TMilli> as Timer;
     
     provides interface Init;
-    /* provides interface AMSend; */
-    /* provides interface Receive; */
-
+    provides interface AMSend;
+    provides interface Receive;
 }
 
 // use a task to post the event that makes the list of neighbours update
@@ -79,6 +78,14 @@ implementation {
     }
 
     /** 
+     * Broadcast the beacon package
+     * 
+     */
+    void broadcast_beacon() {
+        call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(pkt));
+    }
+
+    /** 
      * Implementation of send call using the neighbour list as destination
      * 
      * @param dest Destination of the message, we can just skip it
@@ -87,31 +94,40 @@ implementation {
      * 
      * @return status of the call
      */ 
-    /* command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) { */
-    /*     // we should just discard the destination since we look in our own neighbour table */
-    /*     // just modify the message with the correct stuff and then call or post the sending */
+    command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) {
+        // we should just discard the destination since we look in our own neighbour table
+        // just modify the message with the correct stuff and then call or post the sending
+                
+        // change the name for easier understanding
+        if (dest == AM_BROADCAST_ADDR)
+            call RelSend.send(neighbours, msg, len);
         
-    /*     // assign the correct bitmask */
-    /*     msg->dests; */
+        else {
+            dest = neighbours & (1 << dest);
 
-    /*     // change the name for easier understanding */
-    /*     call AMSend.send(dest, msg, len); */
-    /*     return SUCCESS; */
-    /* } */
+            if (dest != 0) {
+                call RelSend.send(dest, msg, len);
+            }
+            // otherwise sends to all neighbours
+            else {
+                call RelSend.send(neighbours, msg, len);
+            }
+        }
+        return SUCCESS;
+    }
 
-    /* // necessary commands just calling the lower layer commands */
-    /* command error_t AMSend.cancel(message_t* msg) { */
-    /*     return call AMSend.cancel(msg); */
-    /* } */
+    // necessary commands just calling the lower layer commands
+    command error_t AMSend.cancel(message_t* msg) {
+        return call AMSend.cancel(msg);
+    }
     
-    /* command uint8_t AMSend.maxPayloadLength() { */
-    /*     return call AMSend.maxPayloadLength(); */
-    /* } */
+    command uint8_t AMSend.maxPayloadLength() {
+        return call AMSend.maxPayloadLength();
+    }
     
-    /* command void* AMSend.getPayload(message_t* m, uint8_t len) { */
-    /*     return call AMSend.getPayload(m, len); */
-    /* } */
-
+    command void* AMSend.getPayload(message_t* m, uint8_t len) {
+        return call AMSend.getPayload(m, len);
+    }
 
     /** 
      * Broadcast the beacon in the non reliable way of communication
@@ -121,14 +137,24 @@ implementation {
         call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
-    event message_t *Receive.receive(message_t *msg, void *payload, uint8_t len) {
+    /** 
+     * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
+     */
+    event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
-            // when should this get called?
             uint32_t time = call Timer.getdt();
+            // set the time of the last arrival
             LAST_ARRIVAL[beacon->src_node] = time;
         }
         return msg;
+    }
+
+    event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
+        if (len == sizeof(BlinkMsg)) {
+            // just forward the message
+            signal Receive.receive(msg, payload, len);
+        }
     }
 
     /** 
@@ -143,18 +169,22 @@ implementation {
             if (LAST_ARRIVAL[i] == 0)
                 continue;
 
+            // adding and removing have no effect if they are already in or out the list
             if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbour(i);
             }
-            // adding has no effect if already present of course
             else {
                 addNeighbour(i);
             }
         }
     }
 
-    // nothing need to be done given for this non reliable protocol
-    event void AMSend.sendDone(message_t* msg, error_t error) {
+    event void RelSend.sendDone(message_t* msg, error_t error) {
+        signal AMSend.sendDone(msg, error);
+    }
+
+    // we don't need to signal anything in this case
+    event void BeaconSend.sendDone(message_t* msg, error_t error) {
     }
 
     /** 
