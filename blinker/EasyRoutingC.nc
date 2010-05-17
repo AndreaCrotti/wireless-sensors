@@ -116,14 +116,6 @@ implementation {
     }
 
     /** 
-     * Broadcast the beacon in the non reliable way of communication
-     * 
-     */
-    void broadcast_beacon() {
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
-    }
-
-    /** 
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
