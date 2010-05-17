@@ -1,8 +1,4 @@
-#+SEQ_TODO: Marius Andrea Oscar | Done
-
-* Done Task 1
-
-* Task 2
-** Marius Write a java graphical interface
-** Andrea Write the backend java-tos
-** Oscar Modify the existing Blink code
+* Set up the mailing list
+* Set up the hook in github
+* Test the TOSSIM live (remove the power setting if necessary)
+* Set up a correct DEBUG struct in Blink.h and see how to handle it

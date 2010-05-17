@@ -1,3 +1,4 @@
+#include "printf.h"
 #include "EasyRouting.h"
 
 /**
