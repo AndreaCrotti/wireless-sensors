@@ -13,9 +13,7 @@ import net.tinyos.util.PrintStreamMessenger;
 /**
  * @author Andrea Crotti, Marius Grysla, Oscar Dustmann
  * 
- * TODO: understand how to write on the debug output window
- * TODO: print out 20 byte DBGMSG data structure
- * 
+ * TODO: change it to start automatically the printf client instead
  */
 public class BlinkConnector implements MessageListener {
 
@@ -231,11 +229,7 @@ public class BlinkConnector implements MessageListener {
         MoteIF mif = new MoteIF(phoenix);
         BlinkConnector connector;
 
-        // works fine because both messages are of same super type
-        if (debug)
-            connector = new BlinkConnector(mif, new DebugMsg());
-        else
-            connector = new BlinkConnector(mif, new BlinkMsg());
+        connector = new BlinkConnector(mif, new BlinkMsg());
         
         // FIXME: convoluted ! stuff, make it more coherent
         connector.setOutput(new OutputMaker(gui, connector, port));

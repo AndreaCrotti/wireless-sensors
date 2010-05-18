@@ -1,12 +1,12 @@
 COMPONENT=BlinkAppC
-BUILD_EXTRA_DEPS += DebugMsg.java BlinkMsg.java DebugMsg.py BlinkGUI.class BlinkConsole.class
-CLEAN_EXTRA = *.class BlinkMsg.java DebugMsg.py DebugMsg.java
+BUILD_EXTRA_DEPS += SerialMsg BlinkMsg.java BlinkGUI.class BlinkConsole.class
+CLEAN_EXTRA = *.class BlinkMsg.java SerialMsg.py
 JAVA_VERSION = 1.6
 # This is the group of communication
 DEFAULT_LOCAL_GROUP = 0x55
 # set up the transmission power: min=1, max=31
-CFLAGS += -DCC2420_DEF_RFPOWER=15 -I$(TOSDIR)/lib/printf
-GOALS += dist
+POWER = 15
+CFLAGS += -DCC2420_DEF_RFPOWER=$(POWER) -I$(TOSDIR)/lib/printf
 
 BlinkGUI.class: $(wildcard *.java) BlinkMsg.java
 	javac -target $(JAVA_VERSION) -source $(JAVA_VERSION) *.java
@@ -17,14 +17,8 @@ BlinkConsole.class: $(wildcard *.java) BlinkMsg.java
 BlinkMsg.java:
 	mig java -target=null $(CFLAGS) -java-classname=BlinkMsg Blink.h BlinkMsg -o $@
 
-DebugMsg.java:
-	mig java -target=null $(CFLAGS) -java-classname=DebugMsg Blink.h DebugMsg -o $@
-
-DebugMsg.py:
-	mig python -python-classname=DebugMsg Blink.h DebugMsg -o $@
-
-# dist:
-# 	git archive --format tar --output task_sensornet1.tar HEAD
+SerialMsg:
+	mig python -target=null -python-classname=SerialMsg Blink.h BlinkMsg -o SerialMsg.py
 
 include $(MAKERULES)
 

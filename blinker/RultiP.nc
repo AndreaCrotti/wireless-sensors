@@ -142,7 +142,7 @@ implementation {
         pld = (RultiMsg*)(call Packet.getPayload(&ackpkt, 0));
         pld->seqno = prm->seqno;
         pld->from = TOS_NODE_ID;
-        pld->to = (1<<prm->from);
+        pld->to = (1 << (prm->from));
 
         ackSendBusy = 1;
         sendAckArguments.dest = prm->from;// right receiver TODO TODO TODO TODO TODO
@@ -165,7 +165,7 @@ implementation {
                     i++;
             }
             if (!duplicate) {
-                lastSeqnoIdx = (lastSeqnoIdx+1)%RULTI_SEQNO_COUNT;
+                lastSeqnoIdx = (lastSeqnoIdx + 1) % RULTI_SEQNO_COUNT;
                 receivedSeqno[lastSeqnoIdx] = prm->seqno;
                 signalReceiveArguments.message = message;
                 signalReceiveArguments.payload = payload;
@@ -197,7 +197,7 @@ implementation {
         if (!receivers)
             // we are not waiting for any acknowlwedgement
             return message;
-        *receivers &= ~(1<<prm->from);
+        *receivers &= ~(1 << (prm->from));
         if (!*receivers) {
             stopRtx();
             signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
@@ -220,7 +220,7 @@ implementation {
         
         sendPayloadArguments.dest = AM_BROADCAST_ADDR;
         sendPayloadArguments.msg = &pkt;
-        sendPayloadArguments.len = len+sizeof(RultiMsg);
+        sendPayloadArguments.len = len + sizeof(RultiMsg);
         {
             char* i = call Packet.getPayload(&pkt,0);
             char* j = call Packet.getPayload(msg,0);
