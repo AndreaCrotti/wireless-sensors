@@ -231,7 +231,6 @@ public class BlinkConnector implements MessageListener {
 
         connector = new BlinkConnector(mif, new BlinkMsg());
         
-        // FIXME: convoluted ! stuff, make it more coherent
         connector.setOutput(new OutputMaker(gui, connector, port));
     }
 

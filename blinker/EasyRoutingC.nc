@@ -158,7 +158,7 @@ implementation {
     void check_timeout(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
-            // in case it's still 0 we don't touch it at all, means that no answer arrived
+            // in case it's still 0 we don't touch it at all, means that no beacons from node i arrived
             if (LAST_ARRIVAL[i] == 0)
                 continue;
 

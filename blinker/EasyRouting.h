@@ -17,9 +17,11 @@ enum {
     PERIOD = 1000
 };
 
-/// structure of the beacon message, both for brooacast and receiving
+/// Beacon message is used to create the topology of the network
 typedef nx_struct BeaconMsg {
-    nx_uint8_t src_node;
+    nx_nodeid_t src_node;
+    // number of hops from the base-station
+    nx_uint8_t hops_count;
 } BeaconMsg;
 
 #endif

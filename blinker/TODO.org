@@ -3,3 +3,7 @@
 * Test the TOSSIM live (remove the power setting if necessary)
 * Set up a correct DEBUG struct in Blink.h and see how to handle it
 * See if better to rename msg/newmsg stuff into less confusing names
+
+* Using the *getrsi* call it's probably necessary also to use the given protocol
+  - I can just take every possible beacon and try to set the parent accordingly
+  - I can just don't care about the arrival time now, since I can simply every time grab a beacon and see if it's good or not
