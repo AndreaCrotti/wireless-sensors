@@ -138,20 +138,22 @@ implementation {
         if (!prm->seqno)
             // drop invalid packet (invalid seqno)
             return message;
+
         pld = (RultiMsg*)(call Packet.getPayload(&ackpkt, 0));
         pld->seqno = prm->seqno;
         pld->from = TOS_NODE_ID;
         pld->to = (1<<prm->from);
 
-
         ackSendBusy = 1;
         sendAckArguments.dest = prm->from;// right receiver TODO TODO TODO TODO TODO
         sendAckArguments.msg = &ackpkt;
         sendAckArguments.len = sizeof(RultiMsg);
+
+        // randomizing the delta time and starting one shot timer
         timeDelta = call Random.rand16();
         call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
 
-        do {
+        {
             // in case the message we just acknowledged was already reported
             // to the user, we should not do that again!
             char duplicate = 0;
@@ -170,7 +172,7 @@ implementation {
                 signalReceiveArguments.len = len;
                 post signalReceive();
             }
-        } while (0); // take THIS, nesC!
+        }
         return message;
     }
     /**
@@ -185,6 +187,8 @@ implementation {
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         RultiMsg* prm = payload;
         call Leds.led1Toggle();
+        // TODO: maybe those 3 condition can be put together in one big OR or !--And
+        // To make things more clear, we're returning anyway message in the end
         if (len != sizeof(RultiMsg))
             return message;
         if (!(prm->to & (1<<TOS_NODE_ID)))
