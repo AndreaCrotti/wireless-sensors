@@ -47,9 +47,9 @@ implementation {
     components new HamamatsuS10871TsrC() as PhotoActiveC;
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
-    
+
     components RultiP;
-    components EasyRoutingC;
+    components EasyRoutingP;
     
     BlinkC -> MainC.Boot;
     
@@ -70,18 +70,18 @@ implementation {
     
     /// Linking for the neighbor module
     
-    EasyRoutingC.Packet -> BeaconSender.Packet;
-    EasyRoutingC.BeaconSend -> BeaconSender.AMSend;
-    EasyRoutingC.BeaconReceive -> BeaconReceiver;
-    EasyRoutingC.RelSend -> RultiP.AMSend;
-    EasyRoutingC.RelReceive -> RultiP.Receive;
-    EasyRoutingC.Timer -> BeaconTimer;
+    EasyRoutingP.Packet -> BeaconSender.Packet;
+    EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
+    EasyRoutingP.BeaconReceive -> BeaconReceiver;
+    EasyRoutingP.RelSend -> RultiP.AMSend;
+    EasyRoutingP.RelReceive -> RultiP.Receive;
+    EasyRoutingP.Timer -> BeaconTimer;
     
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> RultiRtxSender.Packet;
-    BlinkC.AMSend -> EasyRoutingC.AMSend;
+    BlinkC.AMSend -> EasyRoutingP.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
-    BlinkC.Receive -> EasyRoutingC;
+    BlinkC.Receive -> EasyRoutingP;
 
     /// serial communication
     BlinkC.SerialAMSend -> SerialBlinkSender;

@@ -7,3 +7,6 @@
 * Using the *getrsi* call it's probably necessary also to use the given protocol
   - I can just take every possible beacon and try to set the parent accordingly
   - I can just don't care about the arrival time now, since I can simply every time grab a beacon and see if it's good or not
+
+* What is the default key for?
+* Use @safe if possible and see possible usages
