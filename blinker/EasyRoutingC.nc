@@ -1,4 +1,4 @@
-configuration EasyRouting {
+configuration EasyRouting @safe() {
     // we provide sending and receiving interface
     provides {
         interface AMSend;

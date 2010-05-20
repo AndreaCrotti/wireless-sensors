@@ -15,7 +15,7 @@
  * 
  */
 
-configuration BlinkAppC {
+configuration BlinkAppC @safe() {
     // here I have to put some configuration wiring to allow for splitting
 }
 
