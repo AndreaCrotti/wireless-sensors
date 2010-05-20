@@ -5,7 +5,7 @@ import random
 from TOSSIM import Tossim
 
 RUNTIME = 200
-NUM_NODES = 100
+NUM_NODES = 16
 
 sim = Tossim([])
 radio = sim.radio()
