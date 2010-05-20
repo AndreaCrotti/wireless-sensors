@@ -15,7 +15,7 @@
  * 
  */
 
-configuration BlinkAppC {
+configuration BlinkAppC @safe() {
     // here I have to put some configuration wiring to allow for splitting
 }
 
@@ -54,7 +54,8 @@ implementation {
     components new DemoSensorC() as DemoSensorC;
 
     components RultiP;
-    components EasyRoutingP;
+    // TODO: change this value to what is really needed
+    components new EasyRoutingP(0) as EasyRoutingP;
     
     BlinkC -> MainC.Boot;
     
