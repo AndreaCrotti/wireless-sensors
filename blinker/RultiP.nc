@@ -13,6 +13,7 @@
 module RultiP {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
+    uses interface AMPacket;
     uses interface AMSend as PayloadSend;
     uses interface Receive as PayloadReceive;
     uses interface AMSend as AckSend;
@@ -92,6 +93,17 @@ implementation {
         signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
     }
 
+    /**
+     * Sender of a specific message.
+     *   Why would we need this? To decouple the way we determine the sender from the usage of it.
+     * 
+     * \param message The 'message_t' pointer.
+     * \returns The sender of the message.
+     */
+    nodeid_t getMessageSender(message_t* message) {
+        return call AMPacket.source(message);
+    }
+
 
     /* ******************************** used interfaces ******************************** */
 
@@ -125,9 +137,9 @@ implementation {
      * Event will be triggered we notice a payload. We still have to check if it is valid and is adressed to us.
      */
     event message_t* PayloadReceive.receive(message_t* message, void* payload, uint8_t len) {
-        RultiMsg* prm;
-        RultiMsg* pld;
+        RultiMsg* prm; //payload RultiMessage (the one we got)
         uint16_t timeDelta;
+        nodeid_t payloadSender = getMessageSender(message);
         if (ackSendBusy)
             // this is somewhat ugly, but right now, we just cannot handle the transmission, so we will wait for the next one
             return message;
@@ -139,13 +151,16 @@ implementation {
             // drop invalid packet (invalid seqno)
             return message;
 
-        pld = (RultiMsg*)(call Packet.getPayload(&ackpkt, 0));
-        pld->seqno = prm->seqno;
-        pld->from = TOS_NODE_ID;
-        pld->to = (1 << (prm->from));
+        { // compile the acknowledgement
+            RultiMsg* pAck; //payload Acknowledgement (the one we send back) 
+            pAck = (RultiMsg*)(call Packet.getPayload(&ackpkt, 0));
+            pAck->seqno = prm->seqno;
+            ///pld->from = TOS_NODE_ID; not needed anymore
+            pAck->to = (1 << ((payloadSender)));
+        }
 
         ackSendBusy = 1;
-        sendAckArguments.dest = prm->from;// right receiver TODO TODO TODO TODO TODO
+        sendAckArguments.dest = payloadSender;
         sendAckArguments.msg = &ackpkt;
         sendAckArguments.len = sizeof(RultiMsg);
 
@@ -187,20 +202,12 @@ implementation {
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         RultiMsg* prm = payload;
         call Leds.led1Toggle();
-        // TODO: maybe those 3 condition can be put together in one big OR or !--And
-        // To make things more clear, we're returning anyway message in the end
-        if (len != sizeof(RultiMsg))
-            return message;
-        if (!(prm->to & (1<<TOS_NODE_ID)))
-            // the message was not for us
-            return message;
-        if (!receivers)
-            // we are not waiting for any acknowlwedgement
-            return message;
-        *receivers &= ~(1 << (prm->from));
-        if (!*receivers) {
-            stopRtx();
-            signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
+        if (receivers && (len == sizeof(RultiMsg)) && (prm->to & (1<<TOS_NODE_ID))) {
+            *receivers &= ~(1 << (getMessageSender(message)));
+            if (!*receivers) {
+                stopRtx();
+                signal AMSend.sendDone(originalMessage, SUCCESS); // as far as we are concerned
+            }
         }
 	return message;
     }
@@ -230,7 +237,7 @@ implementation {
                 *i++ = *j++;
 
             while (!(((RultiMsg*)i)->seqno = (seqno_t)(call Random.rand16()))); // 0 is not a valid sequence number
-            ((RultiMsg*)i)->from = TOS_NODE_ID;
+            //((RultiMsg*)i)->from = TOS_NODE_ID;
             ((RultiMsg*)i)->to = dest;
 
             // note 1: 'receivers' points to the actual place in the message_t buffer that holds the value of the 'to' field

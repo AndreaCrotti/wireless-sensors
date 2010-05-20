@@ -58,6 +58,7 @@ implementation {
 
     /// Wirering for the reliable multi-cast module
     RultiP.Packet -> RultiRtxSender.Packet;
+    RultiP.AMPacket -> RultiRtxSender.AMPacket;
     RultiP.PayloadSend -> RultiRtxSender.AMSend;
     RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
     RultiP.AckSend -> RultiAckSender.AMSend;
