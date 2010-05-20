@@ -18,7 +18,6 @@
  */
 typedef nx_struct RultiMsg {
     nx_seqno_t seqno;
-    //nx_nodeid_t from; // not needed anymore
     nx_nodes_t to;
 } RultiMsg;
 
