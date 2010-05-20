@@ -1,4 +1,4 @@
-#include "printf.h"
+//#include "printf.h"
 #include "EasyRouting.h"
 
 /**
@@ -70,9 +70,7 @@ implementation {
     event void Timer.fired() {
         // working with smaller int, safe because we're using seconds
         uint32_t delay = (call Timer.getdt()) / PERIOD;
-        printf("in easyrouting timer\n");
-        printfflush();
-
+        
         // motes in timeout can be checked at every 
         // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
         if ((delay % BEACON) == 0) {
@@ -138,11 +136,13 @@ implementation {
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
+        //printf("received a packet inside EasyRoutingP\n");
+        //printfflush();
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
-            uint32_t time = call Timer.getdt();
+            uint32_t timex = call Timer.getdt();
             // set the time of the last arrival
-            LAST_ARRIVAL[beacon->src_node] = time;
+            LAST_ARRIVAL[beacon->src_node] = timex;
         }
         return msg;
     }
