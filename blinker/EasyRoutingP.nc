@@ -18,7 +18,7 @@
 // communication module
 // TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
 
-module EasyRoutingP {
+generic module EasyRoutingP (uint8_t test) {
     uses interface Packet;
     uses interface AMSend as BeaconSend;
     uses interface Receive as BeaconReceive;
@@ -35,6 +35,9 @@ module EasyRoutingP {
 }
 
 // use a task to post the event that makes the list of neighbours update
+// Protocol is not symmetric, we send the command in broadcast but try to find
+// the shortest path to give back the answer.
+// The shortest path is discovered using beacons
 
 implementation {
     // could that be bigger in case of more motes?
@@ -67,7 +70,9 @@ implementation {
     event void Timer.fired() {
         // working with smaller int, safe because we're using seconds
         uint32_t delay = (call Timer.getdt()) / PERIOD;
-        
+        printf("in easyrouting timer\n");
+        printfflush();
+
         // motes in timeout can be checked at every 
         // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
         if ((delay % BEACON) == 0) {
@@ -124,7 +129,7 @@ implementation {
     command uint8_t AMSend.maxPayloadLength() {
         return call AMSend.maxPayloadLength();
     }
-
+    
     command void* AMSend.getPayload(message_t* m, uint8_t len) {
         return call AMSend.getPayload(m, len);
     }

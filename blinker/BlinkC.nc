@@ -14,7 +14,7 @@
  * @date So 2. Mai 21:14:53 CEST 2010
  **/
 
-module BlinkC {
+module BlinkC @safe() {
     // required interfaces to manage and send/receive packets
     uses interface Packet;
     uses interface AMSend;

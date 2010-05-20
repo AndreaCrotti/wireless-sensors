@@ -7,7 +7,7 @@
  * @date Su 16. Mai 17:14:53 CEST 2010
  **/
 
-configuration RultiC {
+configuration RultiC @safe() {
     provides interface Rulti;
 }
 implementation {
