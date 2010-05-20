@@ -1,4 +1,6 @@
-configuration EasyRouting @safe() {
+// use generic modules instead to make it more modular
+// and get some arguments passed in
+configuration EasyRoutingC @safe() {
     // we provide sending and receiving interface
     provides {
         interface AMSend;
@@ -15,7 +17,7 @@ implementation {
     /* components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver; */
     /* components new TimerMilliC() as BeaconTimer; */
 
-    /* components RultiP; */
+    components RultiC;
     components EasyRoutingP;
     AMSend = EasyRoutingP;
     Receive = EasyRoutingP;
