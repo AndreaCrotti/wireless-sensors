@@ -10,6 +10,8 @@ import net.tinyos.packet.BuildSource;
 import net.tinyos.packet.PhoenixSource;
 import net.tinyos.util.PrintStreamMessenger;
 
+import net.tinyos.tools.PrintfClient;
+
 /**
  * @author Andrea Crotti, Marius Grysla, Oscar Dustmann
  * 
@@ -214,24 +216,44 @@ public class BlinkConnector implements MessageListener {
         System.err.println("usage: BlinkConnector <ip addr> <port master node> [port debug node1] ...");
         System.exit(1);
     }           
-    
-    /**
-     * Creates a new connector (started automatically?)
-     * @param String destination IP
-     * @param String port where the mote is listening
-     * @param boolean debug mode set or not 
-     */
-    private static void makeConnector (String ip, String port, boolean debug, boolean gui) {
-        String source = "sf@" + ip  + ":" + port;
-        System.out.println("Making connector for source" + source);
-        PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
-        
-        MoteIF mif = new MoteIF(phoenix);
-        BlinkConnector connector;
 
-        connector = new BlinkConnector(mif, new BlinkMsg());
+    private static MoteIF makeSFIf(String ip, String port) {
+        String source = "sf@" + ip  + ":" + port;
+        PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
+        MoteIF mif = new MoteIF(phoenix);
+        return mif;
+    }
+
+    // see if it's necessary instead to give this syntax:
+    // java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSBXXX:telosb
+    // private static MoteIF makePrintIF(String ip, String port) {
+    //     String source = "serial@" + 
+    //     PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
+    //     MoteIF mif = new MoteIF(phoenix);
+    //     return mif;
+    // }
         
-        connector.setOutput(new OutputMaker(gui, connector, port));
+    /** 
+     * Creates a new serial connection for the main mote
+     * 
+     * @param mif 
+     */
+    private static void makeSerialConnector(MoteIF mif) {
+        BlinkConnector connector;
+        connector = new BlinkConnector(mif, new BlinkMsg());
+        // FIXME:now the GUI is hard wired to true, fix this stuff
+        connector.setOutput(new OutputMaker(true, connector));
+    }
+
+    
+    /** 
+     * Creating the print connector
+     * 
+     * @param mif 
+     */
+    private static void makePrintfConnector(MoteIF mif) {
+        // this is also a subclass of MessageListener, so it should automatically start a new one
+        PrintfClient client = new PrintfClient(mif);
     }
 
     /**
@@ -254,18 +276,19 @@ public class BlinkConnector implements MessageListener {
             master_port = args[1];
             debug_ports = new String[args.length - 2];
             
+            // for all the other ports given in input I can simply start the
+            // printf daemon
             
             for (int i = 2; i < args.length; i++) {
                 debug_ports[i-2] = args[i];
             }
         }
         
-        // create the connector for the master mote
-        makeConnector(ip, master_port, false, true);
+        makeSerialConnector(makeSFIf(ip, master_port));
 
         // Connects all the other motes in debug mode only
         for (String port : debug_ports) {
-            makeConnector(ip, port, true, false);
+            makePrintfConnector(makeSFIf(ip, port));
         }
         
     }

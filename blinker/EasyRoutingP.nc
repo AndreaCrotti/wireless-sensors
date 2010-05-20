@@ -35,6 +35,9 @@ module EasyRoutingP {
 }
 
 // use a task to post the event that makes the list of neighbours update
+// Protocol is not symmetric, we send the command in broadcast but try to find
+// the shortest path to give back the answer.
+// The shortest path is discovered using beacons
 
 implementation {
     // could that be bigger in case of more motes?
@@ -124,7 +127,7 @@ implementation {
     command uint8_t AMSend.maxPayloadLength() {
         return call AMSend.maxPayloadLength();
     }
-
+    
     command void* AMSend.getPayload(message_t* m, uint8_t len) {
         return call AMSend.getPayload(m, len);
     }
@@ -133,6 +136,8 @@ implementation {
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
+        printf("received a packet inside EasyRoutingP\n");
+        printfflush();
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t time = call Timer.getdt();
