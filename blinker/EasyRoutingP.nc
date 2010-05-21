@@ -100,6 +100,8 @@ implementation {
         // we should just discard the destination since we look in our own neighbour table
         // just modify the message with the correct stuff and then call or post the sending
                 
+	dbg("Routing", "dest is %d\n", dest);
+
         // change the name for easier understanding
         if (dest == AM_BROADCAST_ADDR) {
             call RelSend.send(neighbours, msg, len);
@@ -108,7 +110,7 @@ implementation {
         
         else {
             dest = neighbours & (1 << dest);
-            dbg("Routing", "Send only to %d destination\n", dest);
+            dbg("Routing", "Send only to %d destination with neighbors %d\n", dest, neighbours);
 
             if (dest != 0) {
                 call RelSend.send(dest, msg, len);
@@ -143,6 +145,7 @@ implementation {
             uint32_t arrivalTime = call Timer.getNow();
             // set the time of the last arrival
             LAST_ARRIVAL[beacon->src_node] = arrivalTime;
+	    addNeighbour(beacon->src_node);
         }
         return msg;
     }
@@ -170,9 +173,6 @@ implementation {
             // adding and removing have no effect if they are already in or out the list
             if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbour(i);
-            }
-            else {
-                addNeighbour(i);
             }
         }
     }

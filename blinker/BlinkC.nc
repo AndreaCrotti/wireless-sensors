@@ -94,8 +94,11 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     task void transmitMessage() {
+	BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)); 
+
 	dbg("Radio", "entered 'transmitMessage'\n");
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
+
+        call AMSend.send(msg->dests, &pkt_radio_out, sizeof(BlinkMsg));
     }
 
 
@@ -160,6 +163,9 @@ implementation {
     void setLed(instr_t led) {
         // XORing between actual ledmask and led passed in
         ledMask = (ledMask & (~led >> 3)) ^ led;
+
+	dbg("Sensor", "Leds changed to %d\n", ledMask);
+
         call Leds.set(ledMask);
     }
 
