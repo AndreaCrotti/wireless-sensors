@@ -56,28 +56,22 @@ implementation {
     
     command error_t Init.init() {
         int i;
-        call Timer.startPeriodic(PERIOD);
+	BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
+
+        call Timer.startPeriodic(PERIOD * BEACON);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
         }
 
         // create a message with the correct message created
-        ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)))->src_node = TOS_NODE_ID;
+	message->src_node = TOS_NODE_ID;
+
         return SUCCESS;
     }
 
     event void Timer.fired() {
-        // working with smaller int, safe because we're using seconds
-        uint32_t delay = (call Timer.getdt()) / PERIOD;
-        
-        // motes in timeout can be checked at every 
-        // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
-        if ((delay % BEACON) == 0) {
-            broadcast_beacon();
-        }
-        // Does it make any difference if called before or after the IF?
-        check_timeout(delay);
+	broadcast_beacon();
     }
 
     /** 
@@ -85,8 +79,6 @@ implementation {
      * 
      */
     void broadcast_beacon() {
-	dbg("Routing", "Sending out a beacon\n");
-
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(pkt));
     }
 
@@ -138,14 +130,16 @@ implementation {
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
-        //printf("received a packet inside EasyRoutingP\n");
-        //printfflush();
+	dbg("Routing", "Entered Receive. len is %d and size is %d\n", len, sizeof(BeaconMsg));
+
         if (len == sizeof(BeaconMsg)) {
-
-	    dbg("Routing", "Received a Beacon\n");
-
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t timex = call Timer.getdt();
+
+	    
+	    dbg("Routing", "Received a Beacon\n");
+
+
             // set the time of the last arrival
             LAST_ARRIVAL[beacon->src_node] = timex;
         }

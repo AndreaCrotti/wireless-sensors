@@ -91,6 +91,7 @@ implementation {
     BlinkC.AMSend -> EasyRoutingP.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> EasyRoutingP;
+    BlinkC.RoutingInit -> EasyRoutingP;
 
     /// serial communication
     BlinkC.SerialAMSend -> SerialBlinkSender;
