@@ -2,13 +2,18 @@
 import sys
 import time
 import random
-from TOSSIM import Tossim
+
+from TOSSIM import *
+from SerialMsg import *
 
 RUNTIME = 200
 NUM_NODES = 16
 
 sim = Tossim([])
+mac = sim.mac()
 radio = sim.radio()
+sf = SerialForwarder(9001)
+throttle = Throttle(sim, 10)
 
 # Setting up the debugging channels
 # we could make use of decorators for this for example
@@ -37,8 +42,13 @@ for n in nodes:
 for n in nodes:
     n.bootAtTime(random.randint(100001, 900009))
 
-# FIXME: why this double runNextEvent is necesary?
-sim.runNextEvent()
+sf.process();
+throttle.initialize();
+
 time = sim.time()
 while(time + RUNTIME * 10000000000 > sim.time()):
     sim.runNextEvent()
+    throttle.checkThrottle()
+    sf.process()
+
+throttle.printStatistics()
