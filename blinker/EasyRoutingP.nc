@@ -57,8 +57,9 @@ implementation {
     command error_t Init.init() {
         int i;
 	BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
+        
 
-        call Timer.startPeriodic(PERIOD * BEACON);
+        call Timer.startPeriodic(PERIOD);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
@@ -71,7 +72,11 @@ implementation {
     }
 
     event void Timer.fired() {
-	broadcast_beacon();
+        // motes in timeout can be checked at every 
+        // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
+        broadcast_beacon();
+        // Does it make any difference if called before or after the IF?
+        check_timeout(call Timer.getNow());
     }
 
     /** 
@@ -135,9 +140,9 @@ implementation {
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
-            uint32_t timex = call Timer.getdt();
+            uint32_t arrivalTime = call Timer.getNow();
             // set the time of the last arrival
-            LAST_ARRIVAL[beacon->src_node] = timex;
+            LAST_ARRIVAL[beacon->src_node] = arrivalTime;
         }
         return msg;
     }
