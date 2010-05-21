@@ -74,7 +74,7 @@ implementation {
      */
     event void Boot.booted() {
         int i;
-        /* dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID); */
+        dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
         call AMControl.start();
@@ -92,6 +92,7 @@ implementation {
      * @param led_idx The ID of the LED.
      */
     task void transmitMessage() {
+	dbg("Radio", "entered 'transmitMessage'\n");
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
 
@@ -170,7 +171,9 @@ implementation {
      *   ECANCEL if it was cancelled 
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
-        if (&pkt_radio_out == msg) {
+        dbg("Radio", "Sending Done\n");
+	
+	if (&pkt_radio_out == msg) {
             if (error == SUCCESS) {
                 //timer();
             } else {
@@ -262,6 +265,8 @@ implementation {
             sn = btrpkt->seqno;
             senderID = getIDFromBM(btrpkt->sender);
 
+	    dbg("Radio", "Received an radio message\n");
+
             // check if the message was already seen or handle the received message
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
                 call Leds.set(++called);
@@ -308,7 +313,7 @@ implementation {
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
-
+	    
             // Set the sender to the current Mote's ID
             msg->sender = (1 << TOS_NODE_ID);
             msg->seqno = own_sn++;
@@ -371,11 +376,10 @@ implementation {
 	
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
-	} else {
-            // assign to the payload of the our global packet the new message created
-            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
-	    post transmitMessage();
 	}
+	// assign to the payload of the our global packet the new message created
+	*(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
+	post transmitMessage();
     }
 
 }

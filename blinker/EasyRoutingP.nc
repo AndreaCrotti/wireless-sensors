@@ -85,6 +85,8 @@ implementation {
      * 
      */
     void broadcast_beacon() {
+	dbg("Routing", "Sending out a beacon\n");
+
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(pkt));
     }
 
@@ -139,6 +141,9 @@ implementation {
         //printf("received a packet inside EasyRoutingP\n");
         //printfflush();
         if (len == sizeof(BeaconMsg)) {
+
+	    dbg("Routing", "Received a Beacon\n");
+
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t timex = call Timer.getdt();
             // set the time of the last arrival

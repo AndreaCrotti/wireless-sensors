@@ -18,8 +18,13 @@ throttle = Throttle(sim, 10)
 # Setting up the debugging channels
 # we could make use of decorators for this for example
 # We could also use some StringIO objects to encapsulate writing on pseudo files
-sim.addChannel("BlinkC", sys.stdout)
+sim.addChannel("Serial", sys.stdout)
 sim.addChannel("Boot", sys.stdout)
+sim.addChannel("Radio", sys.stdout)
+sim.addChannel("Routing", sys.stdout)
+sim.addChannel("Rel", sys.stdout)
+sim.addChannel("Sensor", sys.stdout)
+
 
 # creating the list of nodes we're working with
 nodes = [sim.getNode(x) for x in range(NUM_NODES)]
