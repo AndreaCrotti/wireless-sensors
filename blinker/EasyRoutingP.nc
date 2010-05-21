@@ -79,7 +79,7 @@ implementation {
      * 
      */
     void broadcast_beacon() {
-        call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(pkt));
+        call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
     /** 
@@ -130,16 +130,9 @@ implementation {
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
-	dbg("Routing", "Entered Receive. len is %d and size is %d\n", len, sizeof(BeaconMsg));
-
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t timex = call Timer.getdt();
-
-	    
-	    dbg("Routing", "Received a Beacon\n");
-
-
             // set the time of the last arrival
             LAST_ARRIVAL[beacon->src_node] = timex;
         }
