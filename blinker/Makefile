@@ -6,7 +6,8 @@ JAVA_VERSION = 1.6
 DEFAULT_LOCAL_GROUP = 0x55
 # set up the transmission power: min=1, max=31
 POWER = 15
-CFLAGS += -DCC2420_DEF_RFPOWER=$(POWER) -I$(TOSDIR)/lib/printf
+# including directly python2.6 because no better way in sim.extra was found to change the include PATH
+CFLAGS += -DCC2420_DEF_RFPOWER=$(POWER) -I$(TOSDIR)/lib/printf -I/usr/include/python2.6
 
 BlinkGUI.class: $(wildcard *.java) BlinkMsg.java
 	javac -target $(JAVA_VERSION) -source $(JAVA_VERSION) *.java
