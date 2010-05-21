@@ -96,11 +96,14 @@ implementation {
         // just modify the message with the correct stuff and then call or post the sending
                 
         // change the name for easier understanding
-        if (dest == AM_BROADCAST_ADDR)
+        if (dest == AM_BROADCAST_ADDR) {
             call RelSend.send(neighbours, msg, len);
+            dbg("Routing", "Sending to all neighbors from bitmask %d\n", neighbours);
+        }
         
         else {
             dest = neighbours & (1 << dest);
+            dbg("Routing", "Send only to %d destination\n", dest);
 
             if (dest != 0) {
                 call RelSend.send(dest, msg, len);
