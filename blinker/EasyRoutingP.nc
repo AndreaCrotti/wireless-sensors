@@ -108,8 +108,6 @@ implementation {
 	    nodeid_t destinations = bMsg->dests;
 
 	    dbg("Routing", "Sending started with destinations %d\n", destinations);
-
-	    dbg("Routing", "neighbours: %d, ~neighbours: %d", neighbours, ~neighbours);
 	    
 	    // If one of the destinations is not in our neighbour list, we make a broadcast,
 	    // otherwise a multi/unicast
@@ -147,6 +145,16 @@ implementation {
         /*     } */
         /* } */
         /* return SUCCESS; */
+    }
+
+    /**
+     * This function checks, whether there is another receiver than this node.
+     *
+     * @param destinations The destination bitmask to check.
+     * @return 1, if there is another destination and 0 otherwise.
+     */
+    uint8_t otherReceivers(nodeid_t destinations){
+	return !((destinations & ~TOS_NODE_ID) == 0);
     }
 
     // Just calling the lower layer
