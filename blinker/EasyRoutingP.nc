@@ -74,10 +74,9 @@ implementation {
 
     event void Timer.fired() {
         // motes in timeout can be checked at every 
-        // or every BEACON if we're sure that TIMEOUT is divisible by the BEACON
         broadcast_beacon();
-        // Does it make any difference if called before or after the IF?
         check_timeout(call Timer.getNow());
+        /* dbg("Routing", "Now the neighbor list is %d\n", neighbours); */
     }
 
     /** 
@@ -100,7 +99,7 @@ implementation {
      */ 
     command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) {
 	error_t result;
-	if(dest == AM_BROADCAST_ADDR){
+	if (dest == AM_BROADCAST_ADDR) {
 	    // This is the general case, since the above layer should not care, how the 
 	    // message is delivered.
 	    
@@ -115,40 +114,20 @@ implementation {
 
 	    // If one of the destinations is not in our neighbour list, we make a broadcast,
 	    // otherwise a multi/unicast
-	    if((destinations & ~neighbours) != 0){
+	    if ((destinations & ~neighbours) != 0) {
 		dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
 		result = call RelSend.send(neighbours, msg, len);
-	    }else{
+	    } else {
 		dbg("Routing", "Sending to notes %d\n", destinations);
 		result = call RelSend.send(destinations, msg, len);
 	    }
-	}else{
+	} else {
 	    // Should normally not be used
 	    // For now, everything is only forwarded.
 	    result = call RelSend.send(dest, msg, len);
 	}
 
 	return result;
-	// OLD IMPLEMENTATION
-        /* // change the name for easier understanding */
-        /* if (dest == AM_BROADCAST_ADDR) { */
-        /*     call RelSend.send(neighbours, msg, len); */
-        /*     dbg("Routing", "Sending to all neighbors from bitmask %d\n", neighbours); */
-        /* } */
-        
-        /* else { */
-        /*     dest = neighbours & (1 << dest); */
-        /*     dbg("Routing", "Send only to %d destination with neighbors %d\n", dest, neighbours); */
-
-        /*     if (dest != 0) { */
-        /*         call RelSend.send(dest, msg, len); */
-        /*     } */
-        /*     // otherwise sends to all neighbours */
-        /*     else { */
-        /*         call RelSend.send(neighbours, msg, len); */
-        /*     } */
-        /* } */
-        /* return SUCCESS; */
     }
 
     /**
@@ -184,7 +163,8 @@ implementation {
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t arrivalTime = call Timer.getNow();
-            // set the time of the last arrival
+            // set the time of the last arrival and then add the source node to the neighbours list
+            /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
             LAST_ARRIVAL[beacon->src_node] = arrivalTime;
 	    addNeighbour(beacon->src_node);
         }
