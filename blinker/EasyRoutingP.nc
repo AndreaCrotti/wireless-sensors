@@ -88,39 +88,65 @@ implementation {
     }
 
     /** 
-     * Implementation of send call using the neighbour list as destination
-     * 
-     * @param dest Destination of the message, we can just skip it
-     * @param msg 
-     * @param len 
+     * Sends a message over the network by making use of the neighbourhood list.
+     * If one destination is not in the neighborhood the message is forwarded to all neighbours.
+     *
+     * @param dest Should be AM_BROADCAST_ADDR in general, otherwise the package is passed directly to the reliability module.
+     * @param msg The message to send.
+     * @param len The length of the message.
      * 
      * @return status of the call
      */ 
     command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) {
-        // we should just discard the destination since we look in our own neighbour table
-        // just modify the message with the correct stuff and then call or post the sending
-                
-	dbg("Routing", "dest is %d\n", dest);
+	error_t result;
+	if(dest == AM_BROADCAST_ADDR){
+	    // This is the general case, since the above layer should not care, how the 
+	    // message is delivered.
+	    
+	    // Get the destination inside BlinkMsg
+	    BlinkMsg* bMsg = (BlinkMsg*)(call Packet.getPayload(msg, 0));
+	    nodeid_t destinations = bMsg->dests;
 
-        // change the name for easier understanding
-        if (dest == AM_BROADCAST_ADDR) {
-            call RelSend.send(neighbours, msg, len);
-            dbg("Routing", "Sending to all neighbors from bitmask %d\n", neighbours);
-        }
+	    dbg("Routing", "Sending started with destinations %d\n", destinations);
+
+	    dbg("Routing", "neighbours: %d, ~neighbours: %d", neighbours, ~neighbours);
+	    
+	    // If one of the destinations is not in our neighbour list, we make a broadcast,
+	    // otherwise a multi/unicast
+	    if((destinations & ~neighbours) != 0){
+		dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
+		result = call RelSend.send(neighbours, msg, len);
+	    }else{
+		dbg("Routing", "Sending to notes %d\n", destinations);
+		result = call RelSend.send(destinations, msg, len);
+	    }
+	}else{
+	    // Should normally not be used
+	    // For now, everything is only forwarded.
+	    result = call RelSend.send(dest, msg, len);
+	}
+
+	return result;
+	// OLD IMPLEMENTATION
+        /* // change the name for easier understanding */
+        /* if (dest == AM_BROADCAST_ADDR) { */
+        /*     call RelSend.send(neighbours, msg, len); */
+        /*     dbg("Routing", "Sending to all neighbors from bitmask %d\n", neighbours); */
+        /* } */
         
-        else {
-            dest = neighbours & (1 << dest);
-            dbg("Routing", "Send only to %d destination with neighbors %d\n", dest, neighbours);
+        /* else { */
+        /*     dest = neighbours & (1 << dest); */
+        /*     dbg("Routing", "Send only to %d destination with neighbors %d\n", dest, neighbours); */
 
-            if (dest != 0) {
-                call RelSend.send(dest, msg, len);
-            }
-            // otherwise sends to all neighbours
-            else {
-                call RelSend.send(neighbours, msg, len);
-            }
-        }
-        return SUCCESS;
+        /*     if (dest != 0) { */
+        /*         call RelSend.send(dest, msg, len); */
+        /*     } */
+        /*     // otherwise sends to all neighbours */
+        /*     else { */
+        /*         call RelSend.send(neighbours, msg, len); */
+        /*     } */
+        /* } */
+        /* return SUCCESS; */
     }
 
     // Just calling the lower layer

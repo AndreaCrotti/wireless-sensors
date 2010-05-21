@@ -88,17 +88,14 @@ implementation {
     }
 
     /**
-     * Broadcast a led number over the radio network.
+     * Transmits a command over the network.
      *
-     * @param id The sequential ID of the message.
-     * @param led_idx The ID of the LED.
+     * The send data should be stored in the global pkt_radio_out variable.
      */
     task void transmitMessage() {
-	BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)); 
-
 	dbg("Radio", "entered 'transmitMessage'\n");
-
-        call AMSend.send(msg->dests, &pkt_radio_out, sizeof(BlinkMsg));
+	
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
 
 
