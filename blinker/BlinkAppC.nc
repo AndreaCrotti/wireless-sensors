@@ -40,18 +40,20 @@ implementation {
     components new TimerMilliC() as RultiRtxTimer;
     components new TimerMilliC() as RultiAckTimer;
 
+
+#ifdef TOSSIM
+    // For TOSSIM debugging only
+    components new DemoSensorC() as DemoSensorC;
+#else
     ////// The sensor components //////
-    // Humidity and temperature 
-    /*
+    
+    // Humidity and temperature
     components new SensirionSht11C() as SensirionC;
     // Infrared
     components new HamamatsuS10871TsrC() as PhotoActiveC;
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
-    */
-
-    // For TOSSIM debugging only
-    components new DemoSensorC() as DemoSensorC;
+#endif
 
     components RultiP;
     // TODO: change this value to what is really needed
@@ -95,17 +97,17 @@ implementation {
     BlinkC.SerialControl -> SerialActiveMessageC;
     BlinkC.SerialReceive -> SerialBlinkReceiver;
     
-    // Linking the sensor components
-    /*
-    BlinkC.LightSensor -> TotalSolarC;
-    BlinkC.InfraSensor -> PhotoActiveC;
-    BlinkC.TempSensor -> SensirionC.Temperature;
-    BlinkC.HumSensor -> SensirionC.Humidity;
-    */
-
+#ifdef TOSSIM
     BlinkC.LightSensor -> DemoSensorC;
     BlinkC.InfraSensor -> DemoSensorC;
     BlinkC.TempSensor -> DemoSensorC;
     BlinkC.HumSensor -> DemoSensorC;
+#else
+    // Linking the sensor components
+    BlinkC.LightSensor -> TotalSolarC;
+    BlinkC.InfraSensor -> PhotoActiveC;
+    BlinkC.TempSensor -> SensirionC.Temperature;
+    BlinkC.HumSensor -> SensirionC.Humidity;
+#endif
 }
 
