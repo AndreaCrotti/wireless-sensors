@@ -53,7 +53,8 @@ implementation {
     void broadcast_beacon();
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
-    
+    uint8_t otherReceivers(nodeid_t destinations);
+
     command error_t Init.init() {
         int i;
 	BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
@@ -109,6 +110,9 @@ implementation {
 
 	    dbg("Routing", "Sending started with destinations %d\n", destinations);
 	    
+	    if(!otherReceivers(destinations))
+		return SUCCESS;
+
 	    // If one of the destinations is not in our neighbour list, we make a broadcast,
 	    // otherwise a multi/unicast
 	    if((destinations & ~neighbours) != 0){
@@ -154,7 +158,10 @@ implementation {
      * @return 1, if there is another destination and 0 otherwise.
      */
     uint8_t otherReceivers(nodeid_t destinations){
-	return !((destinations & ~TOS_NODE_ID) == 0);
+	if((destinations & ~TOS_NODE_ID) == 0)
+	    return 0;
+	else 
+	    return 1;
     }
 
     // Just calling the lower layer
