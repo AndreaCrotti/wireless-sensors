@@ -8,52 +8,57 @@ from SerialMsg import *
 
 RUNTIME = 200
 NUM_NODES = 16
+SERIAL_PORT = 9001
 
-sim = Tossim([])
-mac = sim.mac()
-radio = sim.radio()
-sf = SerialForwarder(9001)
-throttle = Throttle(sim, 10)
+# channels used for debug messages
+CHANNELS = ["Serial", "Boot", "Radio", "Routing", "Rel", "Sensor"]
 
-# Setting up the debugging channels
-# we could make use of decorators for this for example
-# We could also use some StringIO objects to encapsulate writing on pseudo files
-sim.addChannel("Serial", sys.stdout)
-sim.addChannel("Boot", sys.stdout)
-sim.addChannel("Radio", sys.stdout)
-sim.addChannel("Routing", sys.stdout)
-sim.addChannel("Rel", sys.stdout)
-sim.addChannel("Sensor", sys.stdout)
+class Simulation(object):
+    """Simulation class"""
+    def __init__(self, num_nodes, port, channels):
+        self.num_nodes = num_nodes
+        self.sim = Tossim([])
+        self.nodes = [self.sim.getNode(x) for x in range(self.num_nodes)]
+        self.mac = self.sim.mac()
+        self.radio = self.sim.radio()
+        self.sf = SerialForwarder(port)
+        self.throttle = Throttle(self.sim, 10)
 
+        for c in channels:
+            self.sim.addChannel(c, sys.stdout)
 
-# creating the list of nodes we're working with
-nodes = [sim.getNode(x) for x in range(NUM_NODES)]
+    def start(self):
+        "Starts the simulation"
+        for n in self.nodes:
+            n.bootAtTime(random.randint(100001, 900009))
+        self.sf.process()
+        self.throttle.initialize()
 
-# loading the topology file
-for line in open("topo.txt"):
-    vals = line.split()
-    vals = (int(vals[0]), int(vals[1]), float(vals[2]))
-    radio.add(*vals)
+        # we can divide things even more here
+        time = self.sim.time()
+        while(time + RUNTIME * 10000000000 > self.sim.time()):
+            self.sim.runNextEvent()
+            self.throttle.checkThrottle()
+            self.sf.process()
 
-for line in open("noise.txt"):
-    val = int(line.strip())
-    for n in nodes:
-        n.addNoiseTraceReading(val)
+        self.throttle.printStatistics()
 
-for n in nodes:
-    n.createNoiseModel()
+    def make_topology(self, topo_file):
+        for line in open(topo_file):
+            vals = line.split()
+            vals = (int(vals[0]), int(vals[1]), float(vals[2]))
+            self.radio.add(*vals)
 
-# apparently booting with fixed times could cause some problems
-for n in nodes:
-    n.bootAtTime(random.randint(100001, 900009))
+    def setup_noise(self, noise_file):
+        for line in open(noise_file):
+            val = int(line.strip())
+            for n in self.nodes:
+                n.addNoiseTraceReading(val)
 
-sf.process();
-throttle.initialize();
+        for n in self.nodes:
+            n.createNoiseModel()
 
-time = sim.time()
-while(time + RUNTIME * 10000000000 > sim.time()):
-    sim.runNextEvent()
-    throttle.checkThrottle()
-    sf.process()
-
-throttle.printStatistics()
+sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
+sim.make_topology("topo.txt")
+sim.setup_noise("noise.txt")
+sim.start()
