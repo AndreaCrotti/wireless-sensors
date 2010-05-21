@@ -19,6 +19,7 @@ module BlinkC @safe() {
     uses interface Packet;
     uses interface AMSend;
     uses interface Receive;
+    uses interface Init as RoutingInit;
 
     // serial interface
     uses interface AMSend as SerialAMSend;
@@ -38,8 +39,6 @@ module BlinkC @safe() {
     uses interface Timer<TMilli> as Timer;
     uses interface Boot;
     uses interface Leds;
-
-    uses interface Init;
 }
 
 implementation {
@@ -79,6 +78,9 @@ implementation {
         // Handling of timer starting is done in AMControl.
         call AMControl.start();
         call SerialControl.start();
+
+	// Initialize the routing module
+	call RoutingInit.init();
 
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
@@ -161,8 +163,6 @@ implementation {
         call Leds.set(ledMask);
     }
 
-
-    // FIXME: those two functions are doing nothing at the moment
     /**
      * When the sending is completed successfully, we set the busy-flag to false.
      *
@@ -172,24 +172,9 @@ implementation {
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
         dbg("Radio", "Sending Done\n");
-	
-	if (&pkt_radio_out == msg) {
-            if (error == SUCCESS) {
-                //timer();
-            } else {
-                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
-            }
-        }
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
-        if (&pkt_serial_out == msg) {
-            if (error == SUCCESS) {
-                //timer();
-            } else {
-                //while (call AMSend.send(AM_BROADCAST_ADDR,msg,sizeof(BlinkMsg)) == EBUSY);
-            }
-        }
     }
 
     /**
