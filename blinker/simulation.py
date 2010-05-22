@@ -24,8 +24,12 @@ class Communicator(object):
         self.mif = MoteIF.MoteIF()
         addr = "sf@localhost:%s" % port
         self.mif.addSource(addr)
+        # the self argument is referring to the listener class
+        # simply a class that implements the receive function
         self.mif.addListener(self, BlinkMsg)
         self.seq_no = 0
+
+        mif.sendMsg(self, dest, addr, amType, group, msg)
 
     def receive(self, src, msg):
         print "Received message from %s: %s" % (str(msg), str(src))
@@ -67,7 +71,8 @@ class Simulation(object):
         time = self.sim.time()
         # TODO: setup more granularity in output
         # Use a try/catch to stop and resume the debugging process
-        while(time + RUNTIME * 10000000000 > self.sim.time()):
+        # while(time + RUNTIME * 10000000000 > self.sim.time()):
+        while True:
             self.sim.runNextEvent()
             self.throttle.checkThrottle()
             self.sf.process()

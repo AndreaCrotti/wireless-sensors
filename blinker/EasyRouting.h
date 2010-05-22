@@ -15,7 +15,7 @@
 enum {
     BEACON = 2,
     PERIOD = 1000,
-    TIMEOUT = 15 * PERIOD
+    TIMEOUT = 15
 };
 
 /// Beacon message is used to create the topology of the network

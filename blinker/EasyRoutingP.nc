@@ -76,7 +76,7 @@ implementation {
         // motes in timeout can be checked at every 
         broadcast_beacon();
         check_timeout(call Timer.getNow());
-        /* dbg("Routing", "Now the neighbor list is %d\n", neighbours); */
+        dbg("Routing", "Now the neighbor list is %d\n", neighbours);
     }
 
     /** 
@@ -104,12 +104,12 @@ implementation {
             // message is delivered.
             
             // Get the destination inside BlinkMsg
-            BlinkMsg* bMsg = (BlinkMsg*)(call Packet.getPayload(msg, 0));
+            BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
             nodeid_t destinations = bMsg->dests;
 
             dbg("Routing", "Sending started with destinations %d\n", destinations);
             
-            if(!otherReceivers(destinations))
+            if (!otherReceivers(destinations))
                 return SUCCESS;
 
             // If one of the destinations is not in our neighbour list, we make a broadcast,
@@ -118,7 +118,7 @@ implementation {
                 dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
                 result = call RelSend.send(neighbours, msg, len);
             } else {
-                dbg("Routing", "Sending to notes %d\n", destinations);
+                dbg("Routing", "Sending to nodes %d\n", destinations);
                 result = call RelSend.send(destinations, msg, len);
             }
         } else {
@@ -165,7 +165,7 @@ implementation {
             uint32_t arrivalTime = call Timer.getNow();
             // set the time of the last arrival and then add the source node to the neighbours list
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
-            LAST_ARRIVAL[beacon->src_node] = arrivalTime;
+            LAST_ARRIVAL[beacon->src_node] = arrivalTime / PERIOD;
             addNeighbour(beacon->src_node);
             /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
         }
@@ -194,7 +194,7 @@ implementation {
             
             /* dbg("Routing", "delay = %d and LAST_ARRIVAL[i] = %d\n", delay, LAST_ARRIVAL[i]); */
             // adding and removing have no effect if they are already in or out the list
-            if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
+            if (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbour(i);
             }
         }
