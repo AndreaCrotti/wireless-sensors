@@ -11,6 +11,7 @@
 #ifndef EASY_ROUTING_H
 #define EASY_ROUTING_H
 
+// TIMEOUT is a multiple of (BEACON * PERIOD) it will be more rigourously correct
 enum {
     BEACON = 2,
     PERIOD = 1000,

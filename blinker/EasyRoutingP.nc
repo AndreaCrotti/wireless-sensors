@@ -57,7 +57,7 @@ implementation {
 
     command error_t Init.init() {
         int i;
-	BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
+        BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         
 
         call Timer.startPeriodic(PERIOD);
@@ -67,7 +67,7 @@ implementation {
         }
 
         // create a message with the correct message created
-	message->src_node = TOS_NODE_ID;
+        message->src_node = TOS_NODE_ID;
 
         return SUCCESS;
     }
@@ -98,36 +98,36 @@ implementation {
      * @return status of the call
      */ 
     command error_t AMSend.send(am_addr_t dest, message_t* msg, uint8_t len) {
-	error_t result;
-	if (dest == AM_BROADCAST_ADDR) {
-	    // This is the general case, since the above layer should not care, how the 
-	    // message is delivered.
-	    
-	    // Get the destination inside BlinkMsg
-	    BlinkMsg* bMsg = (BlinkMsg*)(call Packet.getPayload(msg, 0));
-	    nodeid_t destinations = bMsg->dests;
+        error_t result;
+        if (dest == AM_BROADCAST_ADDR) {
+            // This is the general case, since the above layer should not care, how the 
+            // message is delivered.
+            
+            // Get the destination inside BlinkMsg
+            BlinkMsg* bMsg = (BlinkMsg*)(call Packet.getPayload(msg, 0));
+            nodeid_t destinations = bMsg->dests;
 
-	    dbg("Routing", "Sending started with destinations %d\n", destinations);
-	    
-	    if(!otherReceivers(destinations))
-		return SUCCESS;
+            dbg("Routing", "Sending started with destinations %d\n", destinations);
+            
+            if(!otherReceivers(destinations))
+                return SUCCESS;
 
-	    // If one of the destinations is not in our neighbour list, we make a broadcast,
-	    // otherwise a multi/unicast
-	    if ((destinations & ~neighbours) != 0) {
-		dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
-		result = call RelSend.send(neighbours, msg, len);
-	    } else {
-		dbg("Routing", "Sending to notes %d\n", destinations);
-		result = call RelSend.send(destinations, msg, len);
-	    }
-	} else {
-	    // Should normally not be used
-	    // For now, everything is only forwarded.
-	    result = call RelSend.send(dest, msg, len);
-	}
+            // If one of the destinations is not in our neighbour list, we make a broadcast,
+            // otherwise a multi/unicast
+            if ((destinations & ~neighbours) != 0) {
+                dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
+                result = call RelSend.send(neighbours, msg, len);
+            } else {
+                dbg("Routing", "Sending to notes %d\n", destinations);
+                result = call RelSend.send(destinations, msg, len);
+            }
+        } else {
+            // Should normally not be used
+            // For now, everything is only forwarded.
+            result = call RelSend.send(dest, msg, len);
+        }
 
-	return result;
+        return result;
     }
 
     /**
@@ -137,10 +137,10 @@ implementation {
      * @return 1, if there is another destination and 0 otherwise.
      */
     uint8_t otherReceivers(nodeid_t destinations){
-	if((destinations & ~TOS_NODE_ID) == 0)
-	    return 0;
-	else 
-	    return 1;
+        if((destinations & ~TOS_NODE_ID) == 0)
+            return 0;
+        else 
+            return 1;
     }
 
     // Just calling the lower layer
@@ -166,7 +166,7 @@ implementation {
             // set the time of the last arrival and then add the source node to the neighbours list
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
             LAST_ARRIVAL[beacon->src_node] = arrivalTime;
-	    addNeighbour(beacon->src_node);
+            addNeighbour(beacon->src_node);
             /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
         }
         return msg;
