@@ -1,4 +1,3 @@
-//#include "printf.h"
 #include "Rulti.h"
 
 /**

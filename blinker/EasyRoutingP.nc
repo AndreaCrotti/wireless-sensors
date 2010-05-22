@@ -1,4 +1,3 @@
-//#include "printf.h"
 #include "EasyRouting.h"
 
 /**
@@ -175,6 +174,7 @@ implementation {
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
             // just forward the message
+            dbg("Routing", "Received a message");
             signal Receive.receive(msg, payload, len);
         }
         return msg;
