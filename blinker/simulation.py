@@ -44,7 +44,6 @@ class Communicator(object):
         self.seq_no += 1
 
 class Simulation(object):
-    """Simulation class"""
     def __init__(self, num_nodes, port, channels):
         self.num_nodes = num_nodes
         self.sim = Tossim([])
@@ -76,6 +75,8 @@ class Simulation(object):
         self.throttle.printStatistics()
 
     def make_topology(self, topo_file):
+        # every time it should be resetted so we can change te topology on the fly
+        # maybe a deepcopy is necessary or something like that?
         for line in open(topo_file):
             vals = line.split()
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))

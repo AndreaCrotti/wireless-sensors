@@ -167,6 +167,7 @@ implementation {
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
             LAST_ARRIVAL[beacon->src_node] = arrivalTime;
 	    addNeighbour(beacon->src_node);
+            /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
         }
         return msg;
     }
@@ -190,7 +191,8 @@ implementation {
             // in case it's still 0 we don't touch it at all, means that no beacons from node i arrived
             if (LAST_ARRIVAL[i] == 0)
                 continue;
-
+            
+            /* dbg("Routing", "delay = %d and LAST_ARRIVAL[i] = %d\n", delay, LAST_ARRIVAL[i]); */
             // adding and removing have no effect if they are already in or out the list
             if ((delay - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbour(i);
