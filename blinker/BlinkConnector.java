@@ -223,15 +223,6 @@ public class BlinkConnector implements MessageListener {
         MoteIF mif = new MoteIF(phoenix);
         return mif;
     }
-
-    // see if it's necessary instead to give this syntax:
-    // java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSBXXX:telosb
-    // private static MoteIF makePrintIF(String ip, String port) {
-    //     String source = "serial@" + 
-    //     PhoenixSource phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
-    //     MoteIF mif = new MoteIF(phoenix);
-    //     return mif;
-    // }
         
     /** 
      * Creates a new serial connection for the main mote

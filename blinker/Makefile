@@ -1,6 +1,6 @@
 COMPONENT=BlinkAppC
-BUILD_EXTRA_DEPS += SerialMsg BlinkMsg.java BlinkGUI.class BlinkConsole.class
-CLEAN_EXTRA = *.class BlinkMsg.java SerialMsg.py
+BUILD_EXTRA_DEPS += SerialMsg BlinkMsg.java BlinkMsg.py BlinkGUI.class BlinkConsole.class
+CLEAN_EXTRA = *.class BlinkMsg.java SerialMsg.py BlinkMsg.py
 JAVA_VERSION = 1.6
 # This is the group of communication
 DEFAULT_LOCAL_GROUP = 0x55
@@ -17,6 +17,9 @@ BlinkConsole.class: $(wildcard *.java) BlinkMsg.java
 
 BlinkMsg.java:
 	mig java -target=null $(CFLAGS) -java-classname=BlinkMsg Blink.h BlinkMsg -o $@
+
+BlinkMsg.py:
+	mig python -target=null $(CFLAGS) -python-classname=BlinkMsg Blink.h BlinkMsg -o $@
 
 SerialMsg:
 	mig python -target=null -python-classname=SerialMsg Blink.h BlinkMsg -o SerialMsg.py
