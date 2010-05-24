@@ -29,6 +29,7 @@ class Simulation(object):
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
 
+        # adding all the channels
         for c in channels:
             self.sim.addChannel(c, sys.stdout)
 
@@ -43,17 +44,17 @@ class Simulation(object):
         time = self.sim.time()
         # TODO: setup more granularity in output
         # Use a try/catch to stop and resume the debugging process
-        # while(time + RUNTIME * 10000000000 > self.sim.time()):
-        while True:
+        while(time + RUNTIME * 10000000000 > self.sim.time()):
             self.sim.runNextEvent()
             self.throttle.checkThrottle()
+            # processing what it's got from it
             self.sf.process()
 
         self.throttle.printStatistics()
 
     def make_topology(self, topo_file):
-        # every time it should be resetted so we can change te topology on the fly
-        # maybe a deepcopy is necessary or something like that?
+        # TODO: every time it should be resetted so we can change te topology on the fly
+        # not so easy apparently
         for line in open(topo_file):
             vals = line.split()
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))
@@ -68,8 +69,8 @@ class Simulation(object):
         for n in self.nodes:
             n.createNoiseModel()
 
-
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
 sim.make_topology("topo.txt")
 sim.setup_noise("noise.txt")
+# TODO: use some arguments to limit the time used
 sim.start()

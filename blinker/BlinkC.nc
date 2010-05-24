@@ -306,10 +306,12 @@ implementation {
             msg->sender = (1 << TOS_NODE_ID);
             msg->seqno = own_sn++;
 
+            // serial receiver should only work for node 0???
             if (amIaReceiver(msg)) {
                 handleMessage(msg);
             }
 
+            // set correctly the content of the message and post the trasmission
             *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
             post transmitMessage();
         }
@@ -321,25 +323,25 @@ implementation {
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(1, val);
+            sendSensingData(SENS_LIGHT, val);
         }
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(2, val);
+            sendSensingData(SENS_INFRA, val);
         }
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(3, val);
+            sendSensingData(SENS_HUMIDITY, val);
         }
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(4, val);
+            sendSensingData(SENS_TEMP, val);
         }
     }
     
