@@ -16,29 +16,31 @@
 
 module BlinkC @safe() {
     // required interfaces to manage and send/receive packets
-    uses interface Packet;
-    uses interface AMSend;
-    uses interface Receive;
-    uses interface Init as RoutingInit;
+    uses {
+        interface Packet;
+        interface AMSend;
+        interface Receive;
+        interface Init as RoutingInit;
 
-    // serial interface
-    uses interface AMSend as SerialAMSend;
-    uses interface Receive as SerialReceive;
+        // serial interface
+        interface AMSend as SerialAMSend;
+        interface Receive as SerialReceive;
 
-    // used to control the ActiveMessageC component
-    uses interface SplitControl as AMControl;
-    uses interface SplitControl as SerialControl;
+        // used to control the ActiveMessageC component
+        interface SplitControl as AMControl;
+        interface SplitControl as SerialControl;
     
-    // the sensor components
-    uses interface Read<uint16_t> as LightSensor;
-    uses interface Read<uint16_t> as InfraSensor;
-    uses interface Read<uint16_t> as TempSensor;
-    uses interface Read<uint16_t> as HumSensor;
+        // the sensor components
+        interface Read<uint16_t> as LightSensor;
+        interface Read<uint16_t> as InfraSensor;
+        interface Read<uint16_t> as TempSensor;
+        interface Read<uint16_t> as HumSensor;
 
-    // additional needed components
-    uses interface Timer<TMilli> as Timer;
-    uses interface Boot;
-    uses interface Leds;
+        // additional needed components
+        interface Timer<TMilli> as Timer;
+        interface Boot;
+        interface Leds;
+    }
 }
 
 implementation {
@@ -94,7 +96,7 @@ implementation {
      */
     task void transmitMessage() {
 	dbg("Radio", "entered 'transmitMessage'\n");
-	
+        // TODO: should we also check the result or not?
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
 

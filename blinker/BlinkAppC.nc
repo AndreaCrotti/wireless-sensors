@@ -40,6 +40,10 @@ implementation {
     components new TimerMilliC() as RultiRtxTimer;
     components new TimerMilliC() as RultiAckTimer;
 
+#ifndef TOSSIM
+    // needed for checking link quality
+    components CC2420ActiveMessageC;
+#endif
 
 #ifdef TOSSIM
     // For TOSSIM debugging only
@@ -86,6 +90,10 @@ implementation {
     EasyRoutingP.RelReceive -> RultiP.Receive;
     EasyRoutingP.Timer -> BeaconTimer;
     
+#ifndef TOSSIM
+    EasyRoutingP -> CC2420ActiveMessageC.CC2420Packet;
+#endif
+
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> RultiRtxSender.Packet;
     BlinkC.AMSend -> EasyRoutingP.AMSend;
