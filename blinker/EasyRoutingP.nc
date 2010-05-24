@@ -75,7 +75,7 @@ implementation {
         // motes in timeout can be checked at every 
         broadcast_beacon();
         check_timeout(call Timer.getNow());
-        dbg("Routing", "Now the neighbor list is %d\n", neighbours);
+        /* dbg("Routing", "Now the neighbor list is %d\n", neighbours); */
     }
 
     /** 
@@ -172,6 +172,7 @@ implementation {
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
+        dbg("Routing", "Received message not fully");
         if (len == sizeof(BlinkMsg)) {
             // just forward the message
             dbg("Routing", "Received a message");
