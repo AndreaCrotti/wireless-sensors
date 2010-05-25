@@ -161,7 +161,7 @@ implementation {
      * @return 1, if there is another destination and 0 otherwise.
      */
     uint8_t otherReceivers(nodeid_t destinations){
-        if((destinations & ~TOS_NODE_ID) == 0)
+        if((destinations & ~(1 << TOS_NODE_ID)) == 0)
             return 0;
         else 
             return 1;

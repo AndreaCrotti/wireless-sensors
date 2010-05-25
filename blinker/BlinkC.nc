@@ -76,7 +76,6 @@ implementation {
     event void Boot.booted() {
         int i;
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
-        dbg("Serial","Booting mote number %d\n", TOS_NODE_ID);
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
         call AMControl.start();
@@ -254,7 +253,7 @@ implementation {
         static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
-            senderID = getIDFromBM(btrpkt->sender);
+            senderID = btrpkt->sender;
 
 	    dbg("Radio", "Received an radio message\n");
 
@@ -307,7 +306,7 @@ implementation {
             dbg("Serial", "Packet received correctly from serial stuff\n");
 	    
             // Set the sender to the current Mote's ID
-            msg->sender = (1 << TOS_NODE_ID);
+            msg->sender = TOS_NODE_ID;
             msg->seqno = own_sn++;
 
             // serial receiver should only work for node 0???
@@ -361,8 +360,8 @@ implementation {
 	// get the request message
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	// Add new contents
-	newMsg->dests = request->sender;
-	newMsg->sender = (1 << TOS_NODE_ID);
+	newMsg->dests = (1 << request->sender);
+	newMsg->sender = TOS_NODE_ID;
 	newMsg->seqno = own_sn++;
 	newMsg->type = 3;
 	newMsg->instr = sensingInstr;
