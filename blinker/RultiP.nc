@@ -106,7 +106,7 @@ call Leds.led2Toggle();
      * A task to signal the provided receive.
      */
     task void signalReceive() {
-        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
+        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len-sizeof(RultiMsg));
     }
 
     /**

@@ -74,6 +74,7 @@ implementation {
     event void Boot.booted() {
         int i;
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
+        dbg("Serial","Booting mote number %d\n", TOS_NODE_ID);
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
         call AMControl.start();
