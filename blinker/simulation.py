@@ -24,6 +24,15 @@ SERIAL_PORT = 9001
 # TODO: give different colors to the various debug messages
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
+class StdoutDeco(file):
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+
+    def write(self, message):
+        message = "%s: %s" % (self.name, message)
+        sys.stdout.write(message)
+
 class Simulation(object):
     def __init__(self, num_nodes, port, channels):
         self.num_nodes = num_nodes
@@ -37,7 +46,10 @@ class Simulation(object):
 
         # adding all the channels
         for c in channels:
+            # 1. one color for each channel
+            # 2. print the name of the channel before it
             self.sim.addChannel(c, sys.stdout)
+            # self.sim.addChannel(c, StdoutDeco(c, 0))
 
     def start(self):
         "Starts the simulation"
