@@ -129,7 +129,7 @@ implementation {
             
             // Get the destination inside BlinkMsg
             BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
-            nodeid_t destinations = bMsg->dests;
+            nodes_t destinations = bMsg->dests;
 
             dbg("Routing", "Sending started with destinations %d\n", destinations);
             
