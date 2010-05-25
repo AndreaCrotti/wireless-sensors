@@ -3,6 +3,10 @@
 """
 TODO: instead of just printing to debug can I get and parse the output from the program?
 TODO: Check if we have debug messages
+
+Usage
+python simulation.py: normal start using the java gui
+python simulation.py -i: using python for sending packets over the serial
 """
 
 import sys
@@ -21,7 +25,7 @@ SERIAL_PORT = 9001
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
 class Simulation(object):
-    def __init__(self, num_nodes, port, channels):
+    def __init__(self, num_nodes, port, channels, interactive):
         self.num_nodes = num_nodes
         self.sim = Tossim([])
         self.nodes = [self.sim.getNode(x) for x in range(self.num_nodes)]
@@ -30,6 +34,7 @@ class Simulation(object):
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
+        self.interactive = interactive
 
         # adding all the channels
         for c in channels:
@@ -52,10 +57,12 @@ class Simulation(object):
             self.sim.runNextEvent()
             # processing what it's got from it
             self.sf.process()
-            
-        self.test_send()
-        
+
+        if interactive:
+            self.send_packet()
+
         self.throttle.printStatistics()
+        self.start()
 
     def make_topology(self, topo_file):
         # TODO: every time it should be resetted so we can change te topology on the fly
@@ -74,8 +81,21 @@ class Simulation(object):
         for n in self.nodes:
             n.createNoiseModel()
 
-    def test_send(self):
+    def send_packet(self):
+        # exit gracefully when finished
+        inp = raw_input("insert destination and led bitmask\n")
+        # use a try here instead
+        try:
+            dest, mask = map(int, inp.split(" "))
+        except ValueError:
+            print "wrong input, try again"
+            self.send_packet() # using exceptions for 
+        
         msg = SerialMsg()
+        msg.set_dests(dest)
+        msg.set_instr(mask)
+        msg.set_seqno(self.seqno)
+
         serialpkt = self.sim.newSerialPacket();
         serialpkt.setData(msg.data)
         serialpkt.setType(msg.get_amType())
@@ -88,8 +108,14 @@ class Simulation(object):
             # processing what it's got from it
             self.sf.process()
 
-sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
+        self.seqno += 1
+
+interactive = False
+if len(sys.argv) > 1 and sys.argv[1] == '-i':
+    interactive = True
+
+sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS, interactive)
 sim.make_topology("topo.txt")
 sim.setup_noise("noise.txt")
-# TODO: use some arguments to limit the time used
 sim.start()
+
