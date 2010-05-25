@@ -28,6 +28,7 @@ generic module EasyRoutingP (uint8_t test) {
 
         // maybe seconds could be also enough
         interface Timer<TMilli> as Timer;
+        interface PacketAcknowledgements;
     }
 
 #ifndef TOSSIM
@@ -71,7 +72,10 @@ implementation {
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     void updateHops(uint8_t);
+    void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
+
+    // Using tasks we can't pass arguments to them and we must use instead global variables
 
     command error_t Init.init() {
         int i;
@@ -181,7 +185,6 @@ implementation {
      */
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BeaconMsg)) {
-            int8_t rssi_val;
             BeaconMsg* beacon = (BeaconMsg *) payload;
             uint32_t arrivalTime = call Timer.getNow();
             uint8_t hops_count = beacon->hops_count;
@@ -195,29 +198,44 @@ implementation {
             // update the hop count
             HOP_COUNTS[sender] = hops_count;
             /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
-            if (hops_count < min_hops) {
-                dbg("Routing", "Found a shortest path to the base station from node %d\n", sender);
-                // then we found a shortest path to the base station
-                updateHops(hops_count);
-                parent = sender;
-            }
+            checkParent(hops_count, sender, msg);
+        }
+        return msg;
+    }
 
-            // when using the device we can also check the quality of the link
+    
+    /** 
+     * Checks if the last node was closer to the base station or if
+     * at same dinstance if the signal is better than the last best one
+     *
+     */
+    void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
+        if (hops_count < min_hops) {
+            dbg("Routing", "Found a shortest path to the base station from node %d\n", sender);
+            // then we found a shortest path to the base station
+            updateHops(hops_count);
+            parent = sender;
+        }
+
+        // when using the device we can also check the quality of the link
 #ifndef TOSSIM
-            rssi_val = call CC2420Packet.getRssi(msg);
+        {
+            int8_t rssi_val = call CC2420Packet.getRssi(msg);
             // in case it's equal to the minimum we must check the quality of the link
             // otherwise we can just keep the last best one and it still works fine
             if (hops_count == min_hops) {
+                dbg("Routing", "Equal distance, now checking for RSSI value");
                 if (rssi_val < best_link) {
                     parent = sender;
                 }
             }
-#endif
         }
-        return msg;
+#endif
     }
     
-    
+    /** 
+     * Update the variable hops_count in the global variable pkt
+     */
     void updateHops(uint8_t hops_count) {
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         // update the hop count to the minimum path given in input +1

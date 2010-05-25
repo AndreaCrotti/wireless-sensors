@@ -93,9 +93,8 @@ implementation {
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
 #endif
 
-    // FIXME: not finding it for some reason
     // The acknowledgment can be inserted in RultiP directly
-    // EasyRoutingP.PacketAcknowledgements -> ActiveMessageC;
+    EasyRoutingP.PacketAcknowledgements -> ActiveMessageC;
 
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> RultiRtxSender.Packet;

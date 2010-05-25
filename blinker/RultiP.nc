@@ -69,7 +69,7 @@ implementation {
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
     void transmit(void) {
-call Leds.led0Toggle();
+        call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
     }

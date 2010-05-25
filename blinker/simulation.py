@@ -28,6 +28,7 @@ class Simulation(object):
         self.radio = self.sim.radio()
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
+        self.seqno = 0
 
         # adding all the channels
         for c in channels:
@@ -44,7 +45,8 @@ class Simulation(object):
         time = self.sim.time()
         # TODO: setup more granularity in output
         # Use a try/catch to stop and resume the debugging process
-        while(time + RUNTIME * 10000000000 > self.sim.time()):
+        while True:
+        # while(time + RUNTIME * 10000000000 > self.sim.time()):
             self.sim.runNextEvent()
             self.throttle.checkThrottle()
             # processing what it's got from it
