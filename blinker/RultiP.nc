@@ -11,23 +11,26 @@
 
 module RultiP {
     // required interfaces to manage and send/receive packets
-    uses interface Packet;
-    uses interface AMPacket;
-    uses interface AMSend as PayloadSend;
-    uses interface Receive as PayloadReceive;
-    uses interface AMSend as AckSend;
-    uses interface Receive as AckReceive;
-    uses interface Random;
-    uses interface ParameterInit<uint16_t> as SeedInit;
+    uses {
+        interface Packet;
+        interface AMPacket;
+        interface AMSend as PayloadSend;
+        interface Receive as PayloadReceive;
+        interface AMSend as AckSend;
+        interface Receive as AckReceive;
+        interface Random;
+        interface ParameterInit<uint16_t> as SeedInit;
 
-    uses interface Leds;
+        interface Leds;
 
-    // additional components
-    uses interface Timer<TMilli> as RtxTimer;
-    uses interface Timer<TMilli> as AckTimer;
+        interface Timer<TMilli> as RtxTimer;
+        interface Timer<TMilli> as AckTimer;
+    }
 
-    provides interface AMSend;
-    provides interface Receive;
+    provides {
+        interface AMSend;
+        interface Receive;
+    }
 }
 implementation {
     // member variables
@@ -69,7 +72,7 @@ implementation {
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
     void transmit(void) {
-call Leds.led0Toggle();
+        call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
     }
@@ -107,8 +110,8 @@ call Leds.led2Toggle();
      */
     task void signalReceive() {
         dbg("Rel", "signalReceive is called\n");
-        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
-    }
+        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len-sizeof(RultiMsg));
+	}
 
     /**
      * Sender of a specific message.

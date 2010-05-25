@@ -16,29 +16,31 @@
 
 module BlinkC @safe() {
     // required interfaces to manage and send/receive packets
-    uses interface Packet;
-    uses interface AMSend;
-    uses interface Receive;
-    uses interface Init as RoutingInit;
+    uses {
+        interface Packet;
+        interface AMSend;
+        interface Receive;
+        interface Init as RoutingInit;
 
-    // serial interface
-    uses interface AMSend as SerialAMSend;
-    uses interface Receive as SerialReceive;
+        // serial interface
+        interface AMSend as SerialAMSend;
+        interface Receive as SerialReceive;
 
-    // used to control the ActiveMessageC component
-    uses interface SplitControl as AMControl;
-    uses interface SplitControl as SerialControl;
+        // used to control the ActiveMessageC component
+        interface SplitControl as AMControl;
+        interface SplitControl as SerialControl;
     
-    // the sensor components
-    uses interface Read<uint16_t> as LightSensor;
-    uses interface Read<uint16_t> as InfraSensor;
-    uses interface Read<uint16_t> as TempSensor;
-    uses interface Read<uint16_t> as HumSensor;
+        // the sensor components
+        interface Read<uint16_t> as LightSensor;
+        interface Read<uint16_t> as InfraSensor;
+        interface Read<uint16_t> as TempSensor;
+        interface Read<uint16_t> as HumSensor;
 
-    // additional needed components
-    uses interface Timer<TMilli> as Timer;
-    uses interface Boot;
-    uses interface Leds;
+        // additional needed components
+        interface Timer<TMilli> as Timer;
+        interface Boot;
+        interface Leds;
+    }
 }
 
 implementation {
@@ -74,6 +76,7 @@ implementation {
     event void Boot.booted() {
         int i;
         dbg("Boot", "Booting mote number %d\n", TOS_NODE_ID);
+        dbg("Serial","Booting mote number %d\n", TOS_NODE_ID);
         // Now we must wait until the radio channel is actually available.
         // Handling of timer starting is done in AMControl.
         call AMControl.start();
@@ -94,7 +97,7 @@ implementation {
      */
     task void transmitMessage() {
 	dbg("Radio", "entered 'transmitMessage'\n");
-	
+        // TODO: should we also check the result or not?
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
 
@@ -301,15 +304,18 @@ implementation {
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
+            dbg("Serial", "Packet received correctly from serial stuff\n");
 	    
             // Set the sender to the current Mote's ID
             msg->sender = (1 << TOS_NODE_ID);
             msg->seqno = own_sn++;
 
+            // serial receiver should only work for node 0???
             if (amIaReceiver(msg)) {
                 handleMessage(msg);
             }
 
+            // set correctly the content of the message and post the trasmission
             *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
             post transmitMessage();
         }
@@ -321,25 +327,25 @@ implementation {
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(1, val);
+            sendSensingData(SENS_LIGHT, val);
         }
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(2, val);
+            sendSensingData(SENS_INFRA, val);
         }
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(3, val);
+            sendSensingData(SENS_HUMIDITY, val);
         }
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
-            sendSensingData(4, val);
+            sendSensingData(SENS_TEMP, val);
         }
     }
     
