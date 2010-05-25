@@ -109,6 +109,7 @@ call Leds.led2Toggle();
      * A task to signal the provided receive.
      */
     task void signalReceive() {
+        dbg("Rel", "signalReceive is called\n");
         signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
     }
 
@@ -143,6 +144,7 @@ call Leds.led2Toggle();
      * Relay the sendDone error to our user if sending was NOT successfull.
      */
     event void PayloadSend.sendDone(message_t* m, error_t err) {
+        dbg("Rel", "PayloadSending done!\n");
         if (err != SUCCESS) {
             stopRtx();
             signal AMSend.sendDone(originalMessage,err);
@@ -211,7 +213,7 @@ call Leds.led2Toggle();
                 // start the task to inform the upper layer (put its arguments in the struct)
                 signalReceiveArguments.message = message;
                 signalReceiveArguments.payload = payload;
-                signalReceiveArguments.len = len;
+                signalReceiveArguments.len = len-sizeof(RultiMsg);
                 post signalReceive();
             }
         }
@@ -221,6 +223,7 @@ call Leds.led2Toggle();
      * If we successfully got our message out, we signal the receiver, that we did (sender is not busy anymore).
      */
     event void AckSend.sendDone(message_t* m, error_t err) {
+        dbg("Rel", "sended an acknowledgement\n");
         ackSendBusy = 0;
     }
     /**
@@ -228,7 +231,10 @@ call Leds.led2Toggle();
      */
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         RultiMsg* prm = payload; // although the message may be bogus it does not hurt
-call Leds.led1Toggle();
+        call Leds.led1Toggle();
+
+        dbg("Rel", "Received an Acknowledgement\n");
+
         // sanity check:
         //  1) receivers == 0  =>  no transmission is going on  => discard
         //  2) wrong lengh  =>  some tx error / other application  =>  discard
