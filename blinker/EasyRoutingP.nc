@@ -90,8 +90,8 @@ implementation {
 
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
-        // this could be later be overwritten, 0 means not reachable
-        message->hops_count = 255;
+        // Set it to the maximum value reachable
+        message->hops_count = MAX_HOPS;
 
         return SUCCESS;
     }

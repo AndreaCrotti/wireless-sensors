@@ -2,11 +2,11 @@
 
 """
 TODO: instead of just printing to debug can I get and parse the output from the program?
-TODO: Check if we have debug messages
+TODO: check what is the minimal number of events to run to be sure we trigger everything
 
-Usage
-python simulation.py: normal start using the java gui
-python simulation.py -i: using python for sending packets over the serial
+Usage:
+Run normally "python simulation.py", wait that the motes are booted and then, pressing C-c it will ask interactively to build a packet and will send it over the serial channel
+ow the instructions
 """
 
 import sys
@@ -25,7 +25,7 @@ SERIAL_PORT = 9001
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
 class Simulation(object):
-    def __init__(self, num_nodes, port, channels, interactive):
+    def __init__(self, num_nodes, port, channels):
         self.num_nodes = num_nodes
         self.sim = Tossim([])
         self.nodes = [self.sim.getNode(x) for x in range(self.num_nodes)]
@@ -34,7 +34,6 @@ class Simulation(object):
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
-        self.interactive = interactive
 
         # adding all the channels
         for c in channels:
@@ -58,12 +57,23 @@ class Simulation(object):
             # processing what it's got from it
             self.sf.process()
 
-        if interactive:
-            self.send_packet()
-
         self.throttle.printStatistics()
-        self.start()
+        self.cycle()
 
+    def cycle(self):
+        while True:
+            try:
+                self.throttle.checkThrottle()
+                self.sim.runNextEvent()
+                # processing what it's got from it
+                self.sf.process()
+            except KeyboardInterrupt:
+                try:
+                    self.send_packet()
+                    continue
+                except KeyboardInterrupt:
+                    sys.exit()
+        
     def make_topology(self, topo_file):
         # TODO: every time it should be resetted so we can change te topology on the fly
         # not so easy apparently
@@ -83,22 +93,12 @@ class Simulation(object):
 
     def send_packet(self):
         # exit gracefully when finished
-        inp = raw_input("insert destination and led bitmask\n")
-        # use a try here instead
-        try:
-            dest, mask = map(int, inp.split(" "))
-        except ValueError:
-            print "wrong input, try again"
-            self.send_packet() # using exceptions for 
-        
-        msg = SerialMsg()
-        msg.set_dests(dest)
-        msg.set_instr(mask)
-        msg.set_seqno(self.seqno)
 
+        msg = MyPacket()
+        msg.make_packet()
         serialpkt = self.sim.newSerialPacket();
         serialpkt.setData(msg.data)
-        serialpkt.setType(msg.get_amType())
+        serialpkt.setType(msg.am_type)
         serialpkt.setDestination(0)
         serialpkt.deliver(0, self.sim.time() + 3)
 
@@ -108,14 +108,36 @@ class Simulation(object):
             # processing what it's got from it
             self.sf.process()
 
+        print "sended packet %s" % str(msg)
         self.seqno += 1
 
-interactive = False
-if len(sys.argv) > 1 and sys.argv[1] == '-i':
-    interactive = True
+class MyPacket(object):
+    def __init__(self):
+        self.msg = SerialMsg()
+        # that's because we're always in mote 0 here
+        self.msg.set_sender(0)
+        self.data = self.msg.data
+        self.am_type = self.msg.get_amType()
+    
+    def __str__(self):
+        return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
 
-sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS, interactive)
+    def make_packet(self):
+        dest = input("Insert destination\n")
+        typ = input("1)led\n2)sensing request\n3)sensing data\n")
+        self.msg.set_dests(dest)
+        self.msg.set_type(typ)
+
+        if typ == 1:
+            mask = input("insert led mask\n")
+            self.msg.set_instr(mask)
+        if typ == 2:
+            sens = input("1)light\n2)infrared\n3)humidity\n4)temperature\n")
+            self.msg.set_instr(sens)
+
+        # you could also create a real data package maybe?
+
+sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
 sim.make_topology("topo.txt")
 sim.setup_noise("noise.txt")
 sim.start()
-

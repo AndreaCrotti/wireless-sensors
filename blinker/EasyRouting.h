@@ -18,6 +18,10 @@ enum {
     TIMEOUT = 15
 };
 
+enum {
+    MAX_HOPS = 255
+};
+
 /// Beacon message is used to create the topology of the network
 typedef nx_struct BeaconMsg {
     nx_nodeid_t src_node;
