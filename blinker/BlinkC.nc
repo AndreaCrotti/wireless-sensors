@@ -95,7 +95,27 @@ implementation {
      * The send data should be stored in the global pkt_radio_out variable.
      */
     task void transmitMessage() {
-	dbg("Radio", "entered 'transmitMessage'\n");
+        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0));
+        
+        dbg("Radio", "entered 'transmitMessage' with destinations %d\n", msg->dests);
+
+
+        // TODO: should we also check the result or not?
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
+    }
+
+
+    /**
+     * Transmits a command over the network.
+     *
+     * The send data should be stored in the global pkt_radio_out variable.
+     */
+    task void transmitSensing() {
+        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
+        
+        dbg("Radio", "entered 'transmitMessage' with destinations %d\n", msg->dests);
+
+
         // TODO: should we also check the result or not?
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
     }
@@ -377,9 +397,8 @@ implementation {
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
 	}
-	// assign to the payload of the our global packet the new message created
-	*(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *newMsg; 
-	post transmitMessage();
+	// assign to the payload of the our global packet the new message created 
+	post transmitSensing();
     }
 
 }
