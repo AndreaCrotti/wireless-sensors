@@ -2,11 +2,6 @@
 #include "Blink.h"
 
 /**
- * Configuration for the first task.
- * Node number 0 of the network select a random led
- * and broadcast it to the whole network.
- * The other nodes accept the command, make sure they only receive once
- * and set the led also.
  * 
  * @file   BlinkAppC.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
@@ -22,24 +17,32 @@ configuration BlinkAppC @safe() {
 implementation {
     components MainC, BlinkC, LedsC;
     components new TimerMilliC() as Timer;
+
     components ActiveMessageC;
     components SerialActiveMessageC;
-    //components new AMSenderC(AM_BLINK) as BlinkSender;
-    //components new AMReceiverC(AM_BLINK) as BlinkReceiver;
+
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
     
     components new AMSenderC(AM_BEACON) as BeaconSender;
     components new AMReceiverC(AM_BEACON) as BeaconReceiver;
+
     components new AMSenderC(AM_RULTI_RTX) as RultiRtxSender;
     components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver;
+
     components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
     components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver;
+
     components RandomC as RultiRandom;
+    
     components new TimerMilliC() as BeaconTimer;
     components new TimerMilliC() as RultiRtxTimer;
     components new TimerMilliC() as RultiAckTimer;
 
+#ifndef TOSSIM
+    // needed for checking link quality
+    components CC2420ActiveMessageC;
+#endif
 
 #ifdef TOSSIM
     // For TOSSIM debugging only
@@ -58,7 +61,7 @@ implementation {
     components RultiP;
     // TODO: change this value to what is really needed
     components new EasyRoutingP(0) as EasyRoutingP;
-    
+
     BlinkC -> MainC.Boot;
     
     BlinkC.Timer -> Timer;
@@ -82,10 +85,24 @@ implementation {
     EasyRoutingP.Packet -> BeaconSender.Packet;
     EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
     EasyRoutingP.BeaconReceive -> BeaconReceiver;
-    EasyRoutingP.RelSend -> RultiP.AMSend;
-    EasyRoutingP.RelReceive -> RultiP.Receive;
     EasyRoutingP.Timer -> BeaconTimer;
+
+#ifndef NEWSEND
+    EasyRoutingP.RelReceive -> RultiP.Receive;
+    EasyRoutingP.RelSend -> RultiP.AMSend;
+#else
+    components SenderC;
+    // Using the new sender module
+    EasyRoutingP.RelSend -> SenderC.AMSend;
+
+    // The acknowledgment can be inserted in RultiP directly
+    SenderC.PacketAcknowledgements -> ActiveMessageC;
+#endif
     
+#ifndef TOSSIM
+    EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
+#endif
+
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> RultiRtxSender.Packet;
     BlinkC.AMSend -> EasyRoutingP.AMSend;

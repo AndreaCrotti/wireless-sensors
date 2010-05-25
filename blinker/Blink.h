@@ -62,4 +62,6 @@ enum {
 
 #define BLINK_GENERATE_INTERVAL_MS 1000
 
+/* #define NEWSEND 0 */
+
 #endif
