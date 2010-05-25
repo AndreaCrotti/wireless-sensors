@@ -194,6 +194,10 @@ implementation {
         return !!(msg->dests & (1 << TOS_NODE_ID));
     }
 
+    task void sendSerialOut() {
+        call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+    }
+
     /** 
      * Handle the message received calling the correct instructions
      * 
@@ -230,7 +234,8 @@ implementation {
             // Message contains sensing data
             // Send them back over the serial port
             *(BlinkMsg*)(call Packet.getPayload(&pkt_serial_out, 0)) = *msg;
-            call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+            //call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
+            post sendSerialOut();
             break;
         };
     }
