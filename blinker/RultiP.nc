@@ -110,8 +110,8 @@ call Leds.led2Toggle();
      */
     task void signalReceive() {
         dbg("Rel", "signalReceive is called\n");
-        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len-sizeof(RultiMsg));
-	}
+        signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
+    }
 
     /**
      * Sender of a specific message.
@@ -213,7 +213,7 @@ call Leds.led2Toggle();
                 // start the task to inform the upper layer (put its arguments in the struct)
                 signalReceiveArguments.message = message;
                 signalReceiveArguments.payload = payload;
-                signalReceiveArguments.len = len;
+                signalReceiveArguments.len = len-sizeof(RultiMsg);
                 post signalReceive();
             }
         }
