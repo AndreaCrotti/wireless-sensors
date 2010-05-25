@@ -91,7 +91,7 @@ implementation {
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
         // this could be later be overwritten, 0 means not reachable
-        message->hops_count = 0;
+        message->hops_count = 255;
 
         return SUCCESS;
     }
@@ -220,10 +220,11 @@ implementation {
         // when using the device we can also check the quality of the link
 #ifndef TOSSIM
         {
-            int8_t rssi_val = call CC2420Packet.getRssi(msg);
+            int8_t rssi_val;
             // in case it's equal to the minimum we must check the quality of the link
             // otherwise we can just keep the last best one and it still works fine
             if (hops_count == min_hops) {
+                rssi_val = call CC2420Packet.getRssi(msg);
                 dbg("Routing", "Equal distance, now checking for RSSI value");
                 if (rssi_val < best_link) {
                     parent = sender;

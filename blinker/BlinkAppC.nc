@@ -61,7 +61,6 @@ implementation {
     components RultiP;
     // TODO: change this value to what is really needed
     components new EasyRoutingP(0) as EasyRoutingP;
-    /* components SenderC; */
 
     BlinkC -> MainC.Boot;
     
@@ -86,22 +85,23 @@ implementation {
     EasyRoutingP.Packet -> BeaconSender.Packet;
     EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
     EasyRoutingP.BeaconReceive -> BeaconReceiver;
-    EasyRoutingP.RelSend -> RultiP.AMSend;
-    EasyRoutingP.RelReceive -> RultiP.Receive;
     EasyRoutingP.Timer -> BeaconTimer;
 
-    /***********************************************/
-    /* // Using the new sender module              */
-    /* EasyRoutingP.RelSend -> SenderC.AMSend;     */
-    /* EasyRoutingP.RelReceive -> SenderC.Receive; */
-    /***********************************************/
+#ifndef NEWSEND
+    EasyRoutingP.RelReceive -> RultiP.Receive;
+    EasyRoutingP.RelSend -> RultiP.AMSend;
+#else
+    components SenderC;
+    // Using the new sender module
+    EasyRoutingP.RelSend -> SenderC.AMSend;
+
+    // The acknowledgment can be inserted in RultiP directly
+    SenderC.PacketAcknowledgements -> ActiveMessageC;
+#endif
     
 #ifndef TOSSIM
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
 #endif
-
-    // The acknowledgment can be inserted in RultiP directly
-    EasyRoutingP.PacketAcknowledgements -> ActiveMessageC;
 
     /// Linking all our interfaces to the correct components
     BlinkC.Packet -> RultiRtxSender.Packet;

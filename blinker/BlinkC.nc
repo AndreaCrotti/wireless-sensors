@@ -301,8 +301,10 @@ implementation {
      * @return The received message.
      */
     event message_t* SerialReceive.receive(message_t* message, void* payload, uint8_t len) {
+        dbg("Serial", "Received a message");
         if (len == sizeof(BlinkMsg)) {
             BlinkMsg* msg = (BlinkMsg *) payload;
+            dbg("Serial", "Packat received correctly\n");
 	    
             // Set the sender to the current Mote's ID
             msg->sender = (1 << TOS_NODE_ID);

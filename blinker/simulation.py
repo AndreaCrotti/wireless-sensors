@@ -2,6 +2,7 @@
 
 """
 TODO: instead of just printing to debug can I get and parse the output from the program?
+TODO: Check if we have debug messages
 """
 
 import sys
@@ -11,7 +12,7 @@ import random
 from TOSSIM import *
 from SerialMsg import *
 
-RUNTIME = 200
+RUNTIME = 2
 NUM_NODES = 16
 SERIAL_PORT = 9001
 
@@ -38,6 +39,7 @@ class Simulation(object):
         "Starts the simulation"
         for n in self.nodes:
             n.bootAtTime(random.randint(100001, 900009))
+            
         self.sf.process()
         self.throttle.initialize()
 
@@ -45,13 +47,14 @@ class Simulation(object):
         time = self.sim.time()
         # TODO: setup more granularity in output
         # Use a try/catch to stop and resume the debugging process
-        while True:
-        # while(time + RUNTIME * 10000000000 > self.sim.time()):
-            self.sim.runNextEvent()
+        while(time + RUNTIME * 10000000000 > self.sim.time()):
             self.throttle.checkThrottle()
+            self.sim.runNextEvent()
             # processing what it's got from it
             self.sf.process()
-
+            
+        self.test_send()
+        
         self.throttle.printStatistics()
 
     def make_topology(self, topo_file):
@@ -70,6 +73,20 @@ class Simulation(object):
 
         for n in self.nodes:
             n.createNoiseModel()
+
+    def test_send(self):
+        msg = SerialMsg()
+        serialpkt = self.sim.newSerialPacket();
+        serialpkt.setData(msg.data)
+        serialpkt.setType(msg.get_amType())
+        serialpkt.setDestination(0)
+        serialpkt.deliver(0, self.sim.time() + 3)
+
+        for i in range(20):
+            self.throttle.checkThrottle()
+            self.sim.runNextEvent()
+            # processing what it's got from it
+            self.sf.process()
 
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
 sim.make_topology("topo.txt")

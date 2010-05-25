@@ -25,4 +25,3 @@ SerialMsg:
 	mig python -target=null -python-classname=SerialMsg Blink.h BlinkMsg -o SerialMsg.py
 
 include $(MAKERULES)
-

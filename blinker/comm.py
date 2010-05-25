@@ -14,7 +14,6 @@ class Communicator(object):
         self.mif.addSource("sf@localhost:%s" % port)
         self.seqno = 0
         self.tos = Tossim([])
-        # self.sf = SerialForwarder(port)
 
     # I can inject a package directly to the radio
     def send_led_mask(self, dest, mask):
@@ -35,7 +34,6 @@ class Communicator(object):
 
         print "sended message with dest %d with mask %d and seqno %d\n" % (dest, mask, self.seqno)
         self.seqno += 1
-        # self.sf.process()
 
 c = Communicator(9001)
 
