@@ -61,7 +61,8 @@ implementation {
     components RultiP;
     // TODO: change this value to what is really needed
     components new EasyRoutingP(0) as EasyRoutingP;
-    
+    /* components SenderC; */
+
     BlinkC -> MainC.Boot;
     
     BlinkC.Timer -> Timer;
@@ -88,6 +89,12 @@ implementation {
     EasyRoutingP.RelSend -> RultiP.AMSend;
     EasyRoutingP.RelReceive -> RultiP.Receive;
     EasyRoutingP.Timer -> BeaconTimer;
+
+    /***********************************************/
+    /* // Using the new sender module              */
+    /* EasyRoutingP.RelSend -> SenderC.AMSend;     */
+    /* EasyRoutingP.RelReceive -> SenderC.Receive; */
+    /***********************************************/
     
 #ifndef TOSSIM
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
