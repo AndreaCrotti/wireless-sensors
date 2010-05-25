@@ -16,7 +16,7 @@
 /// we only need the id number of the message and the index of the led to turn on
 typedef nx_struct BlinkMsg {
     // The destination of the message stored as a bitmask
-    nx_nodeid_t dests;
+    nx_nodes_t dests;
     // The sender of the message
     nx_nodeid_t sender;
     // The sequential number of the message
