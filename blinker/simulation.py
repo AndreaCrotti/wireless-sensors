@@ -8,7 +8,9 @@ Usage:
 Run normally "python simulation.py", wait that the motes are booted and then, pressing C-c it will ask interactively to build a packet and will send it over the serial channel
 ow the instructions
 
-We can also inspect variables while we run the program
+We can also inspect variables while we run the program.
+If this script doesn't work make sure you have
+$TOSROOT/support/sdk/python/ in your PYTHONPATH variable
 """
 
 import sys
@@ -103,6 +105,7 @@ class Simulation(object):
                 # with the first interrupt we go in interactive mode, the second quits the program
                 try:
                     self.interactive()
+                    print "\nrestarting the cycle, running other events...\n"
                     continue
                 except KeyboardInterrupt:
                     sys.exit()
@@ -150,10 +153,14 @@ class Simulation(object):
         if self.radio.connected(n1, n2):
             self.radio.remove(n1, n2)
             del self.topology[(n1, n2)]
+            if self.topology.has_key([n2, n1]):
+                # now it's done in a symmetric way
+                del self.topology[(n2, n1)]
         else:
             print "not present in the topology"
 
     def interactive(self):
+        print "entering interactive session, another C-c to quit the program"
         choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n\n")
         if choice == 1:
             self.manipulate_topology()
@@ -183,13 +190,9 @@ class Simulation(object):
             self.add_connection(n1, n2, dist)
 
         if choice == 3:
-            nodes = raw_input("what are the nodes to remove write X Y?\n")
+            nodes = raw_input("what are the nodes to remove (symmetrically) write X Y?\n")
             n1, n2 = map(int, nodes.split(" "))
-            if self.radio.connected(n1, n2):
-                self.remove_connection(n1, n2)
-            else:
-                print "not connected already"
-        
+            self.remove_connection(n1, n2)
 
     def send_packet(self):
         "Creates and send a new serial packet"

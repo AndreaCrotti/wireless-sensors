@@ -115,13 +115,6 @@ implementation {
         // motes in timeout can be checked at every 
         broadcast_beacon();
         check_timeout(call Timer.getNow());
-        //dbg("Routing", "Now the neighbor list is %d\n", neighbours);
-        /* { */
-        /*     int i; */
-        /*     for (i = 0; i < MAX_MOTES; i++) { */
-        /*         dbg("Routing", "hops to %d = %d\n", i, HOP_COUNTS[i]); */
-        /*     } */
-        /* } */
     }
 
     /** 
