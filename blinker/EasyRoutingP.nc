@@ -267,10 +267,10 @@ implementation {
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
-        dbg("Routing", "Received message not fully");
+        dbg("Routing", "Received message not fully\n");
         if (len == sizeof(BlinkMsg)) {
             // just forward the message
-            dbg("Routing", "Received a message");
+            dbg("Routing", "Received a message\n");
             signal Receive.receive(msg, payload, len);
         }
         return msg;
