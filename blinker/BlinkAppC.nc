@@ -19,6 +19,9 @@ implementation {
     components new TimerMilliC() as Timer;
 
     components ActiveMessageC;
+    #ifndef TOSSIM
+    components ActiveMessageAddressC;
+    #endif
     components SerialActiveMessageC;
 
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
@@ -109,6 +112,9 @@ implementation {
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> EasyRoutingP;
     BlinkC.RoutingInit -> EasyRoutingP;
+    #ifndef TOSSIM
+        BlinkC.ActiveMessageAddress -> ActiveMessageAddressC;
+    #endif
 
     /// serial communication
     BlinkC.SerialAMSend -> SerialBlinkSender;

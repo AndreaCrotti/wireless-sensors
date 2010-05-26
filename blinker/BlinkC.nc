@@ -20,6 +20,9 @@ module BlinkC @safe() {
         interface AMSend;
         interface Receive;
         interface Init as RoutingInit;
+        #ifndef TOSSIM
+            interface ActiveMessageAddress;
+        #endif
 
         // serial interface
         interface AMSend as SerialAMSend;
@@ -83,10 +86,20 @@ implementation {
 	// Initialize the routing module
 	call RoutingInit.init();
 
+        #ifndef TOSSIM
+            // set the active message address
+            call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(),TOS_NODE_ID);
+        #endif
+
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
     }
+
+    #ifndef TOSSIM
+        async event void ActiveMessageAddress.changed() {
+        }
+    #endif
 
     /**
      * Transmits a command over the network.
@@ -274,7 +287,7 @@ implementation {
 	seqno_t sn;
 	uint8_t senderID;
 
-        static uint8_t called = 0;
+        //static uint8_t called = 0;
         if (len == sizeof(BlinkMsg)){
             sn = btrpkt->seqno;
             senderID = btrpkt->sender;
@@ -283,7 +296,7 @@ implementation {
 
             // check if the message was already seen or handle the received message
             if(sn > curr_sn[senderID] || (!sn && curr_sn[senderID])) {
-                call Leds.set(++called);
+                //call Leds.set(++called);
                 curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
                     handleMessage(btrpkt);
