@@ -12,10 +12,12 @@ ow the instructions
 import sys
 import time
 import random
+
 from StringIO import StringIO
 
 from TOSSIM import *
 from SerialMsg import *
+from gen_network import bin_tree, rand_graph
 
 RUNTIME = 2
 NUM_NODES = 16
@@ -93,6 +95,7 @@ class Simulation(object):
                 except KeyboardInterrupt:
                     sys.exit()
         
+    # TODO: topology must be created using functions every time and not reading from text files
     def make_topology(self, topo_file):
         # TODO: every time it should be resetted so we can change te topology on the fly
         # not so easy apparently
@@ -101,8 +104,17 @@ class Simulation(object):
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))
             self.radio.add(*vals)
 
+    def make_rand_graph(self):
+        for vals in rand_graph(NUM_NODES, 5):
+            self.radio.add(*vals)
+
+    def make_bin_tree(self, len):
+        "Creates a binary tree structure for the topology"
+        for vals in bin_tree(len):
+            self.radio.add(*vals)
+
     def mess_topology(self):
-        "Mess up the topology of the network to enable new testing"
+        "Mess up the topology of the network to test if still correct"
         pass
 
     def setup_noise(self, noise_file):
@@ -169,6 +181,8 @@ class MyPacket(object):
             # you could also create a real data package maybe?
 
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
-sim.make_topology("topo.txt")
+#sim.make_topology("topo.txt")
+sim.make_bin_tree(2)
+#sim.make_rand_graph()
 sim.setup_noise("noise.txt")
 sim.start()

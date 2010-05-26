@@ -1,24 +1,36 @@
 #!/usr/bin/env python
 
 """
-Generates a network of nodes
-with the size given in input and the connection level from 0 to 9
+Usage
+for vals in rand_graph(10, 4):
+    print vals
 """
 
 import random
-from sys import argv, exit
 
-NUM = int(argv[1])
-CONN = int(argv[2])
 DB_RANGE = (-60, -50)
 
-if (NUM < 0 or CONN < 0 or CONN > 9):
-    print "check your arguments"
-    exit(1)
+def rand_graph(num, conn):
+    "Creates a random graph with n elments"
+    for x in range(0, num):
+        for y in range(x+1, num):
+            if random.random() * conn > 1:
+                val = float(random.randrange(*DB_RANGE))
+                yield(x, y, val)
+                yield(y, x, val + random.randrange(3))
 
-for x in range(0, NUM):
-    for y in range(x+1, NUM):
-        if random.random() * CONN > 1:
-            val = random.randrange(*DB_RANGE)
-            print "%d %d %f" % (x, y, val)
-            print "%d %d %f" % (y, x, val + random.randrange(3))
+# FIXME: if MAX_NODES not multiple of 4 something strange could happen
+def bin_tree(dim):
+    "Generates a binary tree connection"
+    for x in range((2 ** dim) - 1):
+        val = float(random.randrange(*DB_RANGE))
+        yield (x, x * 2 + 1, val)
+        yield (x, (x+1) * 2, val)
+        yield (x * 2 + 1, x, val + random.randrange(3))
+        yield ((x+1) * 2, x, val + random.randrange(3))
+
+
+# TODO: use a decorator for this usage instead
+def write_topology(topo_maker, out_file):
+    for vals in topo_maker():
+        pass
