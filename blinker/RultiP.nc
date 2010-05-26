@@ -72,7 +72,7 @@ implementation {
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
     void transmit(void) {
-        call Leds.led0Toggle();
+        //call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
     }
@@ -97,7 +97,7 @@ implementation {
      * \param sendAckArguments [logical] the exact values to pass to the AMSend.send command.
      */
     task void ackSend() {
-call Leds.led2Toggle();
+        //call Leds.led2Toggle();
         if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS) {
             //timeDelta = call Random.rand16();
             //call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
@@ -231,7 +231,7 @@ call Leds.led2Toggle();
      */
     event message_t* AckReceive.receive(message_t* message, void* payload, uint8_t len) {
         RultiMsg* prm = payload; // although the message may be bogus it does not hurt
-        call Leds.led1Toggle();
+        //call Leds.led1Toggle();
 
         dbg("Rel", "Received an Acknowledgement\n");
 
