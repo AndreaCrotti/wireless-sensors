@@ -48,6 +48,8 @@ class Simulation(object):
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
+        # at the moment is only used to store and show the topology informations
+        self.topology = []
 
         # adding all the channels
         for c in channels:
@@ -90,7 +92,7 @@ class Simulation(object):
             except KeyboardInterrupt:
                 # with the first interrupt we go in interactive mode, the second quits the program
                 try:
-                    self.send_packet()
+                    self.interactive()
                     continue
                 except KeyboardInterrupt:
                     sys.exit()
@@ -102,16 +104,16 @@ class Simulation(object):
         for line in open(topo_file):
             vals = line.split()
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))
-            self.radio.add(*vals)
+            self.add_connection(*vals)
 
     def make_rand_graph(self):
         for vals in rand_graph(NUM_NODES, 5):
-            self.radio.add(*vals)
+            self.add_connection(*vals)
 
     def make_bin_tree(self, len):
         "Creates a binary tree structure for the topology"
         for vals in bin_tree(len):
-            self.radio.add(*vals)
+            self.add_connection(*vals)
 
     def mess_topology(self):
         "Mess up the topology of the network to test if still correct"
@@ -125,6 +127,47 @@ class Simulation(object):
 
         for n in self.nodes:
             n.createNoiseModel()
+
+    def add_connection(self, n1, n2, distance):
+        if self.radio.connected(n1, n2):
+            print "already present, modifying the distance then"
+            self.radio.remove(n1, n2)
+            
+        self.radio.add(n1, n2, distance)
+        self.topology.append((n1,n2, distance))
+
+    def remove_connection(self, n1, n2):
+        if self.radio.connected(n1, n2):
+            self.radio.remove(n1, n2)
+            self.topology.remove((n1, n2))
+        else:
+            print "not present in the topology"
+
+    def interactive(self):
+        choice = input("\n\n1)topology management\n2)packet creation\n")
+        if choice == 1:
+            self.manipulate_topology()
+        if choice == 2:
+            self.send_packet()
+            
+    def manipulate_topology(self):
+        choice = input("1)see actual topology\n2)add one connection\n3)remove one connection\n")
+        if choice == 1:
+            for x in self.topology:
+                print "(%d -> %d) (%f)" % (x)
+
+        if choice == 2:
+            n1, n2, dist = input("first node\n"), input("second node\n"), float(input("distance\n"))
+            self.add_connection(n1, n2, dist)
+
+        if choice == 3:
+            nodes = raw_input("what are the nodes to remove?\n")
+            n1, n2 = map(int, nodes.split(" "))
+            if self.radio.connected(n1, n2):
+                self.radio.remove(n1, n2)
+            else:
+                print "not connected already"
+        
 
     def send_packet(self):
         "Creates and send a new serial packet"
