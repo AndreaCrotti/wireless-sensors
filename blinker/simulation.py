@@ -147,11 +147,10 @@ class Simulation(object):
             print "already present, modifying the distance then"
             self.radio.remove(n1, n2)
             
-        print "adding symmetrically the connection"
         self.radio.add(n1, n2, distance)
-        self.radio.add(n2, n1, distance)
+        # self.radio.add(n2, n1, distance)
         self.topology[(n1,n2)] = distance
-        self.topology[(n2,n1)] = distance
+        # self.topology[(n2,n1)] = distance
 
     def remove_connection(self, n1, n2):
         if self.radio.connected(n1, n2):
