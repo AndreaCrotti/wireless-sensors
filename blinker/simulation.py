@@ -163,8 +163,10 @@ class Simulation(object):
             self.inspect_variable()
 
     def inspect_variable(self):
+        "Ask for a variable to inspect and returns it"
         readline.parse_and_bind("tab: complete")
         mote = input("which mote you want to inspect?\n")
+        # see if this is actually correct
         c = rlcompleter.Completer(dict(zip(self.vars, self.vars)))
         readline.set_completer(c.complete)
         var = raw_input("which variable do you want to inspect\n")

@@ -89,6 +89,7 @@ implementation {
 
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
+        best_link = 0;
 
         // Initializing the hop count structures
         // the HOP_COUNTS keeps track of the minimal distances between every mote and the base station
