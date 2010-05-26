@@ -334,7 +334,7 @@ implementation {
             msg->seqno = own_sn++;
 
             dbg("Serial", "pkt destination is %d\n", msg->dests);
-
+            
             // serial receiver should only work for node 0???
             if (amIaReceiver(msg)) {
                 handleMessage(msg);

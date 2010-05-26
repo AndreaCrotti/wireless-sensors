@@ -260,8 +260,10 @@ implementation {
         // update the hop count to the minimum path given in input +1
         // careful here with variables with the same names
         message->hops_count = hops_count + 1;
-        // minimal number of hops to reach the base from here without considering the node itself
+        // distance of the mote with the minimal distance
         min_hops = hops_count;
+        // this is not reallly needed, it's just to keep the array complete
+        HOP_COUNTS[TOS_NODE_ID] = min_hops;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {

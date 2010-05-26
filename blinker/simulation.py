@@ -213,7 +213,7 @@ class Simulation(object):
             # processing what it's got from it
             self.sf.process()
 
-        print "sended packet %s" % str(msg)
+        print "sended packet:\n%s" % str(msg)
         self.seqno += 1
 
 class MyPacket(object):
@@ -228,22 +228,15 @@ class MyPacket(object):
         return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
 
     def make_packet(self):
-        from re import findall
-        header = open('Blink.h').read()
-        # instr = findall('MSG_.*', header)
-        # sens = findall('^SENS_.*', header)
-        # TODO: if possible make it less hard-wired, should fetch info from Blink.h
-        dest = input("Insert destination\n")
-        # typ = input("\n".join(instr) + "\n")
-        typ = input("1)led\n2)sensing request\n3)sensing data\n")
+        dest = input("Insert destination (as a bitmask)\n")
         self.msg.set_dests(dest)
+        typ = input("1)led\n2)sensing request\n3)sensing data\n")
         self.msg.set_type(typ)
 
         if typ == 1:
             mask = input("insert led mask\n")
             self.msg.set_instr(mask)
         elif typ == 2:
-            # sens = input("\n".join(sens) + "\n")
             sens = input("1)light\n2)infrared\n3)humidity\n4)temperature\n")
             self.msg.set_instr(sens)
         
@@ -252,8 +245,8 @@ class MyPacket(object):
             # you could also create a real data package maybe?
 
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
-#sim.make_topology("topo.txt")
-sim.make_bin_tree(2)
+sim.make_topology("topo.txt")
+#sim.make_bin_tree(2)
 #sim.make_rand_graph()
 sim.setup_noise("noise.txt")
 sim.start()
