@@ -12,6 +12,7 @@ ow the instructions
 import sys
 import time
 import random
+from StringIO import StringIO
 
 from TOSSIM import *
 from SerialMsg import *
@@ -24,15 +25,17 @@ SERIAL_PORT = 9001
 # TODO: give different colors to the various debug messages
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
-class StdoutDeco(file):
-    def __init__(self, name, color):
-        self.name = name
-        self.color = color
+class Channel(file): 
+    def __init__(self, name, fp, color, mode='r'): 
+        super(Channel, self).__init__("/dev/null")
+        # file.__init__(path, name)
+        self._name = name 
+        self._color = color 
 
-    def write(self, message):
-        message = "%s: %s" % (self.name, message)
-        sys.stdout.write(message)
-
+    def write(self, message): 
+        message = "%s: %s" % (self._name, message) 
+        self.write(message)
+        
 class Simulation(object):
     def __init__(self, num_nodes, port, channels):
         self.num_nodes = num_nodes
@@ -48,8 +51,9 @@ class Simulation(object):
         for c in channels:
             # 1. one color for each channel
             # 2. print the name of the channel before it
+            # ch = Channel(c, sys.stdout, 0)
+            # self.sim.addChannel(c, ch)
             self.sim.addChannel(c, sys.stdout)
-            # self.sim.addChannel(c, StdoutDeco(c, 0))
 
     def start(self):
         "Starts the simulation"
@@ -73,6 +77,8 @@ class Simulation(object):
         self.cycle()
 
     def cycle(self):
+        "Loop at infinite runnign all the events in the queue"
+        print "start cycling, use C-c to send data interactively"
         while True:
             try:
                 self.throttle.checkThrottle()
@@ -80,6 +86,7 @@ class Simulation(object):
                 # processing what it's got from it
                 self.sf.process()
             except KeyboardInterrupt:
+                # with the first interrupt we go in interactive mode, the second quits the program
                 try:
                     self.send_packet()
                     continue
@@ -94,6 +101,10 @@ class Simulation(object):
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))
             self.radio.add(*vals)
 
+    def mess_topology(self):
+        "Mess up the topology of the network to enable new testing"
+        pass
+
     def setup_noise(self, noise_file):
         for line in open(noise_file):
             val = int(line.strip())
@@ -104,8 +115,7 @@ class Simulation(object):
             n.createNoiseModel()
 
     def send_packet(self):
-        # exit gracefully when finished
-
+        "Creates and send a new serial packet"
         msg = MyPacket()
         msg.make_packet()
         serialpkt = self.sim.newSerialPacket();
@@ -135,7 +145,13 @@ class MyPacket(object):
         return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
 
     def make_packet(self):
+        from re import findall
+        header = open('Blink.h').read()
+        # instr = findall('MSG_.*', header)
+        # sens = findall('^SENS_.*', header)
+        # TODO: if possible make it less hard-wired, should fetch info from Blink.h
         dest = input("Insert destination\n")
+        # typ = input("\n".join(instr) + "\n")
         typ = input("1)led\n2)sensing request\n3)sensing data\n")
         self.msg.set_dests(dest)
         self.msg.set_type(typ)
@@ -143,11 +159,14 @@ class MyPacket(object):
         if typ == 1:
             mask = input("insert led mask\n")
             self.msg.set_instr(mask)
-        if typ == 2:
+        elif typ == 2:
+            # sens = input("\n".join(sens) + "\n")
             sens = input("1)light\n2)infrared\n3)humidity\n4)temperature\n")
             self.msg.set_instr(sens)
-
-        # you could also create a real data package maybe?
+        
+        else:
+            self.make_packet()
+            # you could also create a real data package maybe?
 
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
 sim.make_topology("topo.txt")

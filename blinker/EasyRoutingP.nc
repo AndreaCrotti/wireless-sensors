@@ -81,7 +81,6 @@ implementation {
         int i;
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         
-
         call Timer.startPeriodic(PERIOD);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
@@ -90,9 +89,24 @@ implementation {
 
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
-        // Set it to the maximum value reachable
-        message->hops_count = MAX_HOPS;
 
+        // Initializing the hop count structures
+        // the HOP_COUNTS keeps track of the minimal distances between every mote and the base station
+        // This means that it's at first set to \infinity for all except the base station itself
+
+        for (i = 0; i < MAX_MOTES; i++) {
+            HOP_COUNTS[i] = MAX_HOPS;
+        }
+
+        if (TOS_NODE_ID == 0) {
+            // in the base station of course there can't be shortest paths
+            HOP_COUNTS[0] = 0;
+            message->hops_count = 0;
+            min_hops = 0;
+        } else {
+            min_hops = MAX_HOPS;
+            message->hops_count = MAX_HOPS;
+        }
         return SUCCESS;
     }
 
@@ -101,6 +115,12 @@ implementation {
         broadcast_beacon();
         check_timeout(call Timer.getNow());
         //dbg("Routing", "Now the neighbor list is %d\n", neighbours);
+        /* { */
+        /*     int i; */
+        /*     for (i = 0; i < MAX_MOTES; i++) { */
+        /*         dbg("Routing", "hops to %d = %d\n", i, HOP_COUNTS[i]); */
+        /*     } */
+        /* } */
     }
 
     /** 
@@ -195,7 +215,8 @@ implementation {
             LAST_ARRIVAL[sender] = arrivalTime / PERIOD;
             addNeighbour(sender);
 
-            // update the hop count
+            // Should I always set it or should I check it first?
+            // Maybe the mote has moved away from the base and then the path became longer
             HOP_COUNTS[sender] = hops_count;
             /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
             checkParent(hops_count, sender, msg);
@@ -210,10 +231,13 @@ implementation {
      *
      */
     void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
+        /* dbg("Routing", "Hops count = %d and min_hops = %d\n", hops_count, min_hops); */
         if (hops_count < min_hops) {
-            dbg("Routing", "Found a shortest path to the base station from node %d\n", sender);
+            // we should enter here very quickly in theory
+            /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
             // then we found a shortest path to the base station
             updateHops(hops_count);
+            dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
         }
 
@@ -242,6 +266,8 @@ implementation {
         // update the hop count to the minimum path given in input +1
         // careful here with variables with the same names
         message->hops_count = hops_count + 1;
+        // minimal number of hops to reach the base from here without considering the node itself
+        min_hops = hops_count;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
