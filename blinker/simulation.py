@@ -109,10 +109,8 @@ class Simulation(object):
                 except KeyboardInterrupt:
                     sys.exit()
         
-    # TODO: topology must be created using functions every time and not reading from text files
     def make_topology(self, topo_file):
-        # TODO: every time it should be resetted so we can change te topology on the fly
-        # not so easy apparently
+        "Creates the topology from the given file"
         for line in open(topo_file):
             vals = line.split()
             vals = (int(vals[0]), int(vals[1]), float(vals[2]))
@@ -183,7 +181,7 @@ class Simulation(object):
         print "mote %d:var %s = %s" % (mote, var, self.nodes[mote].getVariable(var).getData())
             
     def manipulate_topology(self):
-        choice = input("1)see actual topology\n2)add one connection\n3)remove one connection\n")
+        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
         if choice == 1:
             for x in self.topology:
                 print "(%d -> %d) (%f)" % (x[0], x[1], self.topology[x])
@@ -202,7 +200,7 @@ class Simulation(object):
         msg = MyPacket()
         msg.make_packet()
         serialpkt = self.sim.newSerialPacket();
-        serialpkt.setData(msg.data)
+        serialpkt.setData(msg.get_data())
         serialpkt.setType(msg.am_type)
         serialpkt.setDestination(0)
         serialpkt.deliver(0, self.sim.time() + 3)
@@ -221,11 +219,13 @@ class MyPacket(object):
         self.msg = SerialMsg()
         # that's because we're always in mote 0 here
         self.msg.set_sender(0)
-        self.data = self.msg.data
         self.am_type = self.msg.get_amType()
     
     def __str__(self):
         return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
+
+    def get_data(self):
+        return self.msg.data
 
     def make_packet(self):
         dest = input("Insert destination (as a bitmask)\n")
@@ -245,8 +245,11 @@ class MyPacket(object):
             # you could also create a real data package maybe?
 
 sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
-sim.make_topology("topo.txt")
-#sim.make_bin_tree(2)
-#sim.make_rand_graph()
+topo_file = "topo.txt"
+
+if len(sys.argv) == 2:
+    topo_file = sys.argv[1]
+    
+sim.make_topology(topo_file)
 sim.setup_noise("noise.txt")
 sim.start()
