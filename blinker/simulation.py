@@ -40,6 +40,14 @@ SERIAL_PORT = 9001
 
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
+def print_var_table(vars):
+    from re import match
+    print "\nvariable list\n"
+    for v in vars:
+        if re.match(r"Blink.*|Easy.*|Rulti.*", v):
+            print v
+    print "\n"
+
 def get_decorated_file(f, prefix, color): 
     proc = subprocess.Popen(['python', 'colorize.py', prefix, color], 
                             bufsize=0, 
@@ -184,10 +192,11 @@ class Simulation(object):
         "Ask for a variable to inspect and returns it"
         readline.parse_and_bind("tab: complete")
         mote = input("which mote you want to inspect?\n")
+        print_var_table(self.vars)
         # see if this is actually correct
         c = rlcompleter.Completer(dict(zip(self.vars, self.vars)))
         readline.set_completer(c.complete)
-        var = raw_input("which variable do you want to inspect\n")
+        var = raw_input("which variable do you want to inspect?\n")
         print "mote %d:var %s = %s" % (mote, var, self.nodes[mote].getVariable(var).getData())
             
     def manipulate_topology(self):
