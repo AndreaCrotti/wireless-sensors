@@ -16,11 +16,12 @@ $TOSROOT/support/sdk/python/ in your PYTHONPATH variable
 
 import sys
 import time
+import subprocess
 import random
 import readline
 import rlcompleter
 
-from StringIO import StringIO
+from colorize import colors
 
 from TOSSIM import *
 from SerialMsg import *
@@ -34,18 +35,15 @@ SERIAL_PORT = 9001
 
 # channels used for debug messages
 # TODO: give different colors to the various debug messages
+
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
-# FIXME: still not working, the idiotic addChannel wants a real file..
-class Channel(file): 
-    def __init__(self, name, fp, color, mode='w'): 
-        super(Channel, self).__init__(fp)
-        self._name = name 
-        self._color = color 
-
-    def write(self, message):
-        message = "%s: %s" % (self._name, message) 
-        file.write(message)
+def get_decorated_file(f, prefix, color): 
+    proc = subprocess.Popen(['python', 'colorize.py', prefix, color], 
+                            bufsize=0, 
+                            stdin=subprocess.PIPE, 
+                            stdout=f) 
+    return proc.stdin 
         
 class Simulation(object):
     def __init__(self, num_nodes, port, channels):
@@ -64,13 +62,18 @@ class Simulation(object):
         self.topology = {}
         # this is used to inspect our code
 
+        cols = colors.keys()
+        idx = 0
         # adding all the channels
         for c in channels:
             # 1. one color for each channel
             # 2. print the name of the channel before it
             # ch = Channel(c, sys.stdout, 0)
             # self.sim.addChannel(c, ch)
-            self.sim.addChannel(c, sys.stdout)
+            ch = get_decorated_file(sys.stdout, c, cols[idx])
+            self.sim.addChannel(c, ch)
+            # we should not have so many but just in case
+            idx = (idx + 1) % len(cols)
 
     def start(self):
         "Starts the simulation"
@@ -126,9 +129,9 @@ class Simulation(object):
         for vals in bin_tree(len):
             self.add_connection(*vals)
 
-    def mess_topology(self):
-        "Mess up the topology of the network to test if still correct"
-        pass
+    def get_max_node(self):
+        "Look into the keys and automatically flat the list with two max"
+        return max(max(couple) for couple in self.topology)
 
     def setup_noise(self, noise_file):
         for line in open(noise_file):
@@ -138,9 +141,10 @@ class Simulation(object):
 
         for n in self.nodes:
             n.createNoiseModel()
-
+    
     def add_connection(self, n1, n2, distance):
         "Add to the radio channel a connection between the two nodes"
+        # check if the nodes are present at all
         if self.radio.connected(n1, n2):
             print "already present, modifying the distance then"
             self.radio.remove(n1, n2)
@@ -214,6 +218,11 @@ class Simulation(object):
         print "sended packet:\n%s" % str(msg)
         self.seqno += 1
 
+    def automated_test(self):
+        "launch some tests automatically to test all the features"
+        # test all the possible things with some easy stuff
+        pass
+
 class MyPacket(object):
     def __init__(self):
         self.msg = SerialMsg()
@@ -250,6 +259,7 @@ topo_file = "topo.txt"
 if len(sys.argv) == 2:
     topo_file = sys.argv[1]
     
+# TODO: only creates the number of nodes present our file
 sim.make_topology(topo_file)
 sim.setup_noise("noise.txt")
 sim.start()
