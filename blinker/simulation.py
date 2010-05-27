@@ -4,6 +4,7 @@
 TODO: instead of just printing to debug can I get and parse the output from the program?
 TODO: check what is the minimal number of events to run to be sure we trigger everything
 TODO: use different subclasses instead
+TODO: check problems with multiple destinations
 
 Usage:
 Run normally "python simulation.py", wait that the motes are booted and then, pressing C-c it will ask interactively to build a packet and will send it over the serial channel
@@ -28,6 +29,7 @@ from colorize import colors
 from TOSSIM import *
 from SerialMsg import *
 from tinyos.tossim.TossimApp import *
+from tinyos.message import MoteIF
 
 from gen_network import bin_tree, rand_graph
 

@@ -255,7 +255,7 @@ implementation {
             /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
             // then we found a shortest path to the base station
             updateHops(hops_count);
-            /* dbg("Routing", "Now the parent is %d\n", sender); */
+            dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
         }
 
