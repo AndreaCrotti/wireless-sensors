@@ -107,11 +107,6 @@ implementation {
      * The send data should be stored in the global pkt_cmd_out variable.
      */
     task void transmitMessage() {
-        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0));
-        
-        dbg("Radio", "entered 'transmitMessage' with destinations %d\n", msg->dests);
-
-
         // TODO: should we also check the result or not?
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg));
     }
@@ -123,12 +118,7 @@ implementation {
      * The send data should be stored in the global pkt_cmd_out variable.
      */
     task void transmitSensing() {
-        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
-        
-        dbg("Radio", "entered 'transmitSensing' with destinations %d\n", msg->dests);
-
-
-        // TODO: should we also check the result or not?
+         // TODO: should we also check the result or not?
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
     }
 
@@ -246,6 +236,8 @@ implementation {
             
         case MSG_SENS_REQ:
             dbg("Sensor", "recognized sensing request %d\n", msg->instr);
+            setLed(1);
+
             // Message is a sensing request
             // store the message locally
             *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
@@ -305,8 +297,9 @@ implementation {
                     handleMessage(btrpkt);
                 }
                 
-                if(btrpkt->type == 3){
+                if(btrpkt->type == MSG_SENS_DATA){
                     dbg("Sensor", "About to forward sensing results \n");
+                    setLed(4);
                 }
 
                 *(BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0)) = *btrpkt; 
@@ -360,7 +353,7 @@ implementation {
             if (amIaReceiver(msg)) {
                 handleMessage(msg);
             }
-
+            
             // set correctly the content of the message and post the trasmission
             *(BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0)) = *msg; 
             post transmitMessage();
@@ -408,6 +401,7 @@ implementation {
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	
         dbg("Sensor", "sendSensingData is called\n");
+        setLed(2);
 
         // Add new contents
 	newMsg->dests = (1 << (request->sender));
