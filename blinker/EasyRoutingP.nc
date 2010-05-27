@@ -58,10 +58,9 @@ implementation {
 
     // structure that keeps the hop count for every of the neighbors
     uint8_t HOP_COUNTS[MAX_MOTES];
-
-    // minimal number of hops to reach the base station
-    // FIXME: rename to a better name
-    uint8_t min_hops;
+    
+    // number of hops of the closest to the base neighbour
+    uint8_t hops_closest_neighbour;
     
     uint16_t best_link;
 
@@ -104,9 +103,9 @@ implementation {
             // in the base station of course there can't be shortest paths
             HOP_COUNTS[0] = 0;
             message->hops_count = 0;
-            min_hops = 0;
+            hops_closest_neighbour = 0;
         } else {
-            min_hops = MAX_HOPS;
+            hops_closest_neighbour = MAX_HOPS;
             message->hops_count = MAX_HOPS;
         }
         return SUCCESS;
@@ -227,8 +226,8 @@ implementation {
      *
      */
     void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
-        /* dbg("Routing", "Hops count = %d and min_hops = %d\n", hops_count, min_hops); */
-        if (hops_count < min_hops) {
+        /* dbg("Routing", "Hops count = %d and hops_closest_neighbour = %d\n", hops_count, hops_closest_neighbour); */
+        if (hops_count < hops_closest_neighbour) {
             // we should enter here very quickly in theory
             /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
             // then we found a shortest path to the base station
@@ -243,7 +242,7 @@ implementation {
             int8_t rssi_val;
             // in case it's equal to the minimum we must check the quality of the link
             // otherwise we can just keep the last best one and it still works fine
-            if (hops_count == min_hops) {
+            if (hops_count == hops_closest_neighbour) {
                 rssi_val = call CC2420Packet.getRssi(msg);
                 dbg("Routing", "Equal distance, now checking for RSSI value");
                 if (rssi_val < best_link) {
@@ -263,9 +262,9 @@ implementation {
         // careful here with variables with the same names
         message->hops_count = hops_count + 1;
         // distance of the mote with the minimal distance
-        min_hops = hops_count;
+        hops_closest_neighbour = hops_count;
         // this is not reallly needed, it's just to keep the array complete
-        HOP_COUNTS[TOS_NODE_ID] = min_hops;
+        HOP_COUNTS[TOS_NODE_ID] = hops_closest_neighbour;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {

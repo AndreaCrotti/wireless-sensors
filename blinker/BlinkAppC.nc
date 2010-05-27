@@ -112,9 +112,9 @@ implementation {
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> EasyRoutingP;
     BlinkC.RoutingInit -> EasyRoutingP;
-    #ifndef TOSSIM
-        BlinkC.ActiveMessageAddress -> ActiveMessageAddressC;
-    #endif
+#ifndef TOSSIM
+    BlinkC.ActiveMessageAddress -> ActiveMessageAddressC;
+#endif
 
     /// serial communication
     BlinkC.SerialAMSend -> SerialBlinkSender;
