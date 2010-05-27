@@ -55,7 +55,7 @@ implementation {
 
     //// variables to control the channel ////
     // The current outgoing radio message
-    message_t pkt_radio_out;
+    message_t pkt_cmd_out;
     // The current outgoing serial message
     message_t pkt_serial_out;
     // The last incoming sensing message
@@ -104,32 +104,32 @@ implementation {
     /**
      * Transmits a command over the network.
      *
-     * The send data should be stored in the global pkt_radio_out variable.
+     * The send data should be stored in the global pkt_cmd_out variable.
      */
     task void transmitMessage() {
-        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0));
+        BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0));
         
         dbg("Radio", "entered 'transmitMessage' with destinations %d\n", msg->dests);
 
 
         // TODO: should we also check the result or not?
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg));
     }
 
 
     /**
      * Transmits a command over the network.
      *
-     * The send data should be stored in the global pkt_radio_out variable.
+     * The send data should be stored in the global pkt_cmd_out variable.
      */
     task void transmitSensing() {
         BlinkMsg* msg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
         
-        dbg("Radio", "entered 'transmitMessage' with destinations %d\n", msg->dests);
+        dbg("Radio", "entered 'transmitSensing' with destinations %d\n", msg->dests);
 
 
         // TODO: should we also check the result or not?
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt_radio_out, sizeof(BlinkMsg));
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
     }
 
 
@@ -236,13 +236,16 @@ implementation {
      * @param msg pointer to the message
      */
     void handleMessage(BlinkMsg* msg){
-        /// checking what message type
+        dbg("Sensor", "handleMessage is called \n");
+        
+        // checking what message type
         switch (msg->type) {
         case MSG_INSTR:
             setLed(msg->instr);
             break;
             
         case MSG_SENS_REQ:
+            dbg("Sensor", "recognized sensing request %d\n", msg->instr);
             // Message is a sensing request
             // store the message locally
             *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
@@ -303,10 +306,10 @@ implementation {
                 }
                 
                 if(btrpkt->type == 3){
-                    dbg("Sensing", "About to forward sensing results \n");
+                    dbg("Sensor", "About to forward sensing results \n");
                 }
 
-                *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
+                *(BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0)) = *btrpkt; 
                 post transmitMessage();
             }
         }
@@ -349,6 +352,7 @@ implementation {
             // Set the sender to the current Mote's ID
             msg->sender = TOS_NODE_ID;
             msg->seqno = own_sn++;
+            curr_sn[TOS_NODE_ID] = msg->seqno;
 
             dbg("Serial", "pkt destination is %d\n", msg->dests);
             
@@ -358,7 +362,7 @@ implementation {
             }
 
             // set correctly the content of the message and post the trasmission
-            *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *msg; 
+            *(BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0)) = *msg; 
             post transmitMessage();
         }
         return message;
@@ -403,10 +407,10 @@ implementation {
 	// get the request message
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	
-        dbg("Sensing", "sendSensingData is called\n");
+        dbg("Sensor", "sendSensingData is called\n");
 
         // Add new contents
-	newMsg->dests = (1 << request->sender);
+	newMsg->dests = (1 << (request->sender));
 	newMsg->sender = TOS_NODE_ID;
 	newMsg->seqno = own_sn++;
 	newMsg->type = 3;
@@ -416,6 +420,9 @@ implementation {
 	if (amIaReceiver(newMsg)) {
 	    handleMessage(newMsg);
 	}
+
+        dbg("Sensor", "After packet creation sender is %d \n", newMsg->sender);
+
 	// assign to the payload of the our global packet the new message created 
 	post transmitSensing();
     }

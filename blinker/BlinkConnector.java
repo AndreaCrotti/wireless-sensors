@@ -141,7 +141,7 @@ public class BlinkConnector implements MessageListener {
 
         BlinkMsg msg = (BlinkMsg)message;
         
-        int sender = getIDFromBM(msg.get_sender());
+        int sender = msg.get_sender();
         short instr = msg.get_instr();
         int data = msg.get_data();
         
