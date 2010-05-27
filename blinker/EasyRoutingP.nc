@@ -58,24 +58,25 @@ implementation {
 
     // structure that keeps the hop count for every of the neighbors
     uint8_t HOP_COUNTS[MAX_MOTES];
-
-    // minimal number of hops to reach the base station
-    // FIXME: rename to a better name
-    uint8_t min_hops;
     
+    // number of hops of the closest to the base neighbour
+    uint8_t hops_closest_neighbour;
     uint16_t best_link;
-
     nodeid_t parent;
+
+    // this is only used by the root node to make sure
+    uint8_t rootNodeSet = 0;
 
     void check_timeout(uint32_t);
     void init_msgs();
-    void broadcast_beacon();
+    void broadcastBeacon();
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
-
+    void initializeRootNode();
+    
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
     command error_t Init.init() {
@@ -100,13 +101,15 @@ implementation {
             HOP_COUNTS[i] = MAX_HOPS;
         }
 
+        // TODO: check if other ways not hardwiring
+        // we can just set the values for node 0 when we first receive the Serial message
         if (TOS_NODE_ID == 0) {
             // in the base station of course there can't be shortest paths
             HOP_COUNTS[0] = 0;
             message->hops_count = 0;
-            min_hops = 0;
+            hops_closest_neighbour = 0;
         } else {
-            min_hops = MAX_HOPS;
+            hops_closest_neighbour = MAX_HOPS;
             message->hops_count = MAX_HOPS;
         }
         return SUCCESS;
@@ -114,15 +117,26 @@ implementation {
 
     event void Timer.fired() {
         // motes in timeout can be checked at every 
-        broadcast_beacon();
+        broadcastBeacon();
         check_timeout(call Timer.getNow());
     }
+    
+    // This function should be called from the SerialReceive code to avoid hard wiring for root, is that possible??
+    void initializeRootNode() {
+        if (!rootNodeSet) {
+            // in the base station of course there can't be shortest paths
+            HOP_COUNTS[0] = 0;
+            /* message->hops_count = 0; */
+            hops_closest_neighbour = 0;
+        }
+    }
+
 
     /** 
      * Broadcast the beacon package
      * 
      */
-    void broadcast_beacon() {
+    void broadcastBeacon() {
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
@@ -145,22 +159,30 @@ implementation {
             // Get the destination inside BlinkMsg
             BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
             nodes_t destinations = bMsg->dests;
+            type_t type = bMsg->type;
 
             if (!otherReceivers(destinations))
                 return SUCCESS;
 
             dbg("Routing", "Sending started with destinations %d\n", destinations);
             
-
-            // If one of the destinations is not in our neighbour list, we make a broadcast,
-            // otherwise a multi/unicast
-            if ((destinations & ~neighbours) != 0) {
-                dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
-                result = call RelSend.send(neighbours, msg, len);
-            } else {
-                dbg("Routing", "Sending to nodes %d\n", destinations);
-                result = call RelSend.send(destinations, msg, len);
+            // only in the case of sensing data we really use the routing tree that we've created
+            if (type == MSG_SENS_DATA) {
+                result = call RelSend.send(parent, msg, len);
             }
+            else {
+
+                // If one of the destinations is not in our neighbour list, we make a broadcast,
+                // otherwise a multi/unicast
+                if ((destinations & ~neighbours) != 0) {
+                    dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
+                    result = call RelSend.send(neighbours, msg, len);
+                } else {
+                    dbg("Routing", "Sending to nodes %d\n", destinations);
+                    result = call RelSend.send(destinations, msg, len);
+                }
+            }
+
         } else {
             // Should normally not be used
             // For now, everything is only forwarded.
@@ -227,13 +249,13 @@ implementation {
      *
      */
     void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
-        /* dbg("Routing", "Hops count = %d and min_hops = %d\n", hops_count, min_hops); */
-        if (hops_count < min_hops) {
+        /* dbg("Routing", "Hops count = %d and hops_closest_neighbour = %d\n", hops_count, hops_closest_neighbour); */
+        if (hops_count < hops_closest_neighbour) {
             // we should enter here very quickly in theory
             /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
             // then we found a shortest path to the base station
             updateHops(hops_count);
-            dbg("Routing", "Now the parent is %d\n", sender);
+            /* dbg("Routing", "Now the parent is %d\n", sender); */
             parent = sender;
         }
 
@@ -243,7 +265,7 @@ implementation {
             int8_t rssi_val;
             // in case it's equal to the minimum we must check the quality of the link
             // otherwise we can just keep the last best one and it still works fine
-            if (hops_count == min_hops) {
+            if (hops_count == hops_closest_neighbour) {
                 rssi_val = call CC2420Packet.getRssi(msg);
                 dbg("Routing", "Equal distance, now checking for RSSI value");
                 if (rssi_val < best_link) {
@@ -263,9 +285,9 @@ implementation {
         // careful here with variables with the same names
         message->hops_count = hops_count + 1;
         // distance of the mote with the minimal distance
-        min_hops = hops_count;
+        hops_closest_neighbour = hops_count;
         // this is not reallly needed, it's just to keep the array complete
-        HOP_COUNTS[TOS_NODE_ID] = min_hops;
+        HOP_COUNTS[TOS_NODE_ID] = hops_closest_neighbour;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
