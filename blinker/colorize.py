@@ -36,6 +36,7 @@ def main():
             if not(line):
                 break
 
+            line = line.replace("DEBUG ", "")
             line = "%s:: %s" % (prefix, line)
             sys.stdout.write(setcolor(line, color)) 
 
