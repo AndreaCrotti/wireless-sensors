@@ -55,6 +55,7 @@ def get_decorated_file(f, prefix, color):
                             stdout=f) 
     return proc.stdin 
         
+# add to the local variables also the variables in the 
 class Simulation(object):
     def __init__(self, num_nodes, port, channels):
         self.app = NescApp()
@@ -70,8 +71,6 @@ class Simulation(object):
         self.seqno = 0
         # at the moment is only used to store and show the topology informations
         self.topology = {}
-        # this is used to inspect our code
-        # self.interactive_output = get_decorated_file(sys.stdout, "", "green")
 
         cols = colors.keys()
         idx = 0
@@ -79,8 +78,6 @@ class Simulation(object):
         for c in channels:
             # 1. one color for each channel
             # 2. print the name of the channel before it
-            # ch = Channel(c, sys.stdout, 0)
-            # self.sim.addChannel(c, ch)
             ch = get_decorated_file(sys.stdout, c, cols[idx])
             self.sim.addChannel(c, ch)
             # we should not have so many but just in case
@@ -180,13 +177,15 @@ class Simulation(object):
         # FIXME: the order of printing now is not respected though, concurrency stuff
         get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
         # print "entering interactive session, another C-c to quit the program"
-        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n\n")
+        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n\n")
         if choice == 1:
             self.manipulate_topology()
         if choice == 2:
             self.send_packet()
         if choice == 3:
             self.inspect_variable()
+        if choice == 4:
+            self.inspect_mote()
 
     def inspect_variable(self):
         "Ask for a variable to inspect and returns it"
@@ -197,7 +196,27 @@ class Simulation(object):
         c = rlcompleter.Completer(dict(zip(self.vars, self.vars)))
         readline.set_completer(c.complete)
         var = raw_input("which variable do you want to inspect?\n")
-        print "mote %d:var %s = %s" % (mote, var, self.nodes[mote].getVariable(var).getData())
+        print "mote %d:var %s = %s" % (mote, var, self.get_variable(mote, var))
+
+    def inspect_mote(self):
+        mote = input("which mote you want to inspect?\n")
+        self.print_mote_vars(mote)
+
+    def custom_command(self):
+        "Takes a custom python command and executes it"
+        pass
+
+    def get_variable(self, mote, var):
+        return self.nodes[mote].getVariable(var).getData()
+
+    def filter_variable(self, mod = "Easy|Blink|Rulti"):
+        for v in self.vars:
+            if re.match(mod, v):
+                yield v
+
+    def print_mote_vars(self, mote):
+        for v in self.filter_variable():
+            print self.get_variable(mote, v)
             
     def manipulate_topology(self):
         choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")

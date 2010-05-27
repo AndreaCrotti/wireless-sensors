@@ -23,3 +23,5 @@ for x in range(10):
 ledmask = 5
 for x in (2**x for x in range(3)):
     print "setting led %s on ledmask %s getting -> %s" % (str(bin(x)), str(bin(ledmask)), str(bin(updateLedMask(ledmask, x))))
+
+# create some simple packets to send to the simulation
