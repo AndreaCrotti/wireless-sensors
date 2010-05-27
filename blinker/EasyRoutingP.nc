@@ -60,6 +60,7 @@ implementation {
     uint8_t HOP_COUNTS[MAX_MOTES];
 
     // minimal number of hops to reach the base station
+    // FIXME: rename to a better name
     uint8_t min_hops;
     
     uint16_t best_link;
@@ -267,11 +268,10 @@ implementation {
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
-        dbg("Routing", "Received message not fully\n");
         if (len == sizeof(BlinkMsg)) {
             // just forward the message
-            dbg("Routing", "Received a message\n");
-            signal Receive.receive(msg, payload, len);
+            dbg("Routing", "Received a message\n"); 
+           signal Receive.receive(msg, payload, len);
         }
         return msg;
     }
