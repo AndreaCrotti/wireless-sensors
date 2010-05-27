@@ -32,13 +32,16 @@ from tinyos.tossim.TossimApp import *
 from gen_network import bin_tree, rand_graph
 
 RUNTIME = 2
+
 MAX_NODES = 16
 SERIAL_PORT = 9001
 
 # channels used for debug messages
 # TODO: give different colors to the various debug messages
 
-CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
+# CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
+CHANNELS = ("Boot", "Radio", "Routing", "Sensor")
+
 
 def print_var_table(vars):
     from re import match

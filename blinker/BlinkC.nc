@@ -302,6 +302,10 @@ implementation {
                     handleMessage(btrpkt);
                 }
                 
+                if(btrpkt->type == 3){
+                    dbg("Sensing", "About to forward sensing results \n");
+                }
+
                 *(BlinkMsg*)(call Packet.getPayload(&pkt_radio_out, 0)) = *btrpkt; 
                 post transmitMessage();
             }
@@ -398,7 +402,10 @@ implementation {
 	BlinkMsg* newMsg = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_out, 0));
 	// get the request message
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
-	// Add new contents
+	
+        dbg("Sensing", "sendSensingData is called\n");
+
+        // Add new contents
 	newMsg->dests = (1 << request->sender);
 	newMsg->sender = TOS_NODE_ID;
 	newMsg->seqno = own_sn++;

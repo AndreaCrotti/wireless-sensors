@@ -145,10 +145,11 @@ implementation {
             BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
             nodes_t destinations = bMsg->dests;
 
-            dbg("Routing", "Sending started with destinations %d\n", destinations);
-            
             if (!otherReceivers(destinations))
                 return SUCCESS;
+
+            dbg("Routing", "Sending started with destinations %d\n", destinations);
+            
 
             // If one of the destinations is not in our neighbour list, we make a broadcast,
             // otherwise a multi/unicast
@@ -267,7 +268,6 @@ implementation {
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
-        dbg("Routing", "Received message not fully\n");
         if (len == sizeof(BlinkMsg)) {
             // just forward the message
             dbg("Routing", "Received a message\n");
