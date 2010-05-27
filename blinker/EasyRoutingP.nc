@@ -61,20 +61,22 @@ implementation {
     
     // number of hops of the closest to the base neighbour
     uint8_t hops_closest_neighbour;
-    
     uint16_t best_link;
-
     nodeid_t parent;
+
+    // this is only used by the root node to make sure
+    uint8_t rootNodeSet = 0;
 
     void check_timeout(uint32_t);
     void init_msgs();
-    void broadcast_beacon();
+    void broadcastBeacon();
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
-
+    void initializeRootNode();
+    
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
     command error_t Init.init() {
@@ -99,6 +101,8 @@ implementation {
             HOP_COUNTS[i] = MAX_HOPS;
         }
 
+        // TODO: check if other ways not hardwiring
+        // we can just set the values for node 0 when we first receive the Serial message
         if (TOS_NODE_ID == 0) {
             // in the base station of course there can't be shortest paths
             HOP_COUNTS[0] = 0;
@@ -113,15 +117,26 @@ implementation {
 
     event void Timer.fired() {
         // motes in timeout can be checked at every 
-        broadcast_beacon();
+        broadcastBeacon();
         check_timeout(call Timer.getNow());
     }
+    
+    // This function should be called from the SerialReceive code to avoid hard wiring for root, is that possible??
+    void initializeRootNode() {
+        if (!rootNodeSet) {
+            // in the base station of course there can't be shortest paths
+            HOP_COUNTS[0] = 0;
+            /* message->hops_count = 0; */
+            hops_closest_neighbour = 0;
+        }
+    }
+
 
     /** 
      * Broadcast the beacon package
      * 
      */
-    void broadcast_beacon() {
+    void broadcastBeacon() {
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
@@ -144,22 +159,30 @@ implementation {
             // Get the destination inside BlinkMsg
             BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
             nodes_t destinations = bMsg->dests;
+            type_t type = bMsg->type;
 
             if (!otherReceivers(destinations))
                 return SUCCESS;
 
             dbg("Routing", "Sending started with destinations %d\n", destinations);
             
-
-            // If one of the destinations is not in our neighbour list, we make a broadcast,
-            // otherwise a multi/unicast
-            if ((destinations & ~neighbours) != 0) {
-                dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
-                result = call RelSend.send(neighbours, msg, len);
-            } else {
-                dbg("Routing", "Sending to nodes %d\n", destinations);
-                result = call RelSend.send(destinations, msg, len);
+            // only in the case of sensing data we really use the routing tree that we've created
+            if (type == MSG_SENS_DATA) {
+                result = call RelSend.send(parent, msg, len);
             }
+            else {
+
+                // If one of the destinations is not in our neighbour list, we make a broadcast,
+                // otherwise a multi/unicast
+                if ((destinations & ~neighbours) != 0) {
+                    dbg("Routing", "Forwarding to all neighbours %d\n",  neighbours);
+                    result = call RelSend.send(neighbours, msg, len);
+                } else {
+                    dbg("Routing", "Sending to nodes %d\n", destinations);
+                    result = call RelSend.send(destinations, msg, len);
+                }
+            }
+
         } else {
             // Should normally not be used
             // For now, everything is only forwarded.
@@ -232,7 +255,7 @@ implementation {
             /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
             // then we found a shortest path to the base station
             updateHops(hops_count);
-            dbg("Routing", "Now the parent is %d\n", sender);
+            /* dbg("Routing", "Now the parent is %d\n", sender); */
             parent = sender;
         }
 
