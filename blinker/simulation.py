@@ -32,7 +32,7 @@ from tinyos.tossim.TossimApp import *
 from gen_network import bin_tree, rand_graph
 
 RUNTIME = 2
-NUM_NODES = 16
+MAX_NODES = 16
 SERIAL_PORT = 9001
 
 # channels used for debug messages
@@ -57,15 +57,14 @@ def get_decorated_file(f, prefix, color):
         
 # add to the local variables also the variables in the 
 class Simulation(object):
-    def __init__(self, num_nodes, port, channels):
+    def __init__(self, port, channels):
         self.app = NescApp()
         self.vars = self.app.variables.variables()
-        self.num_nodes = num_nodes
         # I pass the variables to the simulator 
         self.sim = Tossim(self.vars)
-        self.nodes = [self.sim.getNode(x) for x in range(self.num_nodes)]
-        self.mac = self.sim.mac()
+        self.nodes = {}
         self.radio = self.sim.radio()
+        # the serial forwarder stuff is needed only by the java interaface
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
@@ -83,9 +82,21 @@ class Simulation(object):
             # we should not have so many but just in case
             idx = (idx + 1) % len(cols)
 
+    def add_node(self, idx):
+        if (len(self.nodes) + 1) == MAX_NODES:
+            print "Not possible to add more nodes, reached limit"
+
+        # otherwise add to the dictionary the correct node
+        elif not(self.nodes.has_key(idx)):
+            print "adding node %d to the network" % idx
+            self.nodes[idx] = self.sim.getNode(idx)
+
+    # TODO: we should then implement the removal as well
+    # making sure we always keep a minimal set of nodes
+
     def start(self):
         "Starts the simulation"
-        for n in self.nodes:
+        for n in self.nodes.values():
             n.bootAtTime(random.randint(100001, 900009))
             
         self.sf.process()
@@ -130,7 +141,7 @@ class Simulation(object):
 
     def make_rand_graph(self):
         "Creates a random graph"
-        for vals in rand_graph(NUM_NODES, 5):
+        for vals in rand_graph(MAX_NODES, 5):
             self.add_connection(*vals)
 
     def make_bin_tree(self, len):
@@ -145,10 +156,10 @@ class Simulation(object):
     def setup_noise(self, noise_file):
         for line in open(noise_file):
             val = int(line.strip())
-            for n in self.nodes:
+            for n in self.nodes.values():
                 n.addNoiseTraceReading(val)
 
-        for n in self.nodes:
+        for n in self.nodes.values():
             n.createNoiseModel()
     
     def add_connection(self, n1, n2, distance):
@@ -158,6 +169,8 @@ class Simulation(object):
             print "already present, modifying the distance then"
             self.radio.remove(n1, n2)
             
+        self.add_node(n1)
+        self.add_node(n2)
         self.radio.add(n1, n2, distance)
         # self.radio.add(n2, n1, distance)
         self.topology[(n1,n2)] = distance
@@ -287,7 +300,7 @@ class MyPacket(object):
             self.make_packet()
             # you could also create a real data package maybe?
 
-sim = Simulation(NUM_NODES, SERIAL_PORT, CHANNELS)
+sim = Simulation(SERIAL_PORT, CHANNELS)
 topo_file = "topo.txt"
 
 if len(sys.argv) == 2:
