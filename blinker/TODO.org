@@ -12,3 +12,4 @@
 * Use @safe if possible and see possible usages
 
 * See tos.interfaces.PacketLink interface to setup the correct number of retries and so on
+* See how to configure [[http://docs.tinyos.net/index.php/Setting_up_TUnit][Tunit]] and [[http://docs.tinyos.net/index.php/Multi-Node_Unit_Testing][Multi node testing]]

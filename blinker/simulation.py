@@ -12,6 +12,8 @@ ow the instructions
 We can also inspect variables while we run the program.
 If this script doesn't work make sure you have
 $TOSROOT/support/sdk/python/ in your PYTHONPATH variable
+
+We can also do some sort of unit testing using variables.
 """
 
 import sys
@@ -61,6 +63,7 @@ class Simulation(object):
         # at the moment is only used to store and show the topology informations
         self.topology = {}
         # this is used to inspect our code
+        # self.interactive_output = get_decorated_file(sys.stdout, "", "green")
 
         cols = colors.keys()
         idx = 0
@@ -97,6 +100,7 @@ class Simulation(object):
     def cycle(self):
         "Loop at infinite runnign all the events in the queue"
         print "start cycling, use C-c to send data interactively"
+        # self.interactive_output.write("start cycling, use C-c to send data interactively\n")
         while True:
             try:
                 self.throttle.checkThrottle()
@@ -165,7 +169,9 @@ class Simulation(object):
             print "not present in the topology"
 
     def interactive(self):
-        print "entering interactive session, another C-c to quit the program"
+        # FIXME: the order of printing now is not respected though, concurrency stuff
+        get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
+        # print "entering interactive session, another C-c to quit the program"
         choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n\n")
         if choice == 1:
             self.manipulate_topology()

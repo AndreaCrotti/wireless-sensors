@@ -17,7 +17,7 @@
 // communication module
 // TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
 
-generic module EasyRoutingP (uint8_t test) {
+module EasyRoutingP {
     uses {
         interface Packet;
         interface AMSend as BeaconSend;

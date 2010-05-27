@@ -63,7 +63,7 @@ implementation {
 
     components RultiP;
     // TODO: change this value to what is really needed
-    components new EasyRoutingP(0) as EasyRoutingP;
+    components EasyRoutingP;
 
     BlinkC -> MainC.Boot;
     
