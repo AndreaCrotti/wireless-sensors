@@ -81,17 +81,18 @@ class Simulation(object):
             # 1. one color for each channel
             # 2. print the name of the channel before it
             ch = get_decorated_file(sys.stdout, c, cols[idx])
-            self.sim.addChannel(c, ch)
-            # we should not have so many but just in case
-            idx = (idx + 1) % len(cols)
+            self.sim.addChannel(c, sys.stdout)
+            # self.sim.addChannel(c, ch)
+            # # we should not have so many but just in case
+            # idx = (idx + 1) % len(cols)
 
     def add_node(self, idx):
+        # FIXME: check that they0re all added correctly
         if (len(self.nodes) + 1) == MAX_NODES:
             print "Not possible to add more nodes, reached limit"
 
         # otherwise add to the dictionary the correct node
         elif not(self.nodes.has_key(idx)):
-            print "adding node %d to the network" % idx
             self.nodes[idx] = self.sim.getNode(idx)
 
     # TODO: we should then implement the removal as well
@@ -296,8 +297,8 @@ class MyPacket(object):
             mask = input("insert led mask\n")
             self.msg.set_instr(mask)
         elif typ == 2:
-            sens = input("1)light\n2)infrared\n3)humidity\n4)temperature\n")
-            self.msg.set_instr(sens)
+            # we can just set to 1 (light) because in the simulation we have only the demosensor
+            self.msg.set_instr(1)
         
         else:
             self.make_packet()
