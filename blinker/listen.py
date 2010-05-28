@@ -7,11 +7,11 @@ TODO: create a class that handles the content and outputs it accordingly
 TODO: understand why is not actually listening but exiting quickly
 """
 
-from DebugMsg import *
+from BlinkMsg import *
 from tinyos.message import MoteIF
 from sys import argv
 
-SERVER = "137.226.59.145"
+SERVER = "localhost"
 DEF_PORT = "9001"
 
 class Debugger(object):
@@ -23,7 +23,7 @@ class Debugger(object):
         print "attaching to source %s" % source_addr
         self.source = self.mif.addSource(source_addr)
 
-        self.mif.addListener(self, DebugMsg)
+        self.mif.addListener(self, BlinkMsg)
 
     # Called by the MoteIF's receive thread when a new message is received
     def receive(self, src, msg):
