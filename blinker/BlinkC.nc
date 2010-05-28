@@ -365,27 +365,43 @@ implementation {
      * Sensor events, they simply pass the value      *
      **************************************************/
     event void LightSensor.readDone(error_t result, uint16_t val){
+
+#ifndef TOSSIM
         if(result == SUCCESS){
+            dbg("Sensor", "Light sensor finished \n");
             sendSensingData(SENS_LIGHT, val);
         }
+#endif
+
     }
 
     event void InfraSensor.readDone(error_t result, uint16_t val){
+
+#ifndef TOSSIM
         if(result == SUCCESS){
+            dbg("Sensor", "Infrared sensor finished \n");
             sendSensingData(SENS_INFRA, val);
         }
+#endif
+
     }
 
     event void HumSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
+            dbg("Sensor", "Humidity sensor finished \n");
             sendSensingData(SENS_HUMIDITY, val);
         }
     }
 
     event void TempSensor.readDone(error_t result, uint16_t val){
+
+#ifndef TOSSIM
         if(result == SUCCESS){
+            dbg("Sensor", "Temperature sensor finished \n");
             sendSensingData(SENS_TEMP, val);
         }
+#endif
+
     }
     
     /** 
