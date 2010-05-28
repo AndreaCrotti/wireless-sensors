@@ -168,7 +168,8 @@ implementation {
             
             // only in the case of sensing data we really use the routing tree that we've created
             if (type == MSG_SENS_DATA) {
-                result = call RelSend.send(parent, msg, len);
+                dbg("Routing", "The parent is %d \n", parent);
+                result = call RelSend.send((1 << parent), msg, len);
             }
             else {
 
