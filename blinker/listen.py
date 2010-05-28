@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ 
 A simple Python script that listens on a SF for TestSerial messages.
 

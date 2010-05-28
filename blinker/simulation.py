@@ -3,8 +3,8 @@
 """
 TODO: instead of just printing to debug can I get and parse the output from the program?
 TODO: check what is the minimal number of events to run to be sure we trigger everything
-TODO: use different subclasses instead
 TODO: check problems with multiple destinations
+TODO: catch exceptions when getting input from string
 
 Usage:
 Run normally "python simulation.py", wait that the motes are booted and then, pressing C-c it will ask interactively to build a packet and will send it over the serial channel
@@ -25,9 +25,9 @@ import readline
 import rlcompleter
 
 from colorize import colors
+from packet import make_packet
 
 from TOSSIM import *
-from SerialMsg import *
 from tinyos.tossim.TossimApp import *
 from tinyos.message import MoteIF
 
@@ -59,13 +59,44 @@ def get_decorated_file(f, prefix, color):
                             stdin=subprocess.PIPE, 
                             stdout=f) 
     return proc.stdin 
-        
+
+
+class RadioNetwork(object):
+    def __init__(self, radio, symmetric = True):
+        self.symmetric = symmetric
+        self.radio = radio
+        self.topology = set()
+
+    def __len__(self):
+        return len(self.topology)
+
+    def __iter__(self):
+        # TODO: when symmetric adding iteration also on the opposite connection
+        return iter(self.topology)
+
+    def add_connection(self, node1, node2, link = -56.0):
+        "Add a connection between two nodes"
+        if self.symmetric:
+            self.radio.add(node2, node1, link)
+            self.topology.add((node2, node1))
+
+        self.topology.add((node1, node2))
+        self.radio.add(node1, node2, link)
+
+    def remove_connection(self, node1, node2):
+        if self.symmetric:
+            self.radio.remove(node2, node1)
+            self.topology.add((node2, node1))
+
+        self.topology.remove((node1, node2))
+        self.radio.remove(node1, node1)
+
 # add to the local variables also the variables in the 
 class Simulation(object):
     def __init__(self, port, channels):
         self.app = NescApp()
         self.vars = self.app.variables.variables()
-        # I pass the variables to the simulator 
+        # I pass the variables to the simulator
         self.sim = Tossim(self.vars)
         self.nodes = {}
         self.radio = self.sim.radio()
@@ -73,29 +104,31 @@ class Simulation(object):
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
-        # at the moment is only used to store and show the topology informations
-        self.topology = {}
+        # operations on the topology and the radio channel
+        self.topology = RadioNetwork(self.radio)
 
-        cols = colors.keys()
-        idx = 0
+        # cols = colors.keys()
+        # idx = 0
         # adding all the channels
         for c in channels:
+            self.sim.addChannel(c, sys.stdout)
+
             # 1. one color for each channel
             # 2. print the name of the channel before it
-            ch = get_decorated_file(sys.stdout, c, cols[idx])
-            self.sim.addChannel(c, sys.stdout)
+            # ch = get_decorated_file(sys.stdout, c, cols[idx])
             # self.sim.addChannel(c, ch)
             # # we should not have so many but just in case
             # idx = (idx + 1) % len(cols)
 
     def add_node(self, idx):
-        # FIXME: check that they0re all added correctly
-        if (len(self.nodes) + 1) == MAX_NODES:
-            print "Not possible to add more nodes, reached limit"
-
         # otherwise add to the dictionary the correct node
-        elif not(self.nodes.has_key(idx)):
-            self.nodes[idx] = self.sim.getNode(idx)
+        if not(idx in self.nodes):
+            # FIXME: check that they0re all added correctly
+            if len(self.nodes) == MAX_NODES:
+                print "Not possible to add more nodes, reached limit"
+
+            else:
+                self.nodes[idx] = self.sim.getNode(idx)
 
     # TODO: we should then implement the removal as well
     # making sure we always keep a minimal set of nodes
@@ -104,7 +137,7 @@ class Simulation(object):
         "Starts the simulation"
         for n in self.nodes.values():
             n.bootAtTime(random.randint(100001, 900009))
-            
+
         self.sf.process()
         self.throttle.initialize()
 
@@ -170,27 +203,12 @@ class Simulation(object):
     
     def add_connection(self, n1, n2, distance):
         "Add to the radio channel a connection between the two nodes"
-        # check if the nodes are present at all
-        if self.radio.connected(n1, n2):
-            print "already present, modifying the distance then"
-            self.radio.remove(n1, n2)
-            
         self.add_node(n1)
         self.add_node(n2)
-        self.radio.add(n1, n2, distance)
-        # self.radio.add(n2, n1, distance)
-        self.topology[(n1,n2)] = distance
-        # self.topology[(n2,n1)] = distance
+        self.topology.add_connection(n1, n2, distance)
 
     def remove_connection(self, n1, n2):
-        if self.radio.connected(n1, n2):
-            self.radio.remove(n1, n2)
-            del self.topology[(n1, n2)]
-            if self.topology.has_key([n2, n1]):
-                # now it's done in a symmetric way
-                del self.topology[(n2, n1)]
-        else:
-            print "not present in the topology"
+        self.topology.remove_connection(n1, n2)
 
     def interactive(self):
         # FIXME: the order of printing now is not respected though, concurrency stuff
@@ -200,7 +218,7 @@ class Simulation(object):
         if choice == 1:
             self.manipulate_topology()
         if choice == 2:
-            self.send_packet()
+            self.send_packet(make_packet())
         if choice == 3:
             self.inspect_variable()
         if choice == 4:
@@ -236,12 +254,13 @@ class Simulation(object):
     def print_mote_vars(self, mote):
         for v in self.filter_variable():
             print self.get_variable(mote, v)
-            
+
     def manipulate_topology(self):
         choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
         if choice == 1:
             for x in self.topology:
-                print "(%d -> %d) (%f)" % (x[0], x[1], self.topology[x])
+                # FIXME: remove the hardwired symmetry
+                print "(%d <-> %d)" % (x[0], x[1])
 
         if choice == 2:
             n1, n2, dist = input("first node\n"), input("second node\n"), float(input("distance\n"))
@@ -252,13 +271,12 @@ class Simulation(object):
             n1, n2 = map(int, nodes.split(" "))
             self.remove_connection(n1, n2)
 
-    def send_packet(self):
-        "Creates and send a new serial packet"
-        msg = MyPacket()
-        msg.make_packet()
+    def send_packet(self, msg):
+        "Takes a BlinkMsg already generated and sends it via serial"
         serialpkt = self.sim.newSerialPacket();
         serialpkt.setData(msg.get_data())
         serialpkt.setType(msg.am_type)
+        # TODO: this 0 is ok to be 
         serialpkt.setDestination(0)
         serialpkt.deliver(0, self.sim.time() + 3)
 
@@ -270,41 +288,6 @@ class Simulation(object):
 
         print "sended packet:\n%s" % str(msg)
         self.seqno += 1
-
-    def automated_test(self):
-        "launch some tests automatically to test all the features"
-        # test all the possible things with some easy stuff
-        pass
-
-class MyPacket(object):
-    def __init__(self):
-        self.msg = SerialMsg()
-        # that's because we're always in mote 0 here
-        self.msg.set_sender(0)
-        self.am_type = self.msg.get_amType()
-    
-    def __str__(self):
-        return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
-
-    def get_data(self):
-        return self.msg.data
-
-    def make_packet(self):
-        dest = input("Insert destination (as a bitmask)\n")
-        self.msg.set_dests(dest)
-        typ = input("1)led\n2)sensing request\n3)sensing data\n")
-        self.msg.set_type(typ)
-
-        if typ == 1:
-            mask = input("insert led mask\n")
-            self.msg.set_instr(mask)
-        elif typ == 2:
-            # we can just set to 1 (light) because in the simulation we have only the demosensor
-            self.msg.set_instr(1)
-        
-        else:
-            self.make_packet()
-            # you could also create a real data package maybe?
 
 sim = Simulation(SERIAL_PORT, CHANNELS)
 topo_file = "topo.txt"
