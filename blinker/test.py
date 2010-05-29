@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-
 """
 python script to test if some
 of the algorithms are working as expected
 """
+
+from simulation import *
 
 def getIdFromBM(bitmask):
     counter = 0
@@ -17,6 +18,11 @@ def getIdFromBM(bitmask):
 def updateLedMask(ledmask, led):
     return ledmask & (~led >> 3) ^ led
 
+# We can also maybe
+# - send a packet
+# - start a listener that waits for the answer
+# - see if everything is correct or not
+
 
 # when doing automated testing the DEBUG output should be ignored completely
 # Test
@@ -27,4 +33,27 @@ def updateLedMask(ledmask, led):
 # 2. random values
 # more...
 
+def test_led_setting(topofile):
+    sim = Simulation(SERIAL_PORT, [])
+    sim.make_topology(topofile)
+    sim.setup_noise("noise.txt")
+    sim.start(True)
+    nodes = sorted(sim.nodes.keys())
+    for ledmask in range(2**3 - 1):
+        print "sending ledmask %d" % ledmask
+        sim.send_packet(turn_leds_all_nodes(nodes, ledmask))
+        # make sure we give enough time
+        sim.run_some_events()
+        sim.check_vars_nodes(nodes, "BlinkC.ledMask", ledmask)
 
+
+def test_maker(topo, packet, check):
+    sim = Simulation(SERIAL_PORT, [])
+    sim.make_topology(topofile)
+    sim.setup_noise("noise.txt")
+    sim.start(True)
+    nodes = sorted(sim.nodes.keys())
+    sim.send_packet(packet)
+    assert(check)
+
+test_led_setting("simpletopo.txt")

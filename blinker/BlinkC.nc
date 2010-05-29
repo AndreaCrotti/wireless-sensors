@@ -386,6 +386,8 @@ implementation {
 
     }
 
+    // don't use an #ifdef here since the humidity sensor is the one we're using
+    // in the simulation, but this only depends on the order of wiring
     event void HumSensor.readDone(error_t result, uint16_t val){
         if(result == SUCCESS){
             dbg("Sensor", "Humidity sensor finished \n");

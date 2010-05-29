@@ -41,8 +41,8 @@ SERIAL_PORT = 9001
 # channels used for debug messages
 # TODO: give different colors to the various debug messages
 
-# CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
-CHANNELS = ("Boot", "Radio", "Routing", "Sensor")
+CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
+# CHANNELS = ("Boot", "Radio", "Routing", "Sensor")
 
 
 def print_var_table(vars):
@@ -100,6 +100,7 @@ class Simulation(object):
         self.sim = Tossim(self.vars)
         self.nodes = {}
         # the serial forwarder stuff is needed only by the java interaface
+        # or the listen.py script
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
@@ -132,7 +133,7 @@ class Simulation(object):
     # TODO: we should then implement the removal as well
     # making sure we always keep a minimal set of nodes
 
-    def start(self):
+    def start(self, batch=False):
         "Starts the simulation"
         for n in self.nodes.values():
             n.bootAtTime(random.randint(100001, 900009))
@@ -142,7 +143,8 @@ class Simulation(object):
 
         # just run enough events to make sure we boot all the motes before starting
         self.run_some_events()
-        self.cycle()
+        if not(batch):
+            self.cycle()
 
     def cycle(self):
         "Loop at infinite runnign all the events in the queue"
