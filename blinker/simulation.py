@@ -25,7 +25,7 @@ import readline
 import rlcompleter
 
 from colorize import colors
-from packet import make_packet
+from packet import *
 
 from TOSSIM import *
 from tinyos.tossim.TossimApp import *
@@ -99,13 +99,12 @@ class Simulation(object):
         # I pass the variables to the simulator
         self.sim = Tossim(self.vars)
         self.nodes = {}
-        self.radio = self.sim.radio()
         # the serial forwarder stuff is needed only by the java interaface
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
         # operations on the topology and the radio channel
-        self.topology = RadioNetwork(self.radio)
+        self.topology = RadioNetwork(self.sim.radio())
 
         # cols = colors.keys()
         # idx = 0
@@ -214,7 +213,7 @@ class Simulation(object):
         # FIXME: the order of printing now is not respected though, concurrency stuff
         get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
         # print "entering interactive session, another C-c to quit the program"
-        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n\n")
+        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n5)Running tests\n\n")
         if choice == 1:
             self.manipulate_topology()
         if choice == 2:
@@ -223,6 +222,12 @@ class Simulation(object):
             self.inspect_variable()
         if choice == 4:
             self.inspect_mote()
+        if choice == 5:
+            node_list = sorted(self.nodes.keys())
+            print "sending turn on to all nodes"
+            self.send_packet(turn_leds_all_nodes(node_list))
+            print "sending sensing info to a random node"
+            self.send_packet(sens_random_node(node_list))
 
     def inspect_variable(self):
         "Ask for a variable to inspect and returns it"
@@ -265,11 +270,13 @@ class Simulation(object):
         if choice == 2:
             n1, n2, dist = input("first node\n"), input("second node\n"), float(input("distance\n"))
             self.add_connection(n1, n2, dist)
+            print "added link from %s to %s" % (n1, n2)
 
         if choice == 3:
             nodes = raw_input("what are the nodes to remove (symmetrically) write X Y?\n")
             n1, n2 = map(int, nodes.split(" "))
             self.remove_connection(n1, n2)
+            print "removed link from %s to %s" % (n1, n2)
 
     def send_packet(self, msg):
         "Takes a BlinkMsg already generated and sends it via serial"
