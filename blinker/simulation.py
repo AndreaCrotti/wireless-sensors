@@ -49,20 +49,21 @@ def print_var_table(vars):
     from re import match
     print "\nvariable list\n"
     for v in vars:
-        if re.match(r"Blink.*|Easy.*|Rulti.*", v):
+        if match(r"Blink.*|Easy.*|Rulti.*", v):
             print v
     print "\n"
 
-def get_decorated_file(f, prefix, color): 
-    proc = subprocess.Popen(['python', 'colorize.py', prefix, color], 
-                            bufsize=0, 
-                            stdin=subprocess.PIPE, 
-                            stdout=f) 
-    return proc.stdin 
+def get_decorated_file(f, prefix, color):
+    proc = subprocess.Popen(['python', 'colorize.py', prefix, color],
+                            bufsize=0,
+                            stdin=subprocess.PIPE,
+                            stdout=f)
+    return proc.stdin
 
 
 class RadioNetwork(object):
-    def __init__(self, radio, symmetric = True):
+
+    def __init__(self, radio, symmetric=True):
         self.symmetric = symmetric
         self.radio = radio
         self.topology = set()
@@ -70,11 +71,10 @@ class RadioNetwork(object):
     def __len__(self):
         return len(self.topology)
 
-    def __iter__(self):
-        # TODO: when symmetric adding iteration also on the opposite connection
-        return iter(self.topology)
+    def __str__(self):
+        return "\n".join("%d - %d" % (x[0], x[1]) for x in list(self.topology))
 
-    def add_connection(self, node1, node2, link = -56.0):
+    def add_connection(self, node1, node2, link=-56.0):
         "Add a connection between two nodes"
         if self.symmetric:
             self.radio.add(node2, node1, link)
@@ -141,14 +141,7 @@ class Simulation(object):
         self.throttle.initialize()
 
         # just run enough events to make sure we boot all the motes before starting
-        time = self.sim.time()
-        while(time + RUNTIME * 10000000000 > self.sim.time()):
-            self.throttle.checkThrottle()
-            self.sim.runNextEvent()
-            # processing what it's got from it
-            self.sf.process()
-
-        self.throttle.printStatistics()
+        self.run_some_events()
         self.cycle()
 
     def cycle(self):
@@ -169,7 +162,7 @@ class Simulation(object):
                     continue
                 except KeyboardInterrupt:
                     sys.exit()
-        
+
     def make_topology(self, topo_file):
         "Creates the topology from the given file"
         for line in open(topo_file):
@@ -211,8 +204,8 @@ class Simulation(object):
 
     def interactive(self):
         # FIXME: the order of printing now is not respected though, concurrency stuff
-        get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
-        # print "entering interactive session, another C-c to quit the program"
+        # get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
+        print "entering interactive session, another C-c to quit the program"
         choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n5)Running tests\n\n")
         if choice == 1:
             self.manipulate_topology()
@@ -226,8 +219,34 @@ class Simulation(object):
             node_list = sorted(self.nodes.keys())
             print "sending turn on to all nodes"
             self.send_packet(turn_leds_all_nodes(node_list))
+            self.run_some_events()
+            if not(self.check_vars_nodes(node_list, "BlinkC.ledMask", 7)):
+                print "Not all motes got the right value"
+
             print "sending sensing info to a random node"
             self.send_packet(sens_random_node(node_list))
+
+    def run_some_events(self):
+        "Run some of the events"
+        # TODO: pass some arguments to make sure they're enough
+        time = self.sim.time()
+        while(time + RUNTIME * 10000000000 > self.sim.time()):
+            self.throttle.checkThrottle()
+            self.sim.runNextEvent()
+            # processing what it's got from it
+            self.sf.process()
+
+        self.throttle.printStatistics()
+
+    def check_vars_nodes(self, nodes, var, value):
+        "Check that all the variables of nodes have that value"
+        for n in nodes:
+            val = self.get_variable(n, var)
+            print "node %d = %d" % (n, val)
+            if val != value:
+                return False
+
+        return True
 
     def inspect_variable(self):
         "Ask for a variable to inspect and returns it"
@@ -244,10 +263,6 @@ class Simulation(object):
         mote = input("which mote you want to inspect?\n")
         self.print_mote_vars(mote)
 
-    def custom_command(self):
-        "Takes a custom python command and executes it"
-        pass
-
     def get_variable(self, mote, var):
         return self.nodes[mote].getVariable(var).getData()
 
@@ -263,9 +278,7 @@ class Simulation(object):
     def manipulate_topology(self):
         choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
         if choice == 1:
-            for x in self.topology:
-                # FIXME: remove the hardwired symmetry
-                print "(%d <-> %d)" % (x[0], x[1])
+            print self.topology
 
         if choice == 2:
             n1, n2, dist = input("first node\n"), input("second node\n"), float(input("distance\n"))
@@ -296,13 +309,15 @@ class Simulation(object):
         print "sended packet:\n%s" % str(msg)
         self.seqno += 1
 
-sim = Simulation(SERIAL_PORT, CHANNELS)
-topo_file = "topo.txt"
 
-if len(sys.argv) == 2:
-    topo_file = sys.argv[1]
+if __name__ == '__main__':
+    sim = Simulation(SERIAL_PORT, CHANNELS)
+    topo_file = "topo.txt"
+
+    if len(sys.argv) == 2:
+        topo_file = sys.argv[1]
     
-# TODO: only creates the number of nodes present our file
-sim.make_topology(topo_file)
-sim.setup_noise("noise.txt")
-sim.start()
+    # TODO: only creates the number of nodes present our file
+    sim.make_topology(topo_file)
+    sim.setup_noise("noise.txt")
+    sim.start()

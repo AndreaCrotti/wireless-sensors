@@ -17,11 +17,14 @@ def getIdFromBM(bitmask):
 def updateLedMask(ledmask, led):
     return ledmask & (~led >> 3) ^ led
 
-for x in range(10):
-    print "%d = %s -> %d" % (x, str(bin(x)), getIdFromBM(x))
 
-ledmask = 5
-for x in (2**x for x in range(3)):
-    print "setting led %s on ledmask %s getting -> %s" % (str(bin(x)), str(bin(ledmask)), str(bin(updateLedMask(ledmask, x))))
+# when doing automated testing the DEBUG output should be ignored completely
+# Test
+# 1. leds setting
+# 2. data sensing
+# For
+# 1. different topologies
+# 2. random values
+# more...
 
-# create some simple packets to send to the simulation
+
