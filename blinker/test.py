@@ -33,11 +33,12 @@ def updateLedMask(ledmask, led):
 # 2. random values
 # more...
 
-def test_led_setting(topofile):
-    sim = Simulation(SERIAL_PORT, [])
-    sim.make_topology(topofile)
-    sim.setup_noise("noise.txt")
-    sim.start(True)
+sim = Simulation(SERIAL_PORT, [])
+sim.make_topology("simpletopo.txt")
+sim.setup_noise("noise.txt")
+
+def test_led_setting():
+    sim.start(batch=True)
     nodes = sorted(sim.nodes.keys())
     for ledmask in range(2**3 - 1):
         print "sending ledmask %d" % ledmask
@@ -46,14 +47,20 @@ def test_led_setting(topofile):
         sim.run_some_events()
         sim.check_vars_nodes(nodes, "BlinkC.ledMask", ledmask)
 
+def count_led():
+    sim.start(batch=True)
+    nodes = sorted(sim.nodes.keys())
+    num = sim.count_events_needed(turn_leds_all_nodes(nodes, 1), "BlinkC.ledMask", 1)
+    print "needed %d events" % num
+
 
 def test_maker(topo, packet, check):
     sim = Simulation(SERIAL_PORT, [])
-    sim.make_topology(topofile)
+    sim.make_topology(topo)
     sim.setup_noise("noise.txt")
     sim.start(True)
     nodes = sorted(sim.nodes.keys())
     sim.send_packet(packet)
     assert(check)
 
-test_led_setting("simpletopo.txt")
+count_led()

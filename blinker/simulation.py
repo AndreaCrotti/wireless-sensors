@@ -36,6 +36,7 @@ from gen_network import bin_tree, rand_graph
 RUNTIME = 2
 
 MAX_NODES = 16
+MAXEVENTS = 1000
 SERIAL_PORT = 9001
 
 # channels used for debug messages
@@ -182,9 +183,23 @@ class Simulation(object):
         for vals in bin_tree(len):
             self.add_connection(*vals)
 
-    def get_max_node(self):
-        "Look into the keys and automatically flat the list with two max"
-        return max(max(couple) for couple in self.topology)
+    def count_events_needed(self, packet, var, value):
+        "Send a packet and try to see how many steps are needed to fulfill it"
+        from itertools import count
+        self.send_packet(packet)
+        for i in count():
+            if i > MAXEVENTS:
+                return False
+
+            if self.check_vars_all_nodes(var, value):
+                return i
+
+            # run one more event
+            self.throttle.checkThrottle()
+            self.sim.runNextEvent()
+            # processing what it's got from it
+            self.sf.process()
+
 
     def setup_noise(self, noise_file):
         for line in open(noise_file):
@@ -239,6 +254,9 @@ class Simulation(object):
             self.sf.process()
 
         self.throttle.printStatistics()
+
+    def check_vars_all_nodes(self, var, value):
+        return self.check_vars_nodes(sorted(self.nodes.keys()), var, value)
 
     def check_vars_nodes(self, nodes, var, value):
         "Check that all the variables of nodes have that value"
