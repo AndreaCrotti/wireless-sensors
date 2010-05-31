@@ -63,8 +63,10 @@ implementation {
     task void payloadSend() {
         // transmissions tells us that we (still) have to send suff.
         // if it is 0, we were called falsely for a strange reason (probably does not occur).
-        if (transmissions && (call PayloadSend.send(sendPayloadArguments.dest,sendPayloadArguments.msg,sendPayloadArguments.len) != SUCCESS))
+        if (transmissions && (call PayloadSend.send(sendPayloadArguments.dest,sendPayloadArguments.msg,sendPayloadArguments.len) != SUCCESS)){
+            dbg("Rel", "Reposting payloadSend()\n");
             post payloadSend();
+        }
     }
     /**
      * (Re-)transmit a payload by posting a task and increase the transmission counter.
@@ -72,6 +74,8 @@ implementation {
      * IT IS YOUR RESPONSIBILITY TO CHECK EVERYTHING ELSE!
      */
     void transmit(void) {
+        dbg("Rel", "%dth transmission \n", transmissions+1);
+
         //call Leds.led0Toggle();
         transmissions++;
         post payloadSend();
@@ -99,8 +103,8 @@ implementation {
     task void ackSend() {
         //call Leds.led2Toggle();
         if (call AckSend.send(sendAckArguments.dest,sendAckArguments.msg,sendAckArguments.len) != SUCCESS) {
-            //timeDelta = call Random.rand16();
-            //call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS);
+            /* uint16_t timeDelta = call Random.rand16(); */
+            /* call AckTimer.startOneShot(timeDelta % RULTI_ACK_DELTA_MS); */
         }
     }
     /// Logical arguments to the receive task.
@@ -109,7 +113,7 @@ implementation {
      * A task to signal the provided receive.
      */
     task void signalReceive() {
-        dbg("Rel", "signalReceive is called\n");
+        //dbg("Rel", "signalReceive is called\n");
         signal Receive.receive(signalReceiveArguments.message,signalReceiveArguments.payload,signalReceiveArguments.len);
     }
 
@@ -144,7 +148,7 @@ implementation {
      * Relay the sendDone error to our user if sending was NOT successfull.
      */
     event void PayloadSend.sendDone(message_t* m, error_t err) {
-        dbg("Rel", "PayloadSending done!\n");
+        //dbg("Rel", "PayloadSending done!\n");
         if (err != SUCCESS) {
             stopRtx();
             signal AMSend.sendDone(originalMessage,err);

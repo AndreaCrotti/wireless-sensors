@@ -16,7 +16,8 @@ configuration BlinkAppC @safe() {
 
 implementation {
     components MainC, BlinkC, LedsC;
-    components new TimerMilliC() as Timer;
+    components new TimerMilliC() as MsgRtxTimer;
+    components new TimerMilliC() as SenseRtxTimer;
 
     components ActiveMessageC;
     #ifndef TOSSIM
@@ -67,7 +68,8 @@ implementation {
 
     BlinkC -> MainC.Boot;
     
-    BlinkC.Timer -> Timer;
+    BlinkC.SenseRtxTimer -> SenseRtxTimer;
+    BlinkC.MsgRtxTimer -> MsgRtxTimer;
     BlinkC.Leds -> LedsC;
 
     /// Wirering for the reliable multi-cast module

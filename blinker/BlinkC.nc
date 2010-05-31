@@ -39,7 +39,9 @@ module BlinkC @safe() {
         interface Read<uint16_t> as HumSensor;
 
         // additional needed components
-        interface Timer<TMilli> as Timer;
+        interface Timer<TMilli> as SenseRtxTimer;
+        interface Timer<TMilli> as MsgRtxTimer;
+
         interface Boot;
         interface Leds;
     }
@@ -108,7 +110,10 @@ implementation {
      */
     task void transmitMessage() {
         // TODO: should we also check the result or not?
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg));
+        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)) == EBUSY){
+            call MsgRtxTimer.startOneShot(50);
+        }
+        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)); */
     }
 
 
@@ -118,19 +123,12 @@ implementation {
      * The send data should be stored in the global pkt_cmd_out variable.
      */
     task void transmitSensing() {
+        //dbg("Radio", "Posted a transmitSensing task.\n");
          // TODO: should we also check the result or not?
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
-    }
-
-
-    /**
-     *  Helper function to start a one-shot timer for node 0 and do
-     *  nothing for other nodes.
-     */
-    void timer(void) {
-        // if we use one time shots, we do not need a busy flag or anything
-        // also: we cannot have timer fires while we are still busy
-        call Timer.startPeriodic(BLINK_GENERATE_INTERVAL_MS);
+        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)) == EBUSY){
+            call SenseRtxTimer.startOneShot(50);
+        }
+        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)); */
     }
 
     /**
@@ -140,11 +138,8 @@ implementation {
      * @param err SUCCESS if the component was successfully turned on, FAIL otherwise.
      */
     event void AMControl.startDone(error_t err) {
-        if (err == FAIL) {
+        if (err != SUCCESS) 
             call AMControl.start();
-        } else {
-            timer(); 
-        }
     }
 
     /**
@@ -173,7 +168,12 @@ implementation {
     /** 
      * triggered when the timer fires
      */
-    event void Timer.fired() {
+    event void MsgRtxTimer.fired() {
+        post transmitMessage();
+    }
+
+    event void SenseRtxTimer.fired(){
+        post transmitSensing();
     }
 
     /**
@@ -294,6 +294,8 @@ implementation {
                 //call Leds.set(++called);
                 curr_sn[senderID] = sn;
                 if (amIaReceiver(btrpkt)){
+                    dbg("Radio", "This Mote is an receiver\n");
+
                     handleMessage(btrpkt);
                 }
                 
