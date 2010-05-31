@@ -4,6 +4,7 @@ python script to test if some
 of the algorithms are working as expected
 """
 
+import sys
 from simulation import *
 
 #############################
@@ -35,6 +36,17 @@ def updateLedMask(ledmask, led):
 # 2. random values
 # more...
 
+# just pass the output to the other class
+p1 = Popen(["./listen.py"], stdout=sys.stdout)
+
+class InputChecker(object):
+    def __init__(self, fp):
+        self.fp = fp
+
+    def write(self, message):
+        self.fp.write(message)
+
+
 sim = Simulation(SERIAL_PORT, [])
 sim.make_topology("simpletopo.txt")
 sim.setup_noise("noise.txt")
@@ -58,3 +70,9 @@ def count_led():
     nodes = sorted(sim.nodes.keys())
     num = sim.count_events_needed(turn_leds_all_nodes(nodes, 1), "BlinkC.ledMask", 1)
     print "needed %d events" % num
+
+# check somehow if the topology is working fine automatically
+# for a binary tree we should always get the same thing
+tree_parents = {}
+for x in range(8):
+    

@@ -342,6 +342,21 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
+        // that means that we are removing our parent, so look for the next best one
+        if (idx == parent) {
+            dbg("Routing", "our parent has been removed from neighbour list");
+            setNextBestParent();
+        }
+    }
+
+    void setNextBestParent() {
+        int i;
+        int min = MAX_HOPS;
+        for (i = 0; i < MAX_MOTES; i++)
+            if (HOP_COUNTS[i] < min)
+                min = HOP_COUNTS[i];
+
+        parent = min;
     }
     
     /** 

@@ -2,19 +2,21 @@ from SerialMsg import *
 
 class MyPacket(object):
     # get the TOS_NODE_ID maybe instead
-    def __init__(self, sender = 0):
-        self.msg = SerialMsg()
-        # that's because we're always in mote 0 here
-        self.msg.set_sender(0)
-        self.am_type = self.msg.get_amType()
+    def __init__(self, msg=None):
+        self.msg = msg
     
     def __str__(self):
-        return "dest: %d\ntype: %d\ninstr: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr())
+        # TODO: see if it's possible a sort of reverse from Blink.h enum variables
+        return "\ndest: %d\ntype: %d\ninstr: %d\ndata: %d\n" % (self.msg.get_dests(), self.msg.get_type(), self.msg.get_instr(), self.msg.get_data())
 
     def get_data(self):
         return self.msg.data
 
     def create_packet(self, dest, typ, instr, data):
+        self.msg = SerialMsg()
+        # that's because we're always in mote 0 here
+        self.msg.set_sender(0)
+        self.am_type = self.msg.get_amType()
         self.msg.set_dests(dest)
         self.msg.set_type(typ)
         self.msg.set_instr(instr)

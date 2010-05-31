@@ -94,6 +94,7 @@ class RadioNetwork(object):
 class Simulation(object):
     def __init__(self, port, channels):
         self.app = NescApp()
+        # only take the variable names without
         self.vars = self.app.variables.variables()
         # I pass the variables to the simulator
         self.sim = Tossim(self.vars)

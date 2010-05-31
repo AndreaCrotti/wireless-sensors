@@ -10,6 +10,7 @@ TODO: understand why is not actually listening but exiting quickly
 """
 
 from BlinkMsg import *
+from packet import MyPacket
 from tinyos.message import MoteIF
 from sys import argv
 
@@ -24,12 +25,13 @@ class Debugger(object):
         source_addr = "sf@%s:%s" % (SERVER, port)
         print "attaching to source %s" % source_addr
         self.source = self.mif.addSource(source_addr)
-
         self.mif.addListener(self, BlinkMsg)
+        self.count = 0
 
     # Called by the MoteIF's receive thread when a new message is received
     def receive(self, src, msg):
-        print "Received message: "+ str(msg)
+        print "count = %d\n%s" % (self.count, str(MyPacket(msg)))
+        self.count += 1
 
 if __name__ == "__main__":
     if len(argv) < 2:
