@@ -75,6 +75,7 @@ implementation {
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
     void initializeRootNode();
+    void setNextBestParent();
     
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
@@ -342,12 +343,13 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
+
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
             dbg("Routing", "our parent has been removed from neighbour list");
             setNextBestParent();
         }
-        Leds.set(hops_count + 1);
+        call Leds.set(hops_closest_neighbour + 1);
     }
 
     void setNextBestParent() {
