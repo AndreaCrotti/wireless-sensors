@@ -45,8 +45,6 @@ class InputChecker(object):
         self.fp.write(message)
 
 
-sim = Simulation(SERIAL_PORT, [])
-
 # MASKS = (0x9, 0x8, 0x12, 0x10, 0x24, 0x20)
 MASKS = (0x9, 0x12, 0x24)
 
@@ -76,8 +74,6 @@ def make_tree(high):
         tree_parents[x] = (x-1) / 2
     return tree_parents
 
-print make_tree(3)
-
 def test_bin_tree(dim):
     tree = make_tree(dim)
     sim.setup_noise("noise.txt")
@@ -91,4 +87,31 @@ def test_bin_tree(dim):
         print n, parent
         assert(parent == tree[n])
 
-test_bin_tree(3)
+def test_routing_deletion():
+    sim = Simulation(SERIAL_PORT, [])
+    topo = ((0,1), (0,2), (1,2))
+    # when removing 0-2 I should get 1 as new parent for 1
+    sim.setup_noise("noise.txt")
+    sim.make_given_topology(topo)
+    print sim.topology
+    sim.start(batch=True)
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    
+    sim.print_var_motes("EasyRoutingP.parent")
+    sim.print_var_motes("EasyRoutingP.HOP_COUNTS")
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.run_some_events()
+    sim.remove_connection(0, 2)
+    print sim.topology
+    # check when parent is outside
+    sim.print_var_motes("EasyRoutingP.parent")
+    sim.print_var_motes("EasyRoutingP.HOP_COUNTS")
+
+test_routing_deletion()

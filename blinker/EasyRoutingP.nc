@@ -71,7 +71,6 @@ implementation {
     void broadcastBeacon();
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
-    int isNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
@@ -290,13 +289,16 @@ implementation {
      */
     void updateHops(uint8_t hops_count) {
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
+        int my_hop_count = hops_count + 1;
+
+        dbg("Routing", "Setting hop count to %d\n", hops_count+1);
         // update the hop count to the minimum path given in input +1
         // careful here with variables with the same names
-        message->hops_count = hops_count + 1;
+        message->hops_count = my_hop_count;
         // distance of the mote with the minimal distance
         hops_closest_neighbour = hops_count;
-        // this is not reallly needed, it's just to keep the array complete
-        HOP_COUNTS[TOS_NODE_ID] = hops_closest_neighbour;
+        // this is not reallly needed maybe, it's just to keep the array complete
+        HOP_COUNTS[TOS_NODE_ID] = my_hop_count;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
@@ -345,6 +347,7 @@ implementation {
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
 
+        dbg("Routing", "Node %d is in timeout\n", idx);
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
             dbg("Routing", "our parent has been removed from neighbour list\n");
@@ -361,21 +364,20 @@ implementation {
      * 
      */
     void setNextBestParent(void) {
-        int i;
+        int i, closest;
         int min = MAX_HOPS;
         for (i = 0; i < MAX_MOTES; i++) {
             if (HOP_COUNTS[i] < min) {
                 // here we also have to check that it's really a neighbour
                 // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
                 min = HOP_COUNTS[i];
+                // we have at least one, otherwise we have no neighbours at all and it doesn't work anyway
+                closest = i;
             }
         }
-        parent = min;
-    }
-    
-    int isNeighbour(nodeid_t idx) {
-        // make sure the types are also fine
-        return ((1 << idx) & neighbours);
+        // setting the parent and updating the other values (our beacon for example)
+        parent = closest;
+        updateHops(min);
     }
 
     /** 

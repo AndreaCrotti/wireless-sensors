@@ -75,11 +75,6 @@ class RadioNetwork(object):
     def __str__(self):
         return "\n".join("%d - %d" % (x[0], x[1]) for x in list(self.topology))
 
-    def create_network(couples):
-        "Create a network given a list of couples in input ((t0, t1), (t1, t3))..."
-        for x, y in couples:
-            self.add_connection(x, y)
-
     # Adding and removing from our local data strucure AND the radio topology
     def add_connection(self, node1, node2, link=-56.0):
         "Add a connection between two nodes"
@@ -192,7 +187,8 @@ class Simulation(object):
         print self.topology
 
     def make_given_topology(self, couples):
-        self.topology.create_network(couples)
+        for x, y in couples:
+            self.add_connection(x, y)
 
     def count_events_needed(self, packet, var, value):
         "Send a packet and try to see how many steps are needed to fulfill it"
@@ -307,6 +303,10 @@ class Simulation(object):
     def print_mote_vars(self, mote):
         for v in self.filter_variable():
             print self.get_variable(mote, v)
+
+    def print_var_motes(self, var):
+        for x in sorted(self.nodes):
+            print "%d -> %s" % (x, self.get_variable(x, var))
 
     def manipulate_topology(self):
         print_out = lambda: sys.stdout.write(str(self.topology))
