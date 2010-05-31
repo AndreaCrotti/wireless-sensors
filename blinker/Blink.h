@@ -60,8 +60,8 @@ enum {
     SENS_TEMP = 4
 };
 
-#define BLINK_GENERATE_INTERVAL_MS 1000
-
-/* #define NEWSEND 0 */
+enum {
+    RETRANSMIT_TIME = 50
+};
 
 #endif

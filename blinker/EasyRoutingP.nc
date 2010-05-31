@@ -11,11 +11,9 @@
  * This EasyRouting protocol uses a reliable protocol for commands
  * and an unreliable protocol for discovering the neighbours.
  * 
+ * We also keep a value on the parent to send the results only on the shortest path.
+ *
  */
-
-// TODO: providing an interface for radio communication which in truth will just call the reliable
-// communication module
-// TODO: implement also an unreliable protocol otherwise the reliable interface could override my setting
 
 module EasyRoutingP {
     uses {
@@ -42,12 +40,12 @@ module EasyRoutingP {
     }
 }
 
-// use a task to post the event that makes the list of neighbours update
-// Protocol is not symmetric, we send the command in broadcast but try to find
-// the shortest path to give back the answer.
-// The shortest path is discovered using beacons
-
-// TODO: if possible make only one structure or use some binary ways to do this
+/*******************************************************************************/
+/* use a task to post the event that makes the list of neighbours update       */
+/* Protocol is not symmetric, we send the command in broadcast but try to find */
+/* the shortest path to give back the answer.                                  */
+/* The shortest path is discovered using beacons                               */
+/*******************************************************************************/
 implementation {
     // could that be bigger in case of more motes?
     uint16_t neighbours = 0;
@@ -173,11 +171,7 @@ implementation {
             // only in the case of sensing data we really use the routing tree that we've created
             if (type == MSG_SENS_DATA) {
                 dbg("Routing", "The parent is %d \n", parent);
-<<<<<<< HEAD
                 // sending only to parent node as a bitmask
-=======
-                
->>>>>>> 67e1ac74771adc584d4a47b03ea5eb70978561c7
                 result = call RelSend.send((1 << parent), msg, len);
             }
             else {
