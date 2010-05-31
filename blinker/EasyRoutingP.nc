@@ -262,12 +262,13 @@ implementation {
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
             // set the leds as the parent value
-            call Leds.set(parent + (7 << 3));
+            call Leds.set(parent);
         }
         
         // when using the device we can also check the quality of the link
 #ifndef TOSSIM
         {
+            // TODO: check that this is really working
             int8_t rssi_val;
             // in case it's equal to the minimum we must check the quality of the link
             // otherwise we can just keep the last best one and it still works fine

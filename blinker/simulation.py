@@ -122,7 +122,7 @@ class Simulation(object):
     def add_node(self, idx):
         # otherwise add to the dictionary the correct node
         if not(idx in self.nodes):
-            # FIXME: check that they0re all added correctly
+            # FIXME: check that they're all added correctly
             if len(self.nodes) == MAX_NODES:
                 print "Not possible to add more nodes, reached limit"
 
