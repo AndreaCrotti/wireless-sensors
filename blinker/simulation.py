@@ -45,7 +45,6 @@ SERIAL_PORT = 9001
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 # CHANNELS = ("Boot", "Radio", "Routing", "Sensor")
 
-
 def print_var_table(vars):
     from re import match
     print "\nvariable list\n"
@@ -61,9 +60,8 @@ def get_decorated_file(f, prefix, color):
                             stdout=f)
     return proc.stdin
 
-
 class RadioNetwork(object):
-
+    "Manage the network topology"
     def __init__(self, radio, symmetric=True):
         self.symmetric = symmetric
         self.radio = radio
@@ -200,7 +198,6 @@ class Simulation(object):
             # processing what it's got from it
             self.sf.process()
 
-
     def setup_noise(self, noise_file):
         for line in open(noise_file):
             val = int(line.strip())
@@ -209,7 +206,7 @@ class Simulation(object):
 
         for n in self.nodes.values():
             n.createNoiseModel()
-    
+
     def add_connection(self, n1, n2, distance):
         "Add to the radio channel a connection between the two nodes"
         self.add_node(n1)

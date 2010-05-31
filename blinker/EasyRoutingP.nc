@@ -169,10 +169,10 @@ implementation {
             // only in the case of sensing data we really use the routing tree that we've created
             if (type == MSG_SENS_DATA) {
                 dbg("Routing", "The parent is %d \n", parent);
+                // sending only to parent node as a bitmask
                 result = call RelSend.send((1 << parent), msg, len);
             }
             else {
-
                 // If one of the destinations is not in our neighbour list, we make a broadcast,
                 // otherwise a multi/unicast
                 if ((destinations & ~neighbours) != 0) {
