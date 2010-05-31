@@ -262,7 +262,7 @@ implementation {
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
             // set the leds as the parent value
-            call Leds.set(parent);
+            call Leds.set(hops_count + 1);
         }
         
         // when using the device we can also check the quality of the link
@@ -342,6 +342,8 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
+
+        Leds.set(hops_count + 1);
     }
     
     /** 

@@ -21,17 +21,19 @@ typedef nx_struct RultiMsg {
     nx_nodes_t to;
 } RultiMsg;
 
-// transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
-#define RULTI_MAX_TRANSMISSIONS 5
+enum{
+    // transmissions include the initial transmission. Hence, 5 means up to 4 retransmissions
+    RULTI_MAX_TRANSMISSIONS = 10,
 
-// retransmit every second +- 100
-#define RULTI_RTX_INTERVAL_MS 900
-// add a random number from [0..200) to every tx timer interval
-#define RULTI_RTX_DELTA_MS 200
-// wait a random number of milliseconds in [0..300) to acknowledge the multicast
-#define RULTI_ACK_DELTA_MS 300
+    // retransmit every second +- 100
+    RULTI_RTX_INTERVAL_MS = 450,
+    // add a random number from [0..200) to every tx timer interval
+    RULTI_RTX_DELTA_MS = 100,
+    // wait a random number of milliseconds in [0..300) to acknowledge the multicast
+    RULTI_ACK_DELTA_MS = 80,
 
-// how many seqnos are we supposed to save?
-#define RULTI_SEQNO_COUNT 10
+    // how many seqnos are we supposed to save?
+    RULTI_SEQNO_COUNT = 10
+};
 
 #endif
