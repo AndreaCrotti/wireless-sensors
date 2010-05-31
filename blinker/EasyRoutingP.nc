@@ -27,6 +27,7 @@ module EasyRoutingP {
         // maybe seconds could be also enough
         interface Timer<TMilli> as Timer;
         interface PacketAcknowledgements;
+        interface Leds;
     }
 
 #ifndef TOSSIM
@@ -94,7 +95,7 @@ implementation {
         // Initializing the hop count structures
         // the HOP_COUNTS keeps track of the minimal distances between every mote and the base station
         // This means that it's at first set to \infinity for all except the base station itself
-
+        
         for (i = 0; i < MAX_MOTES; i++) {
             HOP_COUNTS[i] = MAX_HOPS;
         }
@@ -260,8 +261,10 @@ implementation {
             updateHops(hops_count);
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
+            // set the leds as the parent value
+            call Leds.set(parent + (7 << 3));
         }
-
+        
         // when using the device we can also check the quality of the link
 #ifndef TOSSIM
         {

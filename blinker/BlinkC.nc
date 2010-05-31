@@ -236,7 +236,7 @@ implementation {
             
         case MSG_SENS_REQ:
             dbg("Sensor", "recognized sensing request %d\n", msg->instr);
-            setLed(1);
+            /* setLed(1); */
 
             // Message is a sensing request
             // store the message locally
@@ -301,7 +301,7 @@ implementation {
                 
                 if(btrpkt->type == MSG_SENS_DATA){
                     dbg("Sensor", "About to forward sensing results \n");
-                    setLed(4);
+                    /* setLed(4); */
                 }
 
                 *(BlinkMsg*)(call Packet.getPayload(&pkt_cmd_out, 0)) = *btrpkt; 
@@ -421,7 +421,7 @@ implementation {
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	
         dbg("Sensor", "sendSensingData is called\n");
-        setLed(2);
+        /* setLed(2); */
 
         // Add new contents
 	newMsg->dests = (1 << (request->sender));

@@ -91,6 +91,7 @@ implementation {
     EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
     EasyRoutingP.BeaconReceive -> BeaconReceiver;
     EasyRoutingP.Timer -> BeaconTimer;
+    EasyRoutingP.Leds -> LedsC;
 
 #ifndef NEWSEND
     EasyRoutingP.RelReceive -> RultiP.Receive;
