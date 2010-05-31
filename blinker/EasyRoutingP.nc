@@ -158,8 +158,12 @@ implementation {
             
             // Get the destination inside BlinkMsg
             BlinkMsg* bMsg = (BlinkMsg *)(call Packet.getPayload(msg, 0));
-            nodes_t destinations = bMsg->dests;
+            // Remove ourself from the destination list
+            nodes_t destinations = bMsg->dests & ~(1 << TOS_NODE_ID);
             type_t type = bMsg->type;
+            
+            // We will not be a receiver anymore
+            bMsg->dests = destinations;
 
             if (!otherReceivers(destinations))
                 return SUCCESS;
@@ -169,6 +173,7 @@ implementation {
             // only in the case of sensing data we really use the routing tree that we've created
             if (type == MSG_SENS_DATA) {
                 dbg("Routing", "The parent is %d \n", parent);
+                
                 result = call RelSend.send((1 << parent), msg, len);
             }
             else {
@@ -293,9 +298,10 @@ implementation {
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
-            // just forward the message
-            dbg("Routing", "Received a message\n"); 
-           signal Receive.receive(msg, payload, len);
+            BlinkMsg* blinkMsg = (BlinkMsg*) payload;
+            dbg("Routing", "Received a message\n");
+            
+            signal Receive.receive(msg, payload, len);
         }
         return msg;
     }
