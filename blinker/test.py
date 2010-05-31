@@ -6,6 +6,7 @@ of the algorithms are working as expected
 
 import sys
 from simulation import *
+from gen_network import bin_tree
 
 #############################
 # def getIdFromBM(bitmask): #
@@ -36,9 +37,6 @@ def updateLedMask(ledmask, led):
 # 2. random values
 # more...
 
-# just pass the output to the other class
-p1 = Popen(["./listen.py"], stdout=sys.stdout)
-
 class InputChecker(object):
     def __init__(self, fp):
         self.fp = fp
@@ -48,8 +46,6 @@ class InputChecker(object):
 
 
 sim = Simulation(SERIAL_PORT, [])
-sim.make_topology("simpletopo.txt")
-sim.setup_noise("noise.txt")
 
 # MASKS = (0x9, 0x8, 0x12, 0x10, 0x24, 0x20)
 MASKS = (0x9, 0x12, 0x24)
@@ -73,6 +69,26 @@ def count_led():
 
 # check somehow if the topology is working fine automatically
 # for a binary tree we should always get the same thing
-tree_parents = {}
-for x in range(8):
-    
+# try to add and remove some connections also
+def make_tree(high):
+    tree_parents = {}
+    for x in range(1, (2 ** high) - 1):
+        tree_parents[x] = (x-1) / 2
+    return tree_parents
+
+print make_tree(3)
+
+def test_bin_tree(dim):
+    tree = make_tree(dim)
+    sim.setup_noise("noise.txt")
+    sim.make_bin_tree(dim)
+    sim.start(batch=True)
+    sim.run_some_events()
+    nodes = sorted(sim.nodes.keys())
+    for n in sorted(sim.nodes.keys()[1:]):
+        parent = sim.get_variable(n, "EasyRoutingP.parent")
+        ## FIXME: not working now with 3 for example, check why
+        print n, parent
+        assert(parent == tree[n])
+
+test_bin_tree(3)

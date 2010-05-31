@@ -181,6 +181,7 @@ class Simulation(object):
         "Creates a binary tree structure for the topology"
         for vals in bin_tree(len):
             self.add_connection(*vals)
+        print self.topology
 
     def count_events_needed(self, packet, var, value):
         "Send a packet and try to see how many steps are needed to fulfill it"

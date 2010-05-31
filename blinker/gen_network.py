@@ -26,9 +26,6 @@ def bin_tree(dim):
         val = float(random.randrange(*DB_RANGE))
         yield (x, x * 2 + 1, val)
         yield (x, (x+1) * 2, val)
-        yield (x * 2 + 1, x, val + random.randrange(3))
-        yield ((x+1) * 2, x, val + random.randrange(3))
-
 
 # TODO: use a decorator for this usage instead
 def write_topology(topo_maker, out_file):
