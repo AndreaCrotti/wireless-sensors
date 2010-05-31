@@ -350,6 +350,8 @@ implementation {
             dbg("Routing", "our parent has been removed from neighbour list\n");
             setNextBestParent();
         }
+        // setting to the MAX the hop count because it's not reachable anymore
+        HOP_COUNTS[idx] = MAX_HOPS;
         call Leds.set(hops_closest_neighbour + 1);
     }
 
@@ -362,7 +364,7 @@ implementation {
         int i;
         int min = MAX_HOPS;
         for (i = 0; i < MAX_MOTES; i++) {
-            if ((HOP_COUNTS[i] < min) && isNeighbour(i)) {
+            if (HOP_COUNTS[i] < min) {
                 // here we also have to check that it's really a neighbour
                 // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
                 min = HOP_COUNTS[i];
