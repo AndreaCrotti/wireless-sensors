@@ -45,11 +45,13 @@ SERIAL_PORT = 9001
 # CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
+MODULES_REGEXP = "Blink.*|Easy.*|Rulti.*"
+
 def print_var_table(vars):
     from re import match
     print "\nvariable list\n"
     for v in vars:
-        if match(r"Blink.*|Easy.*|Rulti.*", v):
+        if match(MODULES_REGEXP, v):
             print v
     print "\n"
 
@@ -73,6 +75,12 @@ class RadioNetwork(object):
     def __str__(self):
         return "\n".join("%d - %d" % (x[0], x[1]) for x in list(self.topology))
 
+    def create_network(couples):
+        "Create a network given a list of couples in input ((t0, t1), (t1, t3))..."
+        for x, y in couples:
+            self.add_connection(x, y)
+
+    # Adding and removing from our local data strucure AND the radio topology
     def add_connection(self, node1, node2, link=-56.0):
         "Add a connection between two nodes"
         if self.symmetric:
@@ -183,6 +191,9 @@ class Simulation(object):
             self.add_connection(*vals)
         print self.topology
 
+    def make_given_topology(self, couples):
+        self.topology.create_network(couples)
+
     def count_events_needed(self, packet, var, value):
         "Send a packet and try to see how many steps are needed to fulfill it"
         from itertools import count
@@ -209,18 +220,21 @@ class Simulation(object):
         for n in self.nodes.values():
             n.createNoiseModel()
 
-    def add_connection(self, n1, n2, distance):
-        "Add to the radio channel a connection between the two nodes"
+    def add_connection(self, n1, n2, distance=-59):
+        """
+        Add to the radio channel a connection between the two nodes
+        If the given nodes are not present already add them
+        """
         self.add_node(n1)
         self.add_node(n2)
         self.topology.add_connection(n1, n2, distance)
 
     def remove_connection(self, n1, n2):
+        # here we don't need to remove the nodes themselves
         self.topology.remove_connection(n1, n2)
 
     def interactive(self):
-        # FIXME: the order of printing now is not respected though, concurrency stuff
-        # get_decorated_file(sys.stdout, "", "green").write("entering interactive session, another C-c to quit the program\n")
+        # Use a dictionary and function calls instead
         print "entering interactive session, another C-c to quit the program"
         choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n5)Running tests\n\n")
         if choice == 1:
@@ -295,20 +309,38 @@ class Simulation(object):
             print self.get_variable(mote, v)
 
     def manipulate_topology(self):
-        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
-        if choice == 1:
-            print self.topology
+        print_out = lambda: sys.stdout.write(str(self.topology))
+        def add_nodes():
+            try:
+                n1, n2 = input("first node\n"), input("second node\n")
+            except Exception:
+                print "input error"
+                self.manipulate_topology()
 
-        if choice == 2:
-            n1, n2, dist = input("first node\n"), input("second node\n"), float(input("distance\n"))
-            self.add_connection(n1, n2, dist)
-            print "added link from %s to %s" % (n1, n2)
-
-        if choice == 3:
+            else:
+                self.add_connection(n1, n2)
+                
+        def rem_nodes():
             nodes = raw_input("what are the nodes to remove (symmetrically) write X Y?\n")
-            n1, n2 = map(int, nodes.split(" "))
-            self.remove_connection(n1, n2)
-            print "removed link from %s to %s" % (n1, n2)
+            try:
+                n1, n2 = map(int, nodes.split(" "))
+            except ValueError:
+                print "write better values"
+                self.manipulate_topology()
+            else:
+                self.remove_connection(n1, n2)
+
+        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
+        choices = {
+            1: print_out,
+            2: add_nodes,
+            3: rem_nodes
+            }
+
+        if choice in choices:
+            choices[choice]()
+        else:
+            return 
 
     def send_packet(self, msg):
         "Takes a BlinkMsg already generated and sends it via serial"

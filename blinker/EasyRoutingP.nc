@@ -71,6 +71,7 @@ implementation {
     void broadcastBeacon();
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
+    int isNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
@@ -353,20 +354,28 @@ implementation {
     }
 
     /** 
-     * Set the parent to the other best one
+     * Set the parent to the next best one
+     * Check if possible loops can be created in some situations
      * 
      */
     void setNextBestParent(void) {
         int i;
         int min = MAX_HOPS;
-        for (i = 0; i < MAX_MOTES; i++)
-            if (HOP_COUNTS[i] < min)
+        for (i = 0; i < MAX_MOTES; i++) {
+            if ((HOP_COUNTS[i] < min) && isNeighbour(i)) {
+                // here we also have to check that it's really a neighbour
+                // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
                 min = HOP_COUNTS[i];
-
+            }
+        }
         parent = min;
-
     }
     
+    int isNeighbour(nodeid_t idx) {
+        // make sure the types are also fine
+        return ((1 << idx) & neighbours);
+    }
+
     /** 
      * Set the bit corresponding to mote idx to 1
      * 
