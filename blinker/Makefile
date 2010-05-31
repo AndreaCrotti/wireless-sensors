@@ -1,5 +1,5 @@
 COMPONENT=BlinkAppC
-BUILD_EXTRA_DEPS += SerialMsg BlinkMsg.java BlinkMsg.py BlinkGUI.class BlinkConsole.class
+BUILD_EXTRA_DEPS += SerialMsg.py BlinkMsg.java BlinkMsg.py BlinkGUI.class BlinkConsole.class
 CLEAN_EXTRA = *.class BlinkMsg.java SerialMsg.py BlinkMsg.py
 JAVA_VERSION = 1.6
 # This is the group of communication
@@ -21,7 +21,7 @@ BlinkMsg.java:
 BlinkMsg.py:
 	mig python -target=null $(CFLAGS) -python-classname=BlinkMsg Blink.h BlinkMsg -o $@
 
-SerialMsg:
+SerialMsg.py:
 	mig python -target=null -python-classname=SerialMsg Blink.h BlinkMsg -o SerialMsg.py
 
 include $(MAKERULES)

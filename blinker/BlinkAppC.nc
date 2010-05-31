@@ -20,9 +20,9 @@ implementation {
     components new TimerMilliC() as SenseRtxTimer;
 
     components ActiveMessageC;
-    #ifndef TOSSIM
+#ifndef TOSSIM
     components ActiveMessageAddressC;
-    #endif
+#endif
     components SerialActiveMessageC;
 
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
@@ -93,17 +93,8 @@ implementation {
     EasyRoutingP.Timer -> BeaconTimer;
     EasyRoutingP.Leds -> LedsC;
 
-#ifndef NEWSEND
     EasyRoutingP.RelReceive -> RultiP.Receive;
     EasyRoutingP.RelSend -> RultiP.AMSend;
-#else
-    components SenderC;
-    // Using the new sender module
-    EasyRoutingP.RelSend -> SenderC.AMSend;
-
-    // The acknowledgment can be inserted in RultiP directly
-    SenderC.PacketAcknowledgements -> ActiveMessageC;
-#endif
     
 #ifndef TOSSIM
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;

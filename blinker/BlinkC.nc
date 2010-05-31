@@ -88,20 +88,20 @@ implementation {
 	// Initialize the routing module
 	call RoutingInit.init();
 
-        #ifndef TOSSIM
-            // set the active message address
-            call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(),TOS_NODE_ID);
-        #endif
+#ifndef TOSSIM
+        // set the active message address
+        call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(),TOS_NODE_ID);
+#endif
 
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
     }
 
-    #ifndef TOSSIM
-        async event void ActiveMessageAddress.changed() {
-        }
-    #endif
+#ifndef TOSSIM
+    async event void ActiveMessageAddress.changed() {
+    }
+#endif
 
     /**
      * Transmits a command over the network.
