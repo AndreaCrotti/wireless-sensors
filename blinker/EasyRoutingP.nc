@@ -229,7 +229,9 @@ implementation {
     event message_t * BeaconReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BeaconMsg)) {
             BeaconMsg* beacon = (BeaconMsg *) payload;
+            // when we got the message
             uint32_t arrivalTime = call Timer.getNow();
+            
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
@@ -251,7 +253,10 @@ implementation {
     /** 
      * Checks if the last node was closer to the base station or if
      * at same dinstance if the signal is better than the last best one
-     *
+     * 
+     * @param hops_count number of hops to the base station of the sender
+     * @param sender id of the sender
+     * @param msg received beacon Message, here only needed to get the rssi value in some rare cases
      */
     void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
         /* dbg("Routing", "Hops count = %d and hops_closest_neighbour = %d\n", hops_count, hops_closest_neighbour); */
@@ -346,11 +351,13 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
+        // maybe we should check if it's really needed, if it's not there already
+        // the other checks are not really needed
 
         dbg("Routing", "Node %d is in timeout\n", idx);
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
-            dbg("Routing", "our parent has been removed from neighbour list\n");
+            dbg("Routing", "parent node has been removed from neighbour list\n");
             setNextBestParent();
         }
         // setting to the MAX the hop count because it's not reachable anymore

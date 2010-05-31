@@ -23,11 +23,12 @@ import subprocess
 import random
 import readline
 import rlcompleter
+from re import match
 
 from colorize import colors
 from packet import *
 
-from TOSSIM import *
+from TOSSIM import Tossim, SerialForwarder, Throttle
 from tinyos.tossim.TossimApp import *
 from tinyos.message import MoteIF
 
@@ -48,7 +49,6 @@ CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 MODULES_REGEXP = "Blink.*|Easy.*|Rulti.*"
 
 def print_var_table(vars):
-    from re import match
     print "\nvariable list\n"
     for v in vars:
         if match(MODULES_REGEXP, v):
@@ -152,7 +152,6 @@ class Simulation(object):
     def cycle(self):
         "Loop at infinite runnign all the events in the queue"
         print "start cycling, use C-c to send data interactively"
-        # self.interactive_output.write("start cycling, use C-c to send data interactively\n")
         while True:
             try:
                 self.throttle.checkThrottle()
@@ -232,7 +231,7 @@ class Simulation(object):
     def interactive(self):
         # Use a dictionary and function calls instead
         print "entering interactive session, another C-c to quit the program"
-        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect mote\n5)Running tests\n\n")
+        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect node\n5)Running tests\n\n")
         if choice == 1:
             self.manipulate_topology()
         if choice == 2:
@@ -240,14 +239,14 @@ class Simulation(object):
         if choice == 3:
             self.inspect_variable()
         if choice == 4:
-            self.inspect_mote()
+            self.inspect_node()
         if choice == 5:
             node_list = sorted(self.nodes.keys())
             print "sending turn on to all nodes"
             self.send_packet(turn_leds_all_nodes(node_list))
             self.run_some_events()
             if not(self.check_vars_nodes(node_list, "BlinkC.ledMask", 7)):
-                print "Not all motes got the right value"
+                print "Not all nodes got the right value"
 
             print "sending sensing info to a random node"
             self.send_packet(sens_random_node(node_list))
@@ -280,31 +279,32 @@ class Simulation(object):
     def inspect_variable(self):
         "Ask for a variable to inspect and returns it"
         readline.parse_and_bind("tab: complete")
-        mote = input("which mote you want to inspect?\n")
+        node = input("which node you want to inspect?\n")
         print_var_table(self.vars)
         # see if this is actually correct
         c = rlcompleter.Completer(dict(zip(self.vars, self.vars)))
         readline.set_completer(c.complete)
         var = raw_input("which variable do you want to inspect?\n")
-        print "mote %d:var %s = %s" % (mote, var, self.get_variable(mote, var))
+        print "node %d:var %s = %s" % (node, var, self.get_variable(node, var))
 
-    def inspect_mote(self):
-        mote = input("which mote you want to inspect?\n")
-        self.print_mote_vars(mote)
+    def inspect_node(self):
+        "Show all the variables in a certain node"
+        node = input("which node you want to inspect?\n")
+        self.print_node_vars(node)
 
-    def get_variable(self, mote, var):
-        return self.nodes[mote].getVariable(var).getData()
+    def get_variable(self, node, var):
+        return self.nodes[node].getVariable(var).getData()
 
-    def filter_variable(self, mod = "Easy|Blink|Rulti"):
+    def filter_variable(self, mod=MODULES_REGEXP):
         for v in self.vars:
-            if re.match(mod, v):
+            if match(mod, v):
                 yield v
 
-    def print_mote_vars(self, mote):
+    def print_node_vars(self, node):
         for v in self.filter_variable():
-            print self.get_variable(mote, v)
+            print self.get_variable(node, v)
 
-    def print_var_motes(self, var):
+    def print_var_nodes(self, var):
         for x in sorted(self.nodes):
             print "%d -> %s" % (x, self.get_variable(x, var))
 
@@ -319,7 +319,7 @@ class Simulation(object):
 
             else:
                 self.add_connection(n1, n2)
-                
+
         def rem_nodes():
             nodes = raw_input("what are the nodes to remove (symmetrically) write X Y?\n")
             try:
@@ -367,7 +367,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         topo_file = sys.argv[1]
-    
+
     # TODO: only creates the number of nodes present our file
     sim.make_topology(topo_file)
     sim.setup_noise("noise.txt")

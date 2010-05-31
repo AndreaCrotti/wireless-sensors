@@ -88,30 +88,25 @@ def test_bin_tree(dim):
         assert(parent == tree[n])
 
 def test_routing_deletion():
-    sim = Simulation(SERIAL_PORT, [])
+    sim = Simulation(SERIAL_PORT, ("Routing"))
     topo = ((0,1), (0,2), (1,2))
     # when removing 0-2 I should get 1 as new parent for 1
-    sim.setup_noise("noise.txt")
     sim.make_given_topology(topo)
-    print sim.topology
+    sim.setup_noise("noise.txt")
     sim.start(batch=True)
-    sim.run_some_events()
-    sim.run_some_events()
-    sim.run_some_events()
+    print sim.topology
     
-    sim.print_var_motes("EasyRoutingP.parent")
-    sim.print_var_motes("EasyRoutingP.HOP_COUNTS")
-    sim.run_some_events()
-    sim.run_some_events()
-    sim.run_some_events()
-    sim.run_some_events()
-    sim.run_some_events()
-    sim.run_some_events()
+    sim.print_var_nodes("EasyRoutingP.parent")
+    sim.print_var_nodes("EasyRoutingP.HOP_COUNTS")
     sim.run_some_events()
     sim.remove_connection(0, 2)
     print sim.topology
     # check when parent is outside
-    sim.print_var_motes("EasyRoutingP.parent")
-    sim.print_var_motes("EasyRoutingP.HOP_COUNTS")
+    while True:
+        if (sim.get_variable(2, "EasyRoutingP.parent") == 1):
+            sim.run_some_events()
+            
+    sim.print_var_nodes("EasyRoutingP.parent")
+    sim.print_var_nodes("EasyRoutingP.HOP_COUNTS")
 
 test_routing_deletion()
