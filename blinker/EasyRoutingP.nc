@@ -346,13 +346,17 @@ implementation {
 
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
-            dbg("Routing", "our parent has been removed from neighbour list");
+            dbg("Routing", "our parent has been removed from neighbour list\n");
             setNextBestParent();
         }
         call Leds.set(hops_closest_neighbour + 1);
     }
 
-    void setNextBestParent() {
+    /** 
+     * Set the parent to the other best one
+     * 
+     */
+    void setNextBestParent(void) {
         int i;
         int min = MAX_HOPS;
         for (i = 0; i < MAX_MOTES; i++)

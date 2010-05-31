@@ -85,7 +85,7 @@ class RadioNetwork(object):
     def remove_connection(self, node1, node2):
         if self.symmetric:
             self.radio.remove(node2, node1)
-            self.topology.add((node2, node1))
+            self.topology.remove((node2, node1))
 
         self.topology.remove((node1, node2))
         self.radio.remove(node1, node1)
