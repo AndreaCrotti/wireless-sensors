@@ -139,6 +139,8 @@ implementation {
         if (transmissions < RULTI_MAX_TRANSMISSIONS) {
             transmit();
         } else {
+            dbg("Rel", "Stopping because of to many retransmissions\n");
+            
             // just give up after so many (re-)transmissions.
             stopRtx();
             signal AMSend.sendDone(originalMessage,ENOACK);

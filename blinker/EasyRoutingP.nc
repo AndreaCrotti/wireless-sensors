@@ -262,7 +262,7 @@ implementation {
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
             // set the leds as the parent value
-            call Leds.set(parent);
+            call Leds.set(hops_count + 1);
         }
         
         // when using the device we can also check the quality of the link
@@ -347,6 +347,7 @@ implementation {
             dbg("Routing", "our parent has been removed from neighbour list");
             setNextBestParent();
         }
+        Leds.set(hops_count + 1);
     }
 
     void setNextBestParent() {
@@ -357,6 +358,7 @@ implementation {
                 min = HOP_COUNTS[i];
 
         parent = min;
+
     }
     
     /** 
