@@ -80,4 +80,4 @@ def test_routing_deletion():
     print "deletion worked correctly"
 
 test_routing_deletion()
-# test_big_binary_tree(5)
+# test_big_binary_tree(2)

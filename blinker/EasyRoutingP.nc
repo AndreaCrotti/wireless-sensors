@@ -316,24 +316,30 @@ implementation {
      */
     void selectBestParent() {
         int i;
-        nodeid_t closest;
+        nodeid_t closest = 0;
         uint8_t min = MAX_HOPS;
 
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
+#ifndef TOSSIM
+                // in case I have the same hop count as the best actual value I also check the rssi
+                if (HOP_COUNTS[i] == min) {
+                    if (RSSI_VALS[i] > RSSI_VALS[closest]) {
+                        min = HOP_COUNTS[i];
+                        closest = i;
+                    }
+                }
+#endif                    
                 if (HOP_COUNTS[i] < min) {
                     min = HOP_COUNTS[i];
                     closest = i;
                 }
+
             }
         }
+        dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
         parent = closest;
         updateHops(min);
-
-        // when using the device we can also check the quality of the link
-#ifndef TOSSIM
-        // if there are more motes with the same hop count I should check also the Link quality
-#endif
     }
 
     /** 
