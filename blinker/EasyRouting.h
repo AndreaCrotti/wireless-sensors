@@ -11,6 +11,8 @@
 #ifndef EASY_ROUTING_H
 #define EASY_ROUTING_H
 
+#include "Constants.h"
+
 // TIMEOUT is a multiple of (BEACON * PERIOD) it will be more rigourously correct
 enum {
     BEACON = 2,
