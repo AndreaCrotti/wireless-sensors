@@ -63,19 +63,14 @@ implementation {
     uint16_t best_link;
     nodeid_t parent;
 
-    // this is only used by the root node to make sure
-    uint8_t rootNodeSet = 0;
-
     void check_timeout(uint32_t);
-    void init_msgs();
-    void broadcastBeacon();
+    void broadcastBeacon(void);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
-    void initializeRootNode();
-    void setNextBestParent();
+    void setNextBestParent(void);
     
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
@@ -103,7 +98,7 @@ implementation {
 
         // TODO: check if other ways not hardwiring
         // we can just set the values for node 0 when we first receive the Serial message
-        if (TOS_NODE_ID == 0) {
+        if (TOS_NODE_ID == ROOT_NODE_ID) {
             // in the base station of course there can't be shortest paths
             HOP_COUNTS[0] = 0;
             message->hops_count = 0;
@@ -121,22 +116,11 @@ implementation {
         check_timeout(call Timer.getNow());
     }
     
-    // This function should be called from the SerialReceive code to avoid hard wiring for root, is that possible??
-    void initializeRootNode() {
-        if (!rootNodeSet) {
-            // in the base station of course there can't be shortest paths
-            HOP_COUNTS[0] = 0;
-            /* message->hops_count = 0; */
-            hops_closest_neighbour = 0;
-        }
-    }
-
-
     /** 
      * Broadcast the beacon package
      * 
      */
-    void broadcastBeacon() {
+    void broadcastBeacon(void) {
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
     }
 
@@ -345,27 +329,6 @@ implementation {
     }
 
     /** 
-     * Set the bit corresponding to mote idx to 0
-     * 
-     * @param idx index of the mote
-     */
-    void removeNeighbour(nodeid_t idx) {
-        neighbours &= ~(1 << idx);
-        // maybe we should check if it's really needed, if it's not there already
-        // the other checks are not really needed
-
-        dbg("Routing", "Node %d is in timeout\n", idx);
-        // that means that we are removing our parent, so look for the next best one
-        if (idx == parent) {
-            dbg("Routing", "parent node has been removed from neighbour list\n");
-            setNextBestParent();
-        }
-        // setting to the MAX the hop count because it's not reachable anymore
-        HOP_COUNTS[idx] = MAX_HOPS;
-        call Leds.set(hops_closest_neighbour + 1);
-    }
-
-    /** 
      * Set the parent to the next best one
      * Check if possible loops can be created in some situations
      * 
@@ -385,6 +348,27 @@ implementation {
         // setting the parent and updating the other values (our beacon for example)
         parent = closest;
         updateHops(min);
+    }
+
+    /** 
+     * Set the bit corresponding to mote idx to 0
+     * 
+     * @param idx index of the mote
+     */
+    void removeNeighbour(nodeid_t idx) {
+        neighbours &= ~(1 << idx);
+        // maybe we should check if it's really needed, if it's not there already
+        // the other checks are not really needed
+
+        dbg("Routing", "Node %d is in timeout\n", idx);
+        // that means that we are removing our parent, so look for the next best one
+        if (idx == parent) {
+            dbg("Routing", "parent node has been removed from neighbour list\n");
+            setNextBestParent();
+        }
+        // setting to the MAX the hop count because it's not reachable anymore
+        HOP_COUNTS[idx] = MAX_HOPS;
+        call Leds.set(hops_closest_neighbour + 1);
     }
 
     /** 

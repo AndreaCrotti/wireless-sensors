@@ -22,6 +22,10 @@ enum {
     MAX_HOPS = 255
 };
 
+enum {
+    ROOT_NODE_ID = 0
+};
+
 /// Beacon message is used to create the topology of the network
 typedef nx_struct BeaconMsg {
     nx_nodeid_t src_node;
