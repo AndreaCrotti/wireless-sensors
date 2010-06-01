@@ -62,12 +62,10 @@ implementation {
     int8_t RSSI_VALS[MAX_MOTES];
     
     // number of hops of the closest to the base neighbour
-    uint8_t hops_closest_neighbour;
-    uint16_t best_link;
     nodeid_t parent;
 
+    void initGlobalVariables(void);
     void checkTimeout(uint32_t);
-    //task void broadcastBeacon(void);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     uint8_t isNeighbour(nodeid_t);
@@ -79,19 +77,21 @@ implementation {
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
     command error_t Init.init() {
+        initGlobalVariables();
+        call Timer.startPeriodic(PERIOD);
+    }
+
+    void initGlobalVariables(void) {
         int i;
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         
-        call Timer.startPeriodic(PERIOD);
-        // set all to 0 initially
+        // arrival time = 0 means we have never received a beacon from that node
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
         }
 
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
-        best_link = 0;
-
         // Initializing the hop count structures
         // the HOP_COUNTS keeps track of the minimal distances between every mote and the base station
         // This means that it's at first set to \infinity for all except the base station itself
@@ -100,17 +100,15 @@ implementation {
             HOP_COUNTS[i] = MAX_HOPS;
         }
 
-        // TODO: check if other ways not hardwiring
-        // we can just set the values for node 0 when we first receive the Serial message
+        // ROOT_NODE_ID is a special case, with distance 0 from itself of course
         if (TOS_NODE_ID == ROOT_NODE_ID) {
             // in the base station of course there can't be shortest paths
-            HOP_COUNTS[ROOT_NODE_ID] = 0;
             message->hops_count = 0;
-            hops_closest_neighbour = 0;
+            HOP_COUNTS[ROOT_NODE_ID] = 0;
         } else {
-            hops_closest_neighbour = MAX_HOPS;
             message->hops_count = MAX_HOPS;
         }
+
         return SUCCESS;
     }
 
@@ -228,7 +226,7 @@ implementation {
             updateRssi(sender, msg);
            
             if (TOS_NODE_ID != ROOT_NODE_ID) {
-                // now select what is the best possible parent
+                // now select what is the best possible parent unless it's the root node
                 selectBestParent();
             }
         }
@@ -255,7 +253,6 @@ implementation {
         // careful here with variables with the same names - no kidding
         message->hops_count = my_hop_count;
         // distance of the mote with the minimal distance
-        hops_closest_neighbour = hops_count; //FIXME: this is only written to but never read from!
         // this is not really needed maybe, it's just to keep the array complete
         HOP_COUNTS[TOS_NODE_ID] = my_hop_count;
     }
@@ -314,6 +311,7 @@ implementation {
 
             }
         }
+
         if (min < MAX_HOPS) {
             dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
             parent = closest;
