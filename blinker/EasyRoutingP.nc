@@ -209,7 +209,8 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
-            if ((sender == TOS_NODE_ID) || (TOS_NODE_ID == 0)) {
+            // this should not happen anyway
+            if (sender == TOS_NODE_ID) {
                 return msg;
             }
 
