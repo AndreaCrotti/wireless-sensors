@@ -333,8 +333,9 @@ implementation {
      * 
      */
     void setNextBestParent(void) {
-        int i, closest;
-        int min = MAX_HOPS;
+        int i;
+        nodeid_t closest;
+        uint8_t min = MAX_HOPS;
         for (i = 0; i < MAX_MOTES; i++) {
             if (HOP_COUNTS[i] < min) {
                 // here we also have to check that it's really a neighbour
