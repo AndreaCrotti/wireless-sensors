@@ -278,7 +278,7 @@ implementation {
      */
     void updateHops(uint8_t hops_count) {
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
-        int my_hop_count = hops_count + 1;
+        uint8_t my_hop_count = hops_count + 1;
 
         dbg("Routing", "Setting hop count to %d\n", hops_count+1);
         // update the hop count to the minimum path given in input +1
