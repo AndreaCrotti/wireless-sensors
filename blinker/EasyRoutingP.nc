@@ -67,6 +67,7 @@ implementation {
     void broadcastBeacon(void);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
+    uint8_t isNeighbour(nodeid_t);
     void updateHops(uint8_t);
     void checkParent(uint8_t, nodeid_t, message_t *);
     uint8_t otherReceivers(nodeid_t destinations);
@@ -311,8 +312,9 @@ implementation {
             /* dbg("Routing", "delay = %d and LAST_ARRIVAL[%d] = %d\n", delay, i, LAST_ARRIVAL[i]); */
             
             // maybe it would be better to check only for the neighbours, but also adding 
-            // the check for LAST_ARRIVAL[i] != 0 works at the same way
+            // the check for LAST_ARRIVAL[i] != 0 also works
             if ((LAST_ARRIVAL[i] != 0) &&
+                /* (isNeighbour(i)) && */ // it should also work in this way but it doesn't
                 (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT)) {
                 removeNeighbour(i);
             }
@@ -378,5 +380,9 @@ implementation {
      */
     void addNeighbour(nodeid_t idx) {
         neighbours |= (1 << idx);
+    }
+
+    uint8_t isNeighbour(nodeid_t idx) {
+        return neighbours & (1 << idx);
     }
 }

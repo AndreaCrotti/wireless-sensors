@@ -28,13 +28,13 @@ from colorize import colors
 from packet import *
 
 from TOSSIM import Tossim, SerialForwarder, Throttle
-from tinyos.tossim.TossimApp import *
+from tinyos.tossim.TossimApp import NescApp
 
 from gen_network import bin_tree, rand_graph
 
 RUNTIME = 2
 
-MAX_NODES = 16
+MAX_NODES = 2**10
 MAXEVENTS = 1000
 SERIAL_PORT = 9001
 
@@ -101,7 +101,7 @@ class RadioNetwork(object):
 
 # add to the local variables also the variables in the 
 class Simulation(object):
-    def __init__(self, port, channels):
+    def __init__(self, port, channels, test=False):
         self.app = NescApp()
         # only take the variable names without
         self.vars = self.app.variables.variables()
@@ -110,6 +110,7 @@ class Simulation(object):
         self.nodes = {}
         # the serial forwarder stuff is needed only by the java interaface
         # or the listen.py script
+        # in testing mode this is only a problem
         self.sf = SerialForwarder(port)
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0

@@ -23,9 +23,8 @@ def rand_graph(num, conn):
 def bin_tree(dim):
     "Generates a binary tree connection"
     for x in range((2 ** dim) - 1):
-        val = float(random.randrange(*DB_RANGE))
-        yield (x, x * 2 + 1, val)
-        yield (x, (x+1) * 2, val)
+        yield (x, x * 2 + 1)
+        yield (x, (x+1) * 2)
 
 # TODO: use a decorator for this usage instead
 def write_topology(topo_maker, out_file):
