@@ -247,6 +247,8 @@ implementation {
     void updateHops(uint8_t hops_count) {
         BeaconMsg* message = ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         uint8_t my_hop_count = hops_count + 1;
+        if (my_hop_count == 0) // redundant test
+            return;
 
         dbg("Routing", "Setting hop count to %d\n", hops_count+1);
         // update the hop count to the minimum path given in input +1
@@ -312,9 +314,11 @@ implementation {
 
             }
         }
-        dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
-        parent = closest;
-        updateHops(min);
+        if (min < MAX_HOPS) {
+            dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
+            parent = closest;
+            updateHops(min);
+        }
     }
 
     /** 
