@@ -63,7 +63,7 @@ implementation {
     uint16_t best_link;
     nodeid_t parent;
 
-    void check_timeout(uint32_t);
+    void checkTimeout(uint32_t);
     void broadcastBeacon(void);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
@@ -113,7 +113,7 @@ implementation {
     event void Timer.fired() {
         // motes in timeout can be checked at every 
         broadcastBeacon();
-        check_timeout(call Timer.getNow());
+        checkTimeout(call Timer.getNow());
     }
     
     /** 
@@ -305,16 +305,15 @@ implementation {
      * 
      * @param delay time passed from Timer start
      */
-    void check_timeout(uint32_t delay) {
+    void checkTimeout(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
-            // in case it's still 0 we don't touch it at all, means that no beacons from node i arrived
-            if (LAST_ARRIVAL[i] == 0)
-                continue;
-            
             /* dbg("Routing", "delay = %d and LAST_ARRIVAL[%d] = %d\n", delay, i, LAST_ARRIVAL[i]); */
-            // adding and removing have no effect if they are already in or out the list
-            if (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT) {
+            
+            // maybe it would be better to check only for the neighbours, but also adding 
+            // the check for LAST_ARRIVAL[i] != 0 works at the same way
+            if ((LAST_ARRIVAL[i] != 0) &&
+                (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT)) {
                 removeNeighbour(i);
             }
         }
