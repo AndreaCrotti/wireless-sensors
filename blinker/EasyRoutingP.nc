@@ -101,7 +101,7 @@ implementation {
         // we can just set the values for node 0 when we first receive the Serial message
         if (TOS_NODE_ID == ROOT_NODE_ID) {
             // in the base station of course there can't be shortest paths
-            HOP_COUNTS[0] = 0;
+            HOP_COUNTS[ROOT_NODE_ID] = 0;
             message->hops_count = 0;
             hops_closest_neighbour = 0;
         } else {
@@ -115,6 +115,7 @@ implementation {
         // motes in timeout can be checked at every 
         broadcastBeacon();
         checkTimeout(call Timer.getNow());
+        call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
     }
     
     /** 
@@ -253,7 +254,6 @@ implementation {
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
             // set the leds as the parent value
-            call Leds.set(hops_count + 1);
         }
         
         // when using the device we can also check the quality of the link
@@ -266,7 +266,7 @@ implementation {
             if (hops_count == hops_closest_neighbour) {
                 rssi_val = call CC2420Packet.getRssi(msg);
                 dbg("Routing", "Equal distance, now checking for RSSI value");
-                if (rssi_val < best_link) {
+                if (rssi_val > best_link) {
                     parent = sender;
                 }
             }
@@ -312,9 +312,7 @@ implementation {
             /* dbg("Routing", "delay = %d and LAST_ARRIVAL[%d] = %d\n", delay, i, LAST_ARRIVAL[i]); */
             
             // maybe it would be better to check only for the neighbours, but also adding 
-            // the check for LAST_ARRIVAL[i] != 0 also works
-            if ((LAST_ARRIVAL[i] != 0) &&
-                /* (isNeighbour(i)) && */ // it should also work in this way but it doesn't
+            if ((isNeighbour(i) != 0) &&
                 (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT)) {
                 removeNeighbour(i);
             }
@@ -339,12 +337,14 @@ implementation {
         nodeid_t closest;
         uint8_t min = MAX_HOPS;
         for (i = 0; i < MAX_MOTES; i++) {
-            if (HOP_COUNTS[i] < min) {
-                // here we also have to check that it's really a neighbour
-                // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
-                min = HOP_COUNTS[i];
-                // we have at least one, otherwise we have no neighbours at all and it doesn't work anyway
-                closest = i;
+            if (isNeighbour(i)) {
+                if (HOP_COUNTS[i] < min) {
+                    // here we also have to check that it's really a neighbour
+                    // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
+                    min = HOP_COUNTS[i];
+                    // we have at least one, otherwise we have no neighbours at all and it doesn't work anyway
+                    closest = i;
+                }
             }
         }
         // setting the parent and updating the other values (our beacon for example)
@@ -370,7 +370,6 @@ implementation {
         }
         // setting to the MAX the hop count because it's not reachable anymore
         HOP_COUNTS[idx] = MAX_HOPS;
-        call Leds.set(hops_closest_neighbour + 1);
     }
 
     /** 
