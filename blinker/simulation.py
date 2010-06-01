@@ -160,7 +160,6 @@ class Simulation(object):
                 self.throttle.checkThrottle()
                 self.sim.runNextEvent()
                 # processing what it's got from it
-                self.sf.process()
             except KeyboardInterrupt:
                 # with the first interrupt we go in interactive mode, the second quits the program
                 try:
@@ -194,23 +193,6 @@ class Simulation(object):
     def make_given_topology(self, couples):
         for x, y in couples:
             self.add_connection(x, y)
-
-    def count_events_needed(self, packet, var, value):
-        "Send a packet and try to see how many steps are needed to fulfill it"
-        from itertools import count
-        self.send_packet(packet)
-        for i in count():
-            if i > MAXEVENTS:
-                return False
-
-            if self.check_vars_all_nodes(var, value):
-                return i
-
-            # run one more event
-            self.throttle.checkThrottle()
-            self.sim.runNextEvent()
-            # processing what it's got from it
-            self.sf.process()
 
     def setup_noise(self, noise_file):
         for line in open(noise_file):
@@ -264,8 +246,6 @@ class Simulation(object):
         while(time + RUNTIME * 10000000000 > self.sim.time()):
             self.throttle.checkThrottle()
             self.sim.runNextEvent()
-            # processing what it's got from it
-            self.sf.process()
 
         self.throttle.printStatistics()
 
@@ -361,7 +341,6 @@ class Simulation(object):
             self.throttle.checkThrottle()
             self.sim.runNextEvent()
             # processing what it's got from it
-            self.sf.process()
 
         print "sended packet:\n%s" % str(msg)
         self.seqno += 1

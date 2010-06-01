@@ -14,7 +14,7 @@
 enum {
     BEACON = 2,
     PERIOD = 1000,
-    TIMEOUT = 6
+    TIMEOUT = 10
 };
 
 enum {
