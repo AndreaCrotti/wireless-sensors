@@ -76,8 +76,8 @@ def test_routing_deletion():
     # number of cycles could be computed, here we have to wait to be sure at least
     # 2 * total full timeout
     # we could also access to the enums in the code
-    assert(_test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100))
+    assert(_test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100, verbose=True))
     print "deletion worked correctly"
 
-# test_routing_deletion()
-test_big_binary_tree(5)
+test_routing_deletion()
+# test_big_binary_tree(5)
