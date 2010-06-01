@@ -54,6 +54,8 @@ implementation {
     uint8_t LAST_ARRIVAL[MAX_MOTES];
     // structure keeping the message to forward
     message_t pkt;
+    // 
+    uint16_t periodCount = 0;
 
     // structure that keeps the hop count for every of the neighbors
     uint8_t HOP_COUNTS[MAX_MOTES];
@@ -80,7 +82,7 @@ implementation {
         int i;
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         
-        call Timer.startPeriodic(BEACON * PERIOD);
+        call Timer.startPeriodic(PERIOD);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
@@ -121,8 +123,10 @@ implementation {
     }
 
     event void Timer.fired() {
-        // motes in timeout can be checked at every 
-        post broadcastBeacon();
+        periodCount++;
+        // motes in timeout can be checked at every
+        if ((periodCount % BEACON) == 0)
+            post broadcastBeacon();
         checkTimeout(call Timer.getNow());
         call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
     }
@@ -191,10 +195,7 @@ implementation {
      * @return 1, if there is another destination and 0 otherwise.
      */
     uint8_t otherReceivers(nodeid_t destinations){
-        if((destinations & ~(1 << TOS_NODE_ID)) == 0)
-            return 0;
-        else 
-            return 1;
+        return (!(destinations & ~(1 << TOS_NODE_ID)));
     }
 
     // Just calling the lower layer
@@ -222,7 +223,7 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
-            if ((sender == TOS_NODE_ID) || (TOS_NODE_ID == 0)) {
+            if ((sender == TOS_NODE_ID) || (TOS_NODE_ID == ROOT_NODE_ID)) {
                 return msg;
             }
 
@@ -236,9 +237,8 @@ implementation {
             HOP_COUNTS[sender] = hops_count;
 
             // update in the array of RSSI values
-#ifndef TOSSIM            
             updateRssi(sender, msg);
-#endif            
+
             // now select what is the best possible parent
             selectBestParent();
         }
@@ -255,22 +255,21 @@ implementation {
      * Update the variable hops_count in the global variable pkt
      */
     void updateHops(uint8_t hops_count) {
-        BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
+        BeaconMsg* message = ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         uint8_t my_hop_count = hops_count + 1;
 
         dbg("Routing", "Setting hop count to %d\n", hops_count+1);
         // update the hop count to the minimum path given in input +1
-        // careful here with variables with the same names
+        // careful here with variables with the same names - no kidding
         message->hops_count = my_hop_count;
         // distance of the mote with the minimal distance
-        hops_closest_neighbour = hops_count;
-        // this is not reallly needed maybe, it's just to keep the array complete
+        hops_closest_neighbour = hops_count; //FIXME: this is only written to but never read from!
+        // this is not really needed maybe, it's just to keep the array complete
         HOP_COUNTS[TOS_NODE_ID] = my_hop_count;
     }
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
-            BlinkMsg* blinkMsg = (BlinkMsg*) payload;
             dbg("Routing", "Received a message\n");
             
             signal Receive.receive(msg, payload, len);
@@ -315,7 +314,7 @@ implementation {
      * 
      */
     void selectBestParent() {
-        int i;
+        nodeid_t i;
         nodeid_t closest;
         uint8_t min = MAX_HOPS;
 
@@ -333,6 +332,7 @@ implementation {
         // when using the device we can also check the quality of the link
 #ifndef TOSSIM
         // if there are more motes with the same hop count I should check also the Link quality
+        // TODO: implement RSSI tie breaking
 #endif
     }
 

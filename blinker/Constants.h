@@ -10,7 +10,7 @@
 
 
 #ifndef CONSTANTS_H
-#define CONSTANTS
+#define CONSTANTS_H
 
 enum {
     MAX_MOTES = 16
