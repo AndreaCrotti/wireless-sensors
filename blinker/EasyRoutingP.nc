@@ -79,7 +79,7 @@ implementation {
         int i;
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
         
-        call Timer.startPeriodic(PERIOD);
+        call Timer.startPeriodic(BEACON * PERIOD);
         // set all to 0 initially
         for (i = 0; i < MAX_MOTES; i++) {
             LAST_ARRIVAL[i] = 0;
@@ -115,7 +115,6 @@ implementation {
         // motes in timeout can be checked at every 
         broadcastBeacon();
         checkTimeout(call Timer.getNow());
-        call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
     }
     
     /** 
@@ -254,6 +253,7 @@ implementation {
             dbg("Routing", "Now the parent is %d\n", sender);
             parent = sender;
             // set the leds as the parent value
+            call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
         }
         
         // when using the device we can also check the quality of the link
@@ -350,6 +350,7 @@ implementation {
         // setting the parent and updating the other values (our beacon for example)
         parent = closest;
         updateHops(min);
+        call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
     }
 
     /** 
