@@ -197,19 +197,6 @@ implementation {
             return 1;
     }
 
-    // Just calling the lower layer
-    command error_t AMSend.cancel(message_t* msg) {
-        return call AMSend.cancel(msg);
-    }
-
-    command uint8_t AMSend.maxPayloadLength() {
-        return call AMSend.maxPayloadLength();
-    }
-    
-    command void* AMSend.getPayload(message_t* m, uint8_t len) {
-        return call AMSend.getPayload(m, len);
-    }
-
     /** 
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
@@ -296,20 +283,6 @@ implementation {
         }
     }
 
-    event void RelSend.sendDone(message_t* msg, error_t error) {
-        signal AMSend.sendDone(msg, error);
-    }
-
-    // we don't need to signal anything in this case
-    event void BeaconSend.sendDone(message_t* msg, error_t error) {
-    }
-
-    /** 
-     * Set the parent to the next best one
-     * Check if possible loops can be created in some situations
-     * 
-     */
-
     /** 
      * Scan over the list of neighbours to select the best parent
      * 
@@ -364,8 +337,6 @@ implementation {
 
     /** 
      * Set the bit corresponding to mote idx to 1
-     * 
-     * @param idx 
      */
     void addNeighbour(nodeid_t idx) {
         neighbours |= (1 << idx);
@@ -373,5 +344,26 @@ implementation {
 
     uint8_t isNeighbour(nodeid_t idx) {
         return neighbours & (1 << idx);
+    }
+
+    // Just calling the lower layer
+    command error_t AMSend.cancel(message_t* msg) {
+        return call AMSend.cancel(msg);
+    }
+
+    command uint8_t AMSend.maxPayloadLength() {
+        return call AMSend.maxPayloadLength();
+    }
+    
+    command void* AMSend.getPayload(message_t* m, uint8_t len) {
+        return call AMSend.getPayload(m, len);
+    }
+
+    event void RelSend.sendDone(message_t* msg, error_t error) {
+        signal AMSend.sendDone(msg, error);
+    }
+
+    // we don't need to signal anything in this case
+    event void BeaconSend.sendDone(message_t* msg, error_t error) {
     }
 }
