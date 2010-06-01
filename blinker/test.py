@@ -33,30 +33,41 @@ def make_tree(high):
         tree_parents[x] = (x-1) / 2
     return tree_parents
 
-def test_routing_deletion():
-    """
-    Start with a simple topology, remove one connection
-    and then see if the parent and the hop count is set correctly
-    """
-    sim = Simulation(SERIAL_PORT, ("Routing", ))
-    topo = ((0,1), (0,2), (1,2))
-    # when removing 0-2 I should get 1 as new parent for 1
+# general skeleton
+# - inital topology
+# - to add
+# - to remove
+# - variables to check
+# check if it's generic enough or how it could be modified
+
+def test_generic(topo, dbg_channels, toadd, torem, var_triples, cycles):
+    sim = Simulation(SERIAL_PORT, dbg_channels)
     sim.make_given_topology(topo)
     sim.setup_noise("noise.txt")
     sim.start(batch=True)
     
     sim.run_some_events()
-    sim.remove_connection(0, 2)
-    # check when parent is outside
-    while True:
-        # FIXME: 0 actually sees that 2 is not a neighbour but 2 doesn't now
-        if (sim.get_variable(2, "EasyRoutingP.parent") == 1):
-            break
-        sim.run_some_events()
+    for r in torem:
+        sim.remove_connection(*r)
+
+    for a in toadd:
+        sim.add_connection(*a)
     
-    assert(sim.get_variable(2, "EasyRoutingP.parent") == 1)
-    assert(sim.get_variable(2, "EasyRoutingP.HOP_COUNTS")[2] == 2)
-    assert(sim.get_variable(1, "EasyRoutingP.parent") == 0)
-    assert(sim.get_variable(1, "EasyRoutingP.HOP_COUNTS")[2] == 2)
+    for n in range(cycles):
+        sim.run_some_events()
+        
+    for node, var, value in var_triples:
+        assert(sim.get_variable(node, var) == value)
+
+def test_routing_deletion():
+    topo = ((0,1), (0,2), (1,2))
+    triples = ((2, "EasyRoutingP.parent", 1),
+               (2, "EasyRoutingP.HOP_COUNTS", [255, 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
+               (1, "EasyRoutingP.parent", 0))
+
+    # number of cycles could be computed, here we have to wait to be sure at least
+    # 2 * total full timeout
+    # we could also access to the enums in the code
+    test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, cycles=10)
 
 test_routing_deletion()
