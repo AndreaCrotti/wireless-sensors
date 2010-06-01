@@ -328,7 +328,7 @@ implementation {
             if (LAST_ARRIVAL[i] == 0)
                 continue;
             
-            /* dbg("Routing", "delay = %d and LAST_ARRIVAL[i] = %d\n", delay, LAST_ARRIVAL[i]); */
+            /* dbg("Routing", "delay = %d and LAST_ARRIVAL[%d] = %d\n", delay, i, LAST_ARRIVAL[i]); */
             // adding and removing have no effect if they are already in or out the list
             if (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT) {
                 removeNeighbour(i);

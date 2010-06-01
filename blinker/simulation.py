@@ -18,7 +18,6 @@ We can also do some sort of unit testing using variables.
 """
 
 import sys
-import time
 import subprocess
 import random
 import readline
@@ -30,7 +29,6 @@ from packet import *
 
 from TOSSIM import Tossim, SerialForwarder, Throttle
 from tinyos.tossim.TossimApp import *
-from tinyos.message import MoteIF
 
 from gen_network import bin_tree, rand_graph
 
@@ -49,6 +47,7 @@ CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 MODULES_REGEXP = "Blink.*|Easy.*|Rulti.*"
 
 def print_var_table(vars):
+    "print a filtered variable list"
     print "\nvariable list\n"
     for v in vars:
         if match(MODULES_REGEXP, v):
@@ -91,7 +90,14 @@ class RadioNetwork(object):
             self.topology.remove((node2, node1))
 
         self.topology.remove((node1, node2))
-        self.radio.remove(node1, node1)
+        self.radio.remove(node1, node2)
+
+
+    def connected(self, node1, node2):
+        r = self.radio.connected(node1, node2)
+        t = (node1, node2) in self.topology
+        assert(r == t)
+        return r
 
 # add to the local variables also the variables in the 
 class Simulation(object):
@@ -126,15 +132,11 @@ class Simulation(object):
     def add_node(self, idx):
         # otherwise add to the dictionary the correct node
         if not(idx in self.nodes):
-            # FIXME: check that they're all added correctly
             if len(self.nodes) == MAX_NODES:
                 print "Not possible to add more nodes, reached limit"
 
             else:
                 self.nodes[idx] = self.sim.getNode(idx)
-
-    # TODO: we should then implement the removal as well
-    # making sure we always keep a minimal set of nodes
 
     def start(self, batch=False):
         "Starts the simulation"
@@ -144,7 +146,7 @@ class Simulation(object):
         self.sf.process()
         self.throttle.initialize()
 
-        # just run enough events to make sure we boot all the motes before starting
+        # make sure they all boot
         self.run_some_events()
         if not(batch):
             self.cycle()
@@ -166,6 +168,9 @@ class Simulation(object):
                     continue
                 except KeyboardInterrupt:
                     sys.exit()
+
+    def connected(self, node1, node2):
+        return self.topology.connected(node1, node2)
 
     def make_topology(self, topo_file):
         "Creates the topology from the given file"
