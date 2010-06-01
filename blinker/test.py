@@ -3,26 +3,9 @@
 python script to test if some
 of the algorithms are working as expected
 """
-
 import sys
 from simulation import *
 from gen_network import bin_tree
-
-# when doing automated testing the DEBUG output should be ignored completely
-# Test
-# 1. leds setting
-# 2. data sensing
-# For
-# 1. different topologies
-# 2. random values
-# more...
-
-class InputChecker(object):
-    def __init__(self, fp):
-        self.fp = fp
-
-    def write(self, message):
-        self.fp.write(message)
 
 # check somehow if the topology is working fine automatically
 # for a binary tree we should always get the same thing
@@ -40,7 +23,8 @@ def make_tree(high):
 # - variables to check
 # check if it's generic enough or how it could be modified
 
-def test_generic(topo, dbg_channels, toadd, torem, var_triples, cycles):
+def test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles):
+    from itertoos import count
     sim = Simulation(SERIAL_PORT, dbg_channels)
     sim.make_given_topology(topo)
     sim.setup_noise("noise.txt")
@@ -53,11 +37,13 @@ def test_generic(topo, dbg_channels, toadd, torem, var_triples, cycles):
     for a in toadd:
         sim.add_connection(*a)
     
-    for n in range(cycles):
+    # continues to cycle and return True only when all the conditions are fulfilled
+    for n in count():
+        if n == max_cycles:
+            return False
         sim.run_some_events()
-        
-    for node, var, value in var_triples:
-        assert(sim.get_variable(node, var) == value)
+        if all(sim.get_variable(n, var) == val for n,var,val in var_triples):
+            return True
 
 def test_routing_deletion():
     topo = ((0,1), (0,2), (1,2))
@@ -68,6 +54,6 @@ def test_routing_deletion():
     # number of cycles could be computed, here we have to wait to be sure at least
     # 2 * total full timeout
     # we could also access to the enums in the code
-    test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, cycles=10)
+    assert(test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100)
 
 test_routing_deletion()
