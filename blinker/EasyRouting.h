@@ -15,7 +15,7 @@
 
 // TIMEOUT is a multiple of (BEACON * PERIOD) it will be more rigourously correct
 enum {
-    BEACON = 2,
+    BEACON = 1,
     PERIOD = 1000,
     TIMEOUT = 6
 };
