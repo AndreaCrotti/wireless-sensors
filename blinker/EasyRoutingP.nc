@@ -57,6 +57,7 @@ implementation {
 
     // structure that keeps the hop count for every of the neighbors
     uint8_t HOP_COUNTS[MAX_MOTES];
+    int8_t RSSI_VALS[MAX_MOTES];
     
     // number of hops of the closest to the base neighbour
     uint8_t hops_closest_neighbour;
@@ -69,9 +70,9 @@ implementation {
     void removeNeighbour(nodeid_t);
     uint8_t isNeighbour(nodeid_t);
     void updateHops(uint8_t);
-    void checkParent(uint8_t, nodeid_t, message_t *);
-    uint8_t otherReceivers(nodeid_t destinations);
-    void setNextBestParent(void);
+    uint8_t otherReceivers(nodeid_t);
+    void selectBestParent(void);
+    void updateRssi(nodeid_t, message_t *);
     
     // Using tasks we can't pass arguments to them and we must use instead global variables
 
@@ -220,6 +221,10 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
+            if ((sender == TOS_NODE_ID) || (TOS_NODE_ID == 0)) {
+                return msg;
+            }
+
             // set the time of the last arrival and then add the source node to the neighbours list
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
             LAST_ARRIVAL[sender] = arrivalTime / PERIOD;
@@ -228,52 +233,23 @@ implementation {
             // Should I always set it or should I check it first?
             // Maybe the mote has moved away from the base and then the path became longer
             HOP_COUNTS[sender] = hops_count;
-            /* dbg("Routing", "Now neighbours list %d\n", neighbours); */
-            checkParent(hops_count, sender, msg);
+
+            // update in the array of RSSI values
+#ifndef TOSSIM            
+            updateRssi(sender, msg);
+#endif            
+            // now select what is the best possible parent
+            selectBestParent();
         }
         return msg;
     }
 
-    
-    /** 
-     * Checks if the last node was closer to the base station or if
-     * at same dinstance if the signal is better than the last best one
-     * 
-     * @param hops_count number of hops to the base station of the sender
-     * @param sender id of the sender
-     * @param msg received beacon Message, here only needed to get the rssi value in some rare cases
-     */
-    void checkParent(uint8_t hops_count, nodeid_t sender, message_t *msg) {
-        /* dbg("Routing", "Hops count = %d and hops_closest_neighbour = %d\n", hops_count, hops_closest_neighbour); */
-        if (hops_count < hops_closest_neighbour) {
-            // we should enter here very quickly in theory
-            /* dbg("Routing", "Found a shortest path to the base station from node %d\n", sender); */
-            // then we found a shortest path to the base station
-            updateHops(hops_count);
-            dbg("Routing", "Now the parent is %d\n", sender);
-            parent = sender;
-            // set the leds as the parent value
-            call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
-        }
-        
-        // when using the device we can also check the quality of the link
-#ifndef TOSSIM
-        {
-            // TODO: check that this is really working
-            int8_t rssi_val;
-            // in case it's equal to the minimum we must check the quality of the link
-            // otherwise we can just keep the last best one and it still works fine
-            if (hops_count == hops_closest_neighbour) {
-                rssi_val = call CC2420Packet.getRssi(msg);
-                dbg("Routing", "Equal distance, now checking for RSSI value");
-                if (rssi_val > best_link) {
-                    parent = sender;
-                }
-            }
-        }
+    void updateRssi(nodeid_t sender, message_t *msg) {
+#ifndef TOSSIM        
+        RSSI_VALS[sender] = call CC2420Packet.getRssi(msg);
 #endif
     }
-    
+
     /** 
      * Update the variable hops_count in the global variable pkt
      */
@@ -332,25 +308,31 @@ implementation {
      * Check if possible loops can be created in some situations
      * 
      */
-    void setNextBestParent(void) {
+
+    /** 
+     * Scan over the list of neighbours to select the best parent
+     * 
+     */
+    void selectBestParent() {
         int i;
         nodeid_t closest;
         uint8_t min = MAX_HOPS;
+
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
                 if (HOP_COUNTS[i] < min) {
-                    // here we also have to check that it's really a neighbour
-                    // because it might happen that we have a smaller hop count but the node is not our neighbour anymore
                     min = HOP_COUNTS[i];
-                    // we have at least one, otherwise we have no neighbours at all and it doesn't work anyway
                     closest = i;
                 }
             }
         }
-        // setting the parent and updating the other values (our beacon for example)
         parent = closest;
         updateHops(min);
-        call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
+
+        // when using the device we can also check the quality of the link
+#ifndef TOSSIM
+        // if there are more motes with the same hop count I should check also the Link quality
+#endif
     }
 
     /** 
@@ -367,7 +349,7 @@ implementation {
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
             dbg("Routing", "parent node has been removed from neighbour list\n");
-            setNextBestParent();
+            selectBestParent();
         }
         // setting to the MAX the hop count because it's not reachable anymore
         HOP_COUNTS[idx] = MAX_HOPS;
