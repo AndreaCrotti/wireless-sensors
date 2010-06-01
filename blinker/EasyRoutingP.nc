@@ -227,8 +227,10 @@ implementation {
 #ifndef TOSSIM            
             updateRssi(sender, msg);
 #endif            
-            // now select what is the best possible parent
-            selectBestParent();
+            if (TOS_NODE_ID != ROOT_NODE_ID) {
+                // now select what is the best possible parent
+                selectBestParent();
+            }
         }
         return msg;
     }

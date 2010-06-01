@@ -95,5 +95,5 @@ def test_neigbour_discovery():
     assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=100, verbose=True))    
 
 # test_neigbour_discovery()
-test_routing_deletion()
-# test_big_binary_tree(2)
+# test_routing_deletion()
+test_big_binary_tree(2)
