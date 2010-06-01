@@ -23,8 +23,8 @@ def make_tree(high):
 # - variables to check
 # check if it's generic enough or how it could be modified
 
-def test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles):
-    from itertoos import count
+def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles):
+    from itertools import count
     sim = Simulation(SERIAL_PORT, dbg_channels)
     sim.make_given_topology(topo)
     sim.setup_noise("noise.txt")
@@ -54,6 +54,7 @@ def test_routing_deletion():
     # number of cycles could be computed, here we have to wait to be sure at least
     # 2 * total full timeout
     # we could also access to the enums in the code
-    assert(test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100)
+    assert(_test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100))
+    print "deletion worked correctly"
 
 test_routing_deletion()
