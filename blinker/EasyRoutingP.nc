@@ -65,7 +65,7 @@ implementation {
     nodeid_t parent;
 
     void checkTimeout(uint32_t);
-    void broadcastBeacon(void);
+    //task void broadcastBeacon(void);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
     uint8_t isNeighbour(nodeid_t);
@@ -112,18 +112,19 @@ implementation {
         return SUCCESS;
     }
 
-    event void Timer.fired() {
-        // motes in timeout can be checked at every 
-        broadcastBeacon();
-        checkTimeout(call Timer.getNow());
-    }
-    
     /** 
      * Broadcast the beacon package
      * 
      */
-    void broadcastBeacon(void) {
+    task void broadcastBeacon(void) {
         call BeaconSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMsg));
+    }
+
+    event void Timer.fired() {
+        // motes in timeout can be checked at every 
+        post broadcastBeacon();
+        checkTimeout(call Timer.getNow());
+        call Leds.set(HOP_COUNTS[TOS_NODE_ID]);
     }
 
     /** 
