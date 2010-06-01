@@ -198,19 +198,6 @@ implementation {
         return (!(destinations & ~(1 << TOS_NODE_ID)));
     }
 
-    // Just calling the lower layer
-    command error_t AMSend.cancel(message_t* msg) {
-        return call AMSend.cancel(msg);
-    }
-
-    command uint8_t AMSend.maxPayloadLength() {
-        return call AMSend.maxPayloadLength();
-    }
-    
-    command void* AMSend.getPayload(message_t* m, uint8_t len) {
-        return call AMSend.getPayload(m, len);
-    }
-
     /** 
      * Overriding of the receive function, takes a beacon and sets the last arrival of its origin
      */
@@ -223,7 +210,8 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
-            if ((sender == TOS_NODE_ID) || (TOS_NODE_ID == ROOT_NODE_ID)) {
+            // this should not happen anyway
+            if (sender == TOS_NODE_ID) {
                 return msg;
             }
 
@@ -238,9 +226,11 @@ implementation {
 
             // update in the array of RSSI values
             updateRssi(sender, msg);
-
-            // now select what is the best possible parent
-            selectBestParent();
+           
+            if (TOS_NODE_ID != ROOT_NODE_ID) {
+                // now select what is the best possible parent
+                selectBestParent();
+            }
         }
         return msg;
     }
@@ -295,45 +285,36 @@ implementation {
         }
     }
 
-    event void RelSend.sendDone(message_t* msg, error_t error) {
-        signal AMSend.sendDone(msg, error);
-    }
-
-    // we don't need to signal anything in this case
-    event void BeaconSend.sendDone(message_t* msg, error_t error) {
-    }
-
-    /** 
-     * Set the parent to the next best one
-     * Check if possible loops can be created in some situations
-     * 
-     */
-
     /** 
      * Scan over the list of neighbours to select the best parent
      * 
      */
     void selectBestParent() {
         nodeid_t i;
-        nodeid_t closest;
+        nodeid_t closest = 0;
         uint8_t min = MAX_HOPS;
 
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
+#ifndef TOSSIM
+                // in case I have the same hop count as the best actual value I also check the rssi
+                if (HOP_COUNTS[i] == min) {
+                    if (RSSI_VALS[i] > RSSI_VALS[closest]) {
+                        min = HOP_COUNTS[i];
+                        closest = i;
+                    }
+                }
+#endif                    
                 if (HOP_COUNTS[i] < min) {
                     min = HOP_COUNTS[i];
                     closest = i;
                 }
+
             }
         }
+        dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
         parent = closest;
         updateHops(min);
-
-        // when using the device we can also check the quality of the link
-#ifndef TOSSIM
-        // if there are more motes with the same hop count I should check also the Link quality
-        // TODO: implement RSSI tie breaking
-#endif
     }
 
     /** 
@@ -358,8 +339,6 @@ implementation {
 
     /** 
      * Set the bit corresponding to mote idx to 1
-     * 
-     * @param idx 
      */
     void addNeighbour(nodeid_t idx) {
         neighbours |= (1 << idx);
@@ -367,5 +346,26 @@ implementation {
 
     uint8_t isNeighbour(nodeid_t idx) {
         return neighbours & (1 << idx);
+    }
+
+    // Just calling the lower layer
+    command error_t AMSend.cancel(message_t* msg) {
+        return call AMSend.cancel(msg);
+    }
+
+    command uint8_t AMSend.maxPayloadLength() {
+        return call AMSend.maxPayloadLength();
+    }
+    
+    command void* AMSend.getPayload(message_t* m, uint8_t len) {
+        return call AMSend.getPayload(m, len);
+    }
+
+    event void RelSend.sendDone(message_t* msg, error_t error) {
+        signal AMSend.sendDone(msg, error);
+    }
+
+    // we don't need to signal anything in this case
+    event void BeaconSend.sendDone(message_t* msg, error_t error) {
     }
 }

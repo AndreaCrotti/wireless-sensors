@@ -29,6 +29,8 @@ def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles, ver
     sim.make_given_topology(topo)
     sim.setup_noise("noise.txt")
     sim.start(batch=True)
+    if verbose:
+        print sim.topology
     
     sim.run_some_events()
     for r in torem:
@@ -79,5 +81,19 @@ def test_routing_deletion():
     assert(_test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100, verbose=True))
     print "deletion worked correctly"
 
-test_routing_deletion()
-# test_big_binary_tree(5)
+
+def test_neigbour_discovery():
+    # make a full grid of 5 nodes and check that they're all neighbours
+    topo = []
+    dim = 5
+    for x in range(dim):
+        for y in range(x+1, dim):
+            topo.append((x, y))
+    triples = []
+    for x in range(dim):
+        triples.append((x, "EasyRoutingP.neighbours", 2**dim  - 1 - (1 << x)))
+    assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=100, verbose=True))    
+
+# test_neigbour_discovery()
+# test_routing_deletion()
+test_big_binary_tree(2)
