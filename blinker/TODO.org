@@ -13,3 +13,5 @@
 
 * See tos.interfaces.PacketLink interface to setup the correct number of retries and so on
 * See how to configure [[http://docs.tinyos.net/index.php/Setting_up_TUnit][Tunit]] and [[http://docs.tinyos.net/index.php/Multi-Node_Unit_Testing][Multi node testing]]
+* See if possible to create a QUEUE of packets, maybe a separate module below the reliability module
+* See why from node 13 it's not working anymore

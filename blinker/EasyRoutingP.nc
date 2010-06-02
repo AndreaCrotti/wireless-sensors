@@ -49,7 +49,7 @@ module EasyRoutingP {
 /*******************************************************************************/
 implementation {
     // could that be bigger in case of more motes?
-    uint16_t neighbours = 0;
+    nodes_t neighbours = 0;
     // array keeping the last arrival time of the motes
     uint8_t LAST_ARRIVAL[MAX_MOTES];
     // structure keeping the message to forward
@@ -217,6 +217,7 @@ implementation {
             if (sender == TOS_NODE_ID) {
                 return msg;
             }
+            dbg("Routing", "Received beacon from %d\n", sender);
 
             // set the time of the last arrival and then add the source node to the neighbours list
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
@@ -254,6 +255,7 @@ implementation {
             return;
 
         dbg("Routing", "Setting hop count to %d\n", hops_count+1);
+
         // update the hop count to the minimum path given in input +1
         // careful here with variables with the same names - no kidding
         message->hops_count = my_hop_count;
@@ -334,7 +336,7 @@ implementation {
         // maybe we should check if it's really needed, if it's not there already
         // the other checks are not really needed
 
-        dbg("Routing", "Node %d is in timeout\n", idx);
+        /* dbg("Routing", "Node %d is in timeout\n", idx); */
         // that means that we are removing our parent, so look for the next best one
         if (idx == parent) {
             dbg("Routing", "parent node has been removed from neighbour list\n");
