@@ -213,13 +213,13 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
-#ifndef TOSSIM            
-            int8_t rssi = call CC2420Packet.getRssi();
+/* #ifndef TOSSIM             */
+/*             int8_t rssi = call CC2420Packet.getRssi(msg); */
             
-            if (rssi < -35) {
-                return msg;
-            }
-#endif
+/*             if (rssi < -35) { */
+/*                 return msg; */
+/*             } */
+/* #endif */
 
             // this should not happen anyway
             if (sender == TOS_NODE_ID) {
@@ -307,7 +307,6 @@ implementation {
         nodeid_t i;
         nodeid_t closest = 0;
         uint8_t min = MAX_HOPS;
-        int8_t rssi;
 
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
