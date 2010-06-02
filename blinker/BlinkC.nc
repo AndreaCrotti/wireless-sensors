@@ -20,9 +20,9 @@ module BlinkC @safe() {
         interface AMSend;
         interface Receive;
         interface Init as RoutingInit;
-        #ifndef TOSSIM
-            interface ActiveMessageAddress;
-        #endif
+#ifndef TOSSIM
+        interface ActiveMessageAddress;
+#endif
 
         // serial interface
         interface AMSend as SerialAMSend;
@@ -44,6 +44,12 @@ module BlinkC @safe() {
 
         interface Boot;
         interface Leds;
+
+#ifndef TOSSIM
+        // storing configuration
+        interface ConfigStorage as Config;
+        interface Mount as Mount;
+#endif
     }
 }
 
@@ -89,8 +95,8 @@ implementation {
 	call RoutingInit.init();
 
 #ifndef TOSSIM
-        // set the active message address
-        call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(),TOS_NODE_ID);
+        // set the active message address to workaround the testbed bug
+        call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(), TOS_NODE_ID);
 #endif
 
         // initialize the curr_sn
@@ -100,6 +106,23 @@ implementation {
 
 #ifndef TOSSIM
     async event void ActiveMessageAddress.changed() {
+    }
+
+    // Events needed for the configuration protocol
+    event void Mount.mountDone(error_t error) {
+        
+    }
+
+    event void Config.readDone(storage_addr_t addr, void* buf, 
+                               storage_len_t len, error_t err) __attribute__((noinline)) {
+    }
+
+    event void Config.writeDone(storage_addr_t addr, void *buf, 
+                                storage_len_t len, error_t err) {
+    }
+
+    event void Config.commitDone(error_t err) {
+
     }
 #endif
 

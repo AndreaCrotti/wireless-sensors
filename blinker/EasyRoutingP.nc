@@ -79,8 +79,15 @@ implementation {
     command error_t Init.init() {
         initGlobalVariables();
         call Timer.startPeriodic(PERIOD);
+        return SUCCESS;
     }
 
+    /** 
+     * Initializing all the global variables used later
+     * - HOP_COUNTS
+     * - LAST_ARRIVAL
+     * - Beacon message fields
+     */
     void initGlobalVariables(void) {
         int i;
         BeaconMsg* message =  ((BeaconMsg *) (call Packet.getPayload(&pkt, 0)));
@@ -108,8 +115,6 @@ implementation {
         } else {
             message->hops_count = MAX_HOPS;
         }
-
-        return SUCCESS;
     }
 
     /** 

@@ -1,6 +1,10 @@
 #include <Timer.h>
 #include "Blink.h"
 
+#ifndef TOSSIM
+#include "StorageVolumes.h"
+#endif
+
 /**
  * 
  * @file   BlinkAppC.nc
@@ -46,6 +50,8 @@ implementation {
 #ifndef TOSSIM
     // needed for checking link quality
     components CC2420ActiveMessageC;
+    // support for storage
+    components new ConfigStorageC(VOLUME_CONFIGTEST);
 #endif
 
 #ifdef TOSSIM
@@ -71,6 +77,12 @@ implementation {
     BlinkC.SenseRtxTimer -> SenseRtxTimer;
     BlinkC.MsgRtxTimer -> MsgRtxTimer;
     BlinkC.Leds -> LedsC;
+
+#ifndef TOSSIM
+    // wiring configuration stuff
+    BlinkC.Config -> ConfigStorageC.ConfigStorage;
+    BlinkC.Mount  -> ConfigStorageC.Mount;
+#endif
 
     /// Wirering for the reliable multi-cast module
     RultiP.Packet -> RultiRtxSender.Packet;
