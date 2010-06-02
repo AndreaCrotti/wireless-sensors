@@ -213,6 +213,14 @@ implementation {
             uint8_t hops_count = beacon->hops_count;
             nodeid_t sender = beacon->src_node;
 
+#ifndef TOSSIM            
+            int8_t rssi = call CC2420Packet.getRssi();
+            
+            if (rssi < -35) {
+                return msg;
+            }
+#endif
+
             // this should not happen anyway
             if (sender == TOS_NODE_ID) {
                 return msg;
@@ -299,6 +307,7 @@ implementation {
         nodeid_t i;
         nodeid_t closest = 0;
         uint8_t min = MAX_HOPS;
+        int8_t rssi;
 
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
@@ -315,7 +324,6 @@ implementation {
                     min = HOP_COUNTS[i];
                     closest = i;
                 }
-
             }
         }
 
@@ -338,12 +346,13 @@ implementation {
 
         /* dbg("Routing", "Node %d is in timeout\n", idx); */
         // that means that we are removing our parent, so look for the next best one
+        // setting to the MAX the hop count because it's not reachable anymore
+        HOP_COUNTS[idx] = MAX_HOPS;
+
         if (idx == parent) {
             dbg("Routing", "parent node has been removed from neighbour list\n");
             selectBestParent();
         }
-        // setting to the MAX the hop count because it's not reachable anymore
-        HOP_COUNTS[idx] = MAX_HOPS;
     }
 
     /** 
