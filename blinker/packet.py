@@ -40,9 +40,9 @@ def make_packet():
             
 
 # they all take a list of ordered nodes
-def turn_leds_all_nodes(nodes, led = 7):
+def turn_leds_all_nodes(nodes, led):
     "takes a list of nodes and the led bitmask"
-    vals = (2**(max(nodes) + 2)-1, 1, led, 0)
+    vals = (2**(max(nodes) + 2) - 1, 1, led, 0)
     msg = MyPacket()
     msg.create_packet(*vals)
     return msg

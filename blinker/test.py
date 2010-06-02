@@ -5,7 +5,10 @@ of the algorithms are working as expected
 """
 import sys
 from simulation import *
+from packet import *
 from gen_network import bin_tree
+
+simpletopo = ((0,1), (0,2), (1,2))
 
 # check somehow if the topology is working fine automatically
 # for a binary tree we should always get the same thing
@@ -74,7 +77,6 @@ def test_big_binary_tree(dim):
     # assert(_test_generic(topo, ("Routing",), toadd, toremove, var_triples=triples, max_cycles=100, verbose=True))
 
 def test_routing_deletion():
-    topo = ((0,1), (0,2), (1,2))
     triples = ((2, "EasyRoutingP.parent", 1),
                (2, "EasyRoutingP.HOP_COUNTS", [255, 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
                (1, "EasyRoutingP.parent", 0))
@@ -82,7 +84,7 @@ def test_routing_deletion():
     # number of cycles could be computed, here we have to wait to be sure at least
     # 2 * total full timeout
     # we could also access to the enums in the code
-    assert(_test_generic(topo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100, verbose=True))
+    assert(_test_generic(simpletopo, ("Routing",), [], [(0,2)], var_triples=triples, max_cycles=100, verbose=True))
     print "deletion worked correctly"
 
 
@@ -96,8 +98,21 @@ def test_neigbour_discovery():
     triples = []
     for x in range(dim):
         triples.append((x, "EasyRoutingP.neighbours", 2**dim  - 1 - (1 << x)))
-    assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=100, verbose=True))    
+    assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=100, verbose=True))
+
+def test_leds():
+    sim = Simulation(SERIAL_PORT, ("BlinkC","Routing"), test=True)
+    sim.make_given_topology(simpletopo)
+    sim.setup_noise("noise.txt")
+    sim.start(batch=True)
+    print sim.topology
+
+    led = 63
+    sim.run_some_events()
+    sim.send_packet(turn_leds_all_nodes((0,1,2), led))
+    assert(sim.check_vars_all_nodes("BlinkC.ledMask", led))
 
 # test_neigbour_discovery()
 # test_routing_deletion()
-test_big_binary_tree(2)
+# test_big_binary_tree(2)
+test_leds()

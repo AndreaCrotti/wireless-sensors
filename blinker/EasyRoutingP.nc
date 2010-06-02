@@ -99,7 +99,6 @@ implementation {
 
         // create a message with the correct message created
         message->src_node = TOS_NODE_ID;
-        // Initializing the hop count structures
         // the HOP_COUNTS keeps track of the minimal distances between every mote and the base station
         // This means that it's at first set to \infinity for all except the base station itself
         

@@ -126,9 +126,9 @@ def hops_parent(min_dists, nodes, root_node):
 
     return hops, parents
 
-nodes = [1,2,3]
-dist_dict = to_dist_dict(nodes, [(1,2), (2,3)])
-print dist_dict
-fl = floyd_warshall(nodes, dist_dict)
-print fl
-print hops_parent(fl, nodes, 1)
+# nodes = [1,2,3]
+# dist_dict = to_dist_dict(nodes, [(1,2), (2,3)])
+# print dist_dict
+# fl = floyd_warshall(nodes, dist_dict)
+# print fl
+# print hops_parent(fl, nodes, 1)
