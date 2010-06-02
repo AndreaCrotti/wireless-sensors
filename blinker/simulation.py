@@ -159,6 +159,7 @@ class Simulation(object):
             try:
                 self.throttle.checkThrottle()
                 self.sim.runNextEvent()
+                self.sf.process()
                 # processing what it's got from it
             except KeyboardInterrupt:
                 # with the first interrupt we go in interactive mode, the second quits the program

@@ -1,5 +1,6 @@
 #include "Blink.h"
 #include "Constants.h"
+#include "Storage.h"
 
 /**
  * Implementation of the first task.
@@ -105,6 +106,7 @@ implementation {
     }
 
 #ifndef TOSSIM
+    // 
     async event void ActiveMessageAddress.changed() {
     }
 

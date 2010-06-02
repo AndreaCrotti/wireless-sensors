@@ -185,6 +185,7 @@ implementation {
         } else {
             // Should normally not be used
             // For now, everything is only forwarded.
+            dbg("Routing", "using third way\n");
             result = call RelSend.send(dest, msg, len);
         }
 
@@ -225,7 +226,7 @@ implementation {
             if (sender == TOS_NODE_ID) {
                 return msg;
             }
-            dbg("Routing", "Received beacon from %d\n", sender);
+            /* dbg("Routing", "Received beacon from %d\n", sender); */
 
             // set the time of the last arrival and then add the source node to the neighbours list
             /* dbg("Routing", "Received a beacon from node %d\n", beacon->src_node); */
@@ -262,7 +263,7 @@ implementation {
         if (my_hop_count == 0) // redundant test
             return;
 
-        dbg("Routing", "Setting hop count to %d\n", hops_count+1);
+        /* dbg("Routing", "Setting hop count to %d\n", hops_count+1); */
 
         // update the hop count to the minimum path given in input +1
         // careful here with variables with the same names - no kidding
@@ -327,7 +328,7 @@ implementation {
         }
 
         if (min < MAX_HOPS) {
-            dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min);
+            /* dbg("Routing", "Selecting parent %d with hop count %d\n", closest, min); */
             parent = closest;
             updateHops(min);
         }
@@ -349,7 +350,7 @@ implementation {
         HOP_COUNTS[idx] = MAX_HOPS;
 
         if (idx == parent) {
-            dbg("Routing", "parent node has been removed from neighbour list\n");
+            /* dbg("Routing", "parent node has been removed from neighbour list\n"); */
             selectBestParent();
         }
     }
