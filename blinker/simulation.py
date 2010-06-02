@@ -35,13 +35,11 @@ from gen_network import bin_tree, rand_graph
 RUNTIME = 2
 
 MAX_NODES = 2**10
-MAXEVENTS = 1000
 SERIAL_PORT = 9001
 
 # channels used for debug messages
 # TODO: give different colors to the various debug messages
 
-# CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 CHANNELS = ("Serial", "Boot", "Radio", "Routing", "Rel", "Sensor")
 
 MODULES_REGEXP = "Blink.*|Easy.*|Rulti.*"
@@ -111,24 +109,22 @@ class Simulation(object):
         # the serial forwarder stuff is needed only by the java interaface
         # or the listen.py script
         # in testing mode this is only a problem
-        self.sf = SerialForwarder(port)
+        self.test = test
+        if not(self.test):
+            self.sf = SerialForwarder(port)
+
         self.throttle = Throttle(self.sim, 10)
         self.seqno = 0
         # operations on the topology and the radio channel
         self.topology = RadioNetwork(self.sim.radio())
 
-        # cols = colors.keys()
-        # idx = 0
         # adding all the channels
         for c in channels:
             self.sim.addChannel(c, sys.stdout)
 
-            # 1. one color for each channel
-            # 2. print the name of the channel before it
-            # ch = get_decorated_file(sys.stdout, c, cols[idx])
-            # self.sim.addChannel(c, ch)
-            # # we should not have so many but just in case
-            # idx = (idx + 1) % len(cols)
+    def process(self):
+        if not(self.test):
+            self.sf.process()
 
     def add_node(self, idx):
         # otherwise add to the dictionary the correct node
@@ -144,7 +140,7 @@ class Simulation(object):
         for n in self.nodes.values():
             n.bootAtTime(random.randint(100001, 900009))
 
-        self.sf.process()
+        self.process()
         self.throttle.initialize()
 
         # make sure they all boot
@@ -159,7 +155,7 @@ class Simulation(object):
             try:
                 self.throttle.checkThrottle()
                 self.sim.runNextEvent()
-                self.sf.process()
+                self.process()
                 # processing what it's got from it
             except KeyboardInterrupt:
                 # with the first interrupt we go in interactive mode, the second quits the program
@@ -220,7 +216,7 @@ class Simulation(object):
     def interactive(self):
         # Use a dictionary and function calls instead
         print "entering interactive session, another C-c to quit the program"
-        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect node\n5)Running tests\n\n")
+        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect node\n\n")
         if choice == 1:
             self.manipulate_topology()
         if choice == 2:
@@ -229,17 +225,7 @@ class Simulation(object):
             self.inspect_variable()
         if choice == 4:
             self.inspect_node()
-        if choice == 5:
-            node_list = sorted(self.nodes.keys())
-            print "sending turn on to all nodes"
-            self.send_packet(turn_leds_all_nodes(node_list))
-            self.run_some_events()
-            if not(self.check_vars_nodes(node_list, "BlinkC.ledMask", 7)):
-                print "Not all nodes got the right value"
-
-            print "sending sensing info to a random node"
-            self.send_packet(sens_random_node(node_list))
-
+  
     def run_some_events(self):
         "Run some of the events"
         # TODO: pass some arguments to make sure they're enough
@@ -337,23 +323,25 @@ class Simulation(object):
         # TODO: this 0 is ok to be 
         serialpkt.setDestination(0)
         serialpkt.deliver(0, self.sim.time() + 3)
-
-        for i in range(20):
-            self.throttle.checkThrottle()
-            self.sim.runNextEvent()
-            # processing what it's got from it
+        self.run_some_events()
 
         print "sended packet:\n%s" % str(msg)
+        # TODO: the seqno is not actually used here
         self.seqno += 1
-
 
 if __name__ == '__main__':
     sim = Simulation(SERIAL_PORT, CHANNELS)
     topo_file = "topo.txt"
 
     if len(sys.argv) == 2:
-        topo_file = sys.argv[1]
-
+        print sys.argv[1]
+        if sys.argv[1] == "test":
+            import nose
+            nose.run()
+            sys.exit()
+        else:
+            topo_file = sys.argv[1]
+    
     # TODO: only creates the number of nodes present our file
     sim.make_topology(topo_file)
     sim.setup_noise("noise.txt")
