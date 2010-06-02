@@ -31,14 +31,14 @@ def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles, ver
     sim.start(batch=True)
     if verbose:
         print sim.topology
-    
+
     sim.run_some_events()
     for r in torem:
         sim.remove_connection(*r)
 
     for a in toadd:
         sim.add_connection(*a)
-    
+
     # continues to cycle and return True only when all the conditions are fulfilled
     for n in count():
         if n == max_cycles:
@@ -53,14 +53,18 @@ def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles, ver
 
 def test_big_binary_tree(dim):
     "Testing a big binary tree generated"
+    from math import log
     topo = list(bin_tree(dim))
     triples = []
     # the parent of every node is just given by the inverse
     # we can generate the conditions to verify pretty easily
     for x, y in topo:
         triples.append((y, "EasyRoutingP.parent", x))
-    
-    assert(_test_generic(topo, ("Routing",), var_triples=triples, max_cycles=100))
+
+    for x in range(2**dim - 1):
+        triples.append((x, "EasyRoutingP.HOP_COUNTS",[255, 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]))
+
+    assert(_test_generic(topo, ("Routing",), [], [], var_triples=triples, max_cycles=100, verbose=True))
     # now we can remove node 1 for example and relink 3-4
     # This should be another function maybe
     # toadd = [(0, 3), (0,4)]
@@ -94,7 +98,6 @@ def test_neigbour_discovery():
         triples.append((x, "EasyRoutingP.neighbours", 2**dim  - 1 - (1 << x)))
     assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=100, verbose=True))    
 
-test_neigbour_discovery()
-test_routing_deletion()
+# test_neigbour_discovery()
+# test_routing_deletion()
 test_big_binary_tree(2)
-

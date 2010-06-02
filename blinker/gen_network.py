@@ -70,7 +70,7 @@ def topology_to_png(topology, filename):
         return
     
     p = pydot.Dot()
-    for x,y in topology:
+    for x, y in topology:
         p.add_edge(pydot.Edge(str(x), str(y)))
     
     f = filename + ".png"
@@ -78,3 +78,57 @@ def topology_to_png(topology, filename):
     p.write_png(f)
     
 
+def to_dist_dict(nodes, topo):
+    # they're simply all 1 in this case, when no connection use -1
+    d = {}
+    for n1 in nodes:
+        for n2 in nodes:
+            if n1 == n2:
+                d[(n1,n2)] = 0
+            elif ((n1, n2) in topo) or ((n2, n1) in topo):
+                d[(n1,n2)] = d[(n2,n1)] = 1
+            else:
+                d[(n1,n2)] = d[(n2,n1)] = -1
+    
+    return d
+
+# FIXME: check this algorithm is buggy in some situations
+def floyd_warshall(cities, dist):
+    dim = len(cities)
+    old = new = {}
+    # first cycle to set the initial configuration
+    for c1 in cities:
+        for c2 in cities:
+            old[(c1, c2)] = [dist[(c1, c2)], [c2]]
+
+    # ranging over the distance between nodes
+    for k in range(1, dim):
+        for c1 in cities:
+            for c2 in cities:
+                diretto = old[(c1, c2)]
+                before = old[(c1, cities[k-1])]
+                after = old[(cities[k-1], c2)]
+                if diretto[0] <= (before[0] + after[0]):
+                    new[(c1, c2)] = diretto
+                else:
+                    new[(c1, c2)] = [before[0] + after[0], before[1]+after[1]]
+        old = new
+    return new
+
+def hops_parent(min_dists, nodes, root_node):
+    "Get the ouput from floyd_warshall and compute the distance and the parent"
+    hops = parents = {}
+    # take always the before last with s[len(s)-2]
+    for n in nodes:
+        inf = min_dists[(n, root_node)]
+        hops[n] = inf[0]
+        parents[n] = inf[1][len(inf[1])-2]
+
+    return hops, parents
+
+nodes = [1,2,3]
+dist_dict = to_dist_dict(nodes, [(1,2), (2,3)])
+print dist_dict
+fl = floyd_warshall(nodes, dist_dict)
+print fl
+print hops_parent(fl, nodes, 1)
