@@ -72,6 +72,9 @@ class RadioNetwork(object):
     def __str__(self):
         return "\n".join("%d - %d" % (x[0], x[1]) for x in list(self.topology))
 
+    def __iter__(self):
+        return iter(self.topology)
+
     # Adding and removing from our local data strucure AND the radio topology
     def add_connection(self, node1, node2, link=-56.0):
         "Add a connection between two nodes"
@@ -90,10 +93,29 @@ class RadioNetwork(object):
         self.topology.remove((node1, node2))
         self.radio.remove(node1, node2)
 
+    def disconnect_node(self, node):
+        "remove all the connections of node"
+        for couple in self:
+            if node in couple:
+                self.remove_connection(*couple)
+    
+    def topo_to_radio(self, topology, nodes):
+        "Update the real radio world given the topology"
+        from itertools import combinations
+        # remove what is connected and should not be and viceversa
+        for x, y in combinations(nodes, 2):
+            # can be simply like that since adding something already there
+            # or removing something not present doesn't create problems
+            if (x,y) in self.topology:
+                self.add_connection(x, y)
+            else:
+                self.remove_connection(x, y)                
 
     def connected(self, node1, node2):
+        "Return True if the two nodes are connected"
         r = self.radio.connected(node1, node2)
         t = (node1, node2) in self.topology
+        # just to check that we're working correctly on both
         assert(r == t)
         return r
 

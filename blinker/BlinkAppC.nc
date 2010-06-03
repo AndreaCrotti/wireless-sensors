@@ -68,6 +68,9 @@ implementation {
     components new HamamatsuS1087ParC() as TotalSolarC;
 #endif
 
+    // trying out a new leds abstraction
+    components LedsModC;
+
     components RultiP;
     // TODO: change this value to what is really needed
     components EasyRoutingP;

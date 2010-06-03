@@ -141,8 +141,6 @@ def test_leds():
 
 TESTS = (test_leds, test_neigbour_discovery, test_routing_deletion, test_big_binary_tree)
 
-test_root_moving_away()
-
 # if __name__ == '__main__':
 #     for t in TESTS:
 #         try:
