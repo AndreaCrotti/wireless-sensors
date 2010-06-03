@@ -75,6 +75,7 @@ implementation {
     // TODO: change this value to what is really needed
     components EasyRoutingP;
 
+    // just needed as a facility
     BlinkC -> MainC.Boot;
     
     BlinkC.SenseRtxTimer -> SenseRtxTimer;
