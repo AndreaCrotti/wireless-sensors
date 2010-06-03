@@ -4,11 +4,12 @@ python script to test if some
 of the algorithms are working as expected
 """
 import sys
-from simulation import *
 from packet import *
 from gen_network import bin_tree
+from simulation import *
 
 MAX_CYCLES = 10
+DIM = 4
 simpletopo = ((0,1), (0,2), (1,2))
 
 # check somehow if the topology is working fine automatically
@@ -56,30 +57,22 @@ def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles, ver
         if all(sim.get_variable(n, var) == val for n,var,val in var_triples):
             return True
 
-def test_big_binary_tree(dim):
+def test_big_binary_tree():
     "Testing a big binary tree generated"
-    from math import log
-    topo = list(bin_tree(dim))
+    topo = list(bin_tree(DIM))
     triples = []
     # the parent of every node is just given by the inverse
     # we can generate the conditions to verify pretty easily
     for x, y in topo:
         triples.append((y, "EasyRoutingP.parent", x))
 
-    for x in range(2**dim - 1):
+    for x in range(2**DIM - 1):
         triples.append((x, "EasyRoutingP.HOP_COUNTS",[255, 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]))
 
-    assert(_test_generic(topo, ("Routing",), [], [], var_triples=triples, max_cycles=MAX_CYCLES, verbose=True))
-    # now we can remove node 1 for example and relink 3-4
-    # This should be another function maybe
-    # toadd = [(0, 3), (0,4)]
-    # toremove = [(1, 3), (1, 4)]
-    # triples = ((3, "EasyRoutingP.parent", 0),
-    #            (4, "EasyRoutingP.parent", 0))
-    # assert(_test_generic(topo, ("Routing",), toadd, toremove, var_triples=triples, max_cycles=MAX_CYCLES, verbose=True))
+    assert(_test_generic(topo, ("Routing",), [], [], var_triples=triples, max_cycles=MAX_CYCLES))
 
 def test_routing_deletion():
-    print "setting deletion"
+    # FIXME: failing and not stopping at MAX_CYCLES for some reasons
     triples = ((2, "EasyRoutingP.parent", 1),
                (2, "EasyRoutingP.HOP_COUNTS", [255, 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
                (1, "EasyRoutingP.parent", 0))
@@ -91,9 +84,38 @@ def test_routing_deletion():
     print "deletion worked correctly"
 
 
+def test_root_moving_away():
+    # with a simple topology move the root away and then put it back
+    # see also what happens while the root is not present
+    
+    # first remove all the link to root_node and then add them back
+    sim = Simulation(SERIAL_PORT, ("BlinkC","Routing"), test=True)
+    sim.make_given_topology(simpletopo)
+    sim.setup_noise("noise.txt")
+    sim.start(batch=True)
+    
+    sim.topology.remove_connection(0, 2)
+    sim.topology.remove_connection(0, 1)
+    # looks if they're looping
+    for n in range(10):
+        sim.print_var_nodes("EasyRoutingP.HOP_COUNTS")
+        sim.run_some_events()
+    # print now after some events run
+    print sim.topology
+    sim.print_var_nodes("EasyRoutingP.HOP_COUNTS")
+    
+    sim.topology.add_connection(0, 1)
+    for n in range(10):
+        sim.run_some_events()
+
+    # we could also now try to send some sensing packets around
+
+    print sim.topology
+    sim.print_var_nodes("EasyRoutingP.HOP_COUNTS")
+
 def test_neigbour_discovery():
     # make a full grid of 5 nodes and check that they're all neighbours
-    print "testing neighbour discovery"
+    # FIXME: also failing now
     topo = []
     dim = 5
     for x in range(dim):
@@ -102,10 +124,9 @@ def test_neigbour_discovery():
     triples = []
     for x in range(dim):
         triples.append((x, "EasyRoutingP.neighbours", 2**dim  - 1 - (1 << x)))
-    assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=MAX_CYCLES, verbose=True))
+    assert(_test_generic(topo, (), [], [], var_triples=triples, max_cycles=MAX_CYCLES))
 
 def test_leds():
-    print "testing the led settings"
     sim = Simulation(SERIAL_PORT, ("BlinkC","Routing"), test=True)
     sim.make_given_topology(simpletopo)
     sim.setup_noise("noise.txt")
@@ -117,7 +138,17 @@ def test_leds():
     sim.send_packet(turn_leds_all_nodes((0,1,2), led))
     assert(sim.check_vars_all_nodes("BlinkC.ledMask", led))
 
-# test_neigbour_discovery()
-# test_routing_deletion()
-# test_big_binary_tree(2)
-test_leds()
+
+TESTS = (test_leds, test_neigbour_discovery, test_routing_deletion, test_big_binary_tree)
+
+test_root_moving_away()
+
+# if __name__ == '__main__':
+#     for t in TESTS:
+#         try:
+#             print "startin test %s" % str(t)
+#             t()
+#         except AssertionError:
+#             print "test %s failed!!!\n\n\n" % str(t)
+#         else:
+#             print "test %s succedeed\n\n\n" % str(t)

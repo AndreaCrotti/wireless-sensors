@@ -338,7 +338,6 @@ if __name__ == '__main__':
         if sys.argv[1] == "test":
             import nose
             nose.run()
-            sys.exit()
         else:
             topo_file = sys.argv[1]
     
