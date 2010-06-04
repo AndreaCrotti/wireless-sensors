@@ -12,6 +12,7 @@
 configuration RultiC @safe() {
     provides interface AMSend;
     provides interface Receive;
+    provides interface Packet;
 }
 implementation {
     components RultiP;
@@ -43,4 +44,5 @@ implementation {
 
     AMSend = RultiP;
     Receive = RultiP;
+    Packet = RultiRtxSender;
 }
