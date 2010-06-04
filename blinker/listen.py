@@ -12,17 +12,17 @@ TODO: understand why is not actually listening but exiting quickly
 from BlinkMsg import *
 from packet import MyPacket
 from tinyos.message import MoteIF
-from sys import argv
+from sys import argv, exit
 
 SERVER = "localhost"
 DEF_PORT = "9001"
 
 class Debugger(object):
-    def __init__(self, port):
+    def __init__(self, server, port):
         # manages the mote interface
         self.mif = MoteIF.MoteIF()
         # Attach a source to it
-        source_addr = "sf@%s:%s" % (SERVER, port)
+        source_addr = "sf@%s:%s" % (server, port)
         print "attaching to source %s" % source_addr
         self.source = self.mif.addSource(source_addr)
         self.mif.addListener(self, BlinkMsg)
@@ -33,11 +33,15 @@ class Debugger(object):
         print "count = %d\n%s" % (self.count, str(MyPacket(msg)))
         self.count += 1
 
-if __name__ == "__main__":
-    if len(argv) < 2:
-        port = DEF_PORT
-    else:
-        port = argv[1]
-    
-    Debugger(port)
+usage = "./listen.py <server> <port>"
 
+if __name__ == "__main__":
+    if len(argv) == 1:
+        Debugger(SERVER, DEF_PORT)
+
+    if len(argv) == 3:
+        Debugger(argv[1], argv[2])
+
+    else:
+        print usage
+        exit(1)
