@@ -1,3 +1,6 @@
+// should be safe without #ifdef since I have it outside it
+#include "Storage.h"
+
 // maybe making it generic would also make it possible to get the caller
 module StorageP @safe() {
     provides interface Init;

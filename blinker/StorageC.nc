@@ -4,9 +4,6 @@ configuration StorageC {
 }
 
 implementation {
-#ifndef TOSSIM
-    components new ConfigStorageC(VOLUME_CONFIGTEST);
-    StorageC.Config -> ConfigStorageC.ConfigStorage;
-    StorageC.Mount  -> ConfigStorageC.Mount;
-#endif
+    components StorageP;
+    Init = StorageP;
 }

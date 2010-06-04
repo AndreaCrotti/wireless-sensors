@@ -1,6 +1,5 @@
 #include "Blink.h"
 #include "Constants.h"
-#include "Storage.h"
 
 /**
  * Implementation of the first task.
@@ -34,10 +33,10 @@ module BlinkC @safe() {
         interface SplitControl as SerialControl;
     
         // the sensor components
-        interface Read<uint16_t> as LightSensor;
-        interface Read<uint16_t> as InfraSensor;
-        interface Read<uint16_t> as TempSensor;
-        interface Read<uint16_t> as HumSensor;
+        interface Read<data_t> as LightSensor;
+        interface Read<data_t> as InfraSensor;
+        interface Read<data_t> as TempSensor;
+        interface Read<data_t> as HumSensor;
 
         // additional needed components
         interface Timer<TMilli> as SenseRtxTimer;
@@ -391,7 +390,8 @@ implementation {
     /**************************************************
      * Sensor events, they simply pass the value      *
      **************************************************/
-    event void LightSensor.readDone(error_t result, uint16_t val){
+    // FIXME: Are all those #ifdef really necessary?
+    event void LightSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
         if(result == SUCCESS){
@@ -402,7 +402,7 @@ implementation {
 
     }
 
-    event void InfraSensor.readDone(error_t result, uint16_t val){
+    event void InfraSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
         if(result == SUCCESS){
@@ -415,14 +415,14 @@ implementation {
 
     // don't use an #ifdef here since the humidity sensor is the one we're using
     // in the simulation, but this only depends on the order of wiring
-    event void HumSensor.readDone(error_t result, uint16_t val){
+    event void HumSensor.readDone(error_t result, data_t val){
         if(result == SUCCESS){
             dbg("Sensor", "Humidity sensor finished \n");
             sendSensingData(SENS_HUMIDITY, val);
         }
     }
 
-    event void TempSensor.readDone(error_t result, uint16_t val){
+    event void TempSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
         if(result == SUCCESS){

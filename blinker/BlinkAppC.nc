@@ -15,7 +15,6 @@
  */
 
 configuration BlinkAppC @safe() {
-    // here I have to put some configuration wiring to allow for splitting
 }
 
 implementation {
@@ -68,6 +67,7 @@ implementation {
     BlinkC.Leds -> LedsC;
 
 #ifndef TOSSIM
+    /* components StorageC; */
     // wiring configuration stuff
     BlinkC.Config -> ConfigStorageC.ConfigStorage;
     BlinkC.Mount  -> ConfigStorageC.Mount;
