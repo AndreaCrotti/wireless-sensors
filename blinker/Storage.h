@@ -8,6 +8,12 @@
  * 
  */
 
+enum {
+    // Sensing time in milliseconds
+    SENSETIME = 1000
+}
+
+
 // log entry
 typedef nx_struct logentry_t {
     nx_uint8_t len;
