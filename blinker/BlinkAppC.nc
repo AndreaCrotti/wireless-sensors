@@ -31,21 +31,6 @@ implementation {
 
     components new SerialAMSenderC(AM_SERIAL_BLINK) as SerialBlinkSender;
     components new SerialAMReceiverC(AM_SERIAL_BLINK) as SerialBlinkReceiver;
-    
-    components new AMSenderC(AM_BEACON) as BeaconSender;
-    components new AMReceiverC(AM_BEACON) as BeaconReceiver;
-
-    components new AMSenderC(AM_RULTI_RTX) as RultiRtxSender;
-    components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver;
-
-    components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
-    components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver;
-
-    components RandomC as RultiRandom;
-    
-    components new TimerMilliC() as BeaconTimer;
-    components new TimerMilliC() as RultiRtxTimer;
-    components new TimerMilliC() as RultiAckTimer;
 
 #ifndef TOSSIM
     // needed for checking link quality
@@ -71,9 +56,9 @@ implementation {
     // trying out a new leds abstraction
     components LedsModC;
 
-    components RultiP;
+    components RultiC;
     // TODO: change this value to what is really needed
-    components EasyRoutingP;
+    components EasyRoutingC;
 
     // just needed as a facility
     BlinkC -> MainC.Boot;
@@ -88,40 +73,12 @@ implementation {
     BlinkC.Mount  -> ConfigStorageC.Mount;
 #endif
 
-    /// Wirering for the reliable multi-cast module
-    RultiP.Packet -> RultiRtxSender.Packet;
-    RultiP.AMPacket -> RultiRtxSender.AMPacket;
-    RultiP.PayloadSend -> RultiRtxSender.AMSend;
-    RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
-    RultiP.AckSend -> RultiAckSender.AMSend;
-    RultiP.AckReceive -> RultiAckReceiver.Receive;
-    RultiP.RtxTimer -> RultiRtxTimer;
-    RultiP.AckTimer -> RultiAckTimer;
-    RultiP.Random -> RultiRandom;
-    RultiP.SeedInit -> RultiRandom;
-    RultiP.Leds -> LedsC;
-    
-    /// Linking for the neighbor module
-    
-    EasyRoutingP.Packet -> BeaconSender.Packet;
-    EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
-    EasyRoutingP.BeaconReceive -> BeaconReceiver;
-    EasyRoutingP.Timer -> BeaconTimer;
-    EasyRoutingP.Leds -> LedsC;
-
-    EasyRoutingP.RelReceive -> RultiP.Receive;
-    EasyRoutingP.RelSend -> RultiP.AMSend;
-    
-#ifndef TOSSIM
-    EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
-#endif
-
     /// Linking all our interfaces to the correct components
-    BlinkC.Packet -> RultiRtxSender.Packet;
-    BlinkC.AMSend -> EasyRoutingP.AMSend;
+    BlinkC.Packet -> EasyRoutingC.Packet;
+    BlinkC.AMSend -> EasyRoutingC.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
-    BlinkC.Receive -> EasyRoutingP;
-    BlinkC.RoutingInit -> EasyRoutingP;
+    BlinkC.Receive -> EasyRoutingC;
+    BlinkC.RoutingInit -> EasyRoutingC;
 #ifndef TOSSIM
     BlinkC.ActiveMessageAddress -> ActiveMessageAddressC;
 #endif
