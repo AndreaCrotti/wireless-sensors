@@ -146,6 +146,7 @@ implementation {
             signal AMSend.sendDone(originalMessage,ENOACK);
         }
     }
+
     /**
      * Relay the sendDone error to our user if sending was NOT successfull.
      */

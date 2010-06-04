@@ -35,17 +35,17 @@ implementation {
     components new AMSenderC(AM_BEACON) as BeaconSender;
     components new AMReceiverC(AM_BEACON) as BeaconReceiver;
 
-    components new AMSenderC(AM_RULTI_RTX) as RultiRtxSender;
-    components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver;
+    components new AMSenderC(AM_RULTI_RTX) as Sender;
+    /* components new AMReceiverC(AM_RULTI_RTX) as RultiRtxReceiver; */
 
-    components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
-    components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver;
+    /* components new AMSenderC(AM_RULTI_ACK) as RultiAckSender; */
+    /* components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver; */
 
-    components RandomC as RultiRandom;
+    /* components RandomC as RultiRandom; */
     
     components new TimerMilliC() as BeaconTimer;
-    components new TimerMilliC() as RultiRtxTimer;
-    components new TimerMilliC() as RultiAckTimer;
+    /* components new TimerMilliC() as RultiRtxTimer; */
+    /* components new TimerMilliC() as RultiAckTimer; */
 
 #ifndef TOSSIM
     // needed for checking link quality
@@ -71,7 +71,7 @@ implementation {
     // trying out a new leds abstraction
     components LedsModC;
 
-    components RultiP;
+    components RultiC;
     // TODO: change this value to what is really needed
     components EasyRoutingP;
 
@@ -89,17 +89,17 @@ implementation {
 #endif
 
     /// Wirering for the reliable multi-cast module
-    RultiP.Packet -> RultiRtxSender.Packet;
-    RultiP.AMPacket -> RultiRtxSender.AMPacket;
-    RultiP.PayloadSend -> RultiRtxSender.AMSend;
-    RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
-    RultiP.AckSend -> RultiAckSender.AMSend;
-    RultiP.AckReceive -> RultiAckReceiver.Receive;
-    RultiP.RtxTimer -> RultiRtxTimer;
-    RultiP.AckTimer -> RultiAckTimer;
-    RultiP.Random -> RultiRandom;
-    RultiP.SeedInit -> RultiRandom;
-    RultiP.Leds -> LedsC;
+    /* RultiP.Packet -> RultiRtxSender.Packet; */
+    /* RultiP.AMPacket -> RultiRtxSender.AMPacket; */
+    /* RultiP.PayloadSend -> RultiRtxSender.AMSend; */
+    /* RultiP.PayloadReceive -> RultiRtxReceiver.Receive; */
+    /* RultiP.AckSend -> RultiAckSender.AMSend; */
+    /* RultiP.AckReceive -> RultiAckReceiver.Receive; */
+    /* RultiP.RtxTimer -> RultiRtxTimer; */
+    /* RultiP.AckTimer -> RultiAckTimer; */
+    /* RultiP.Random -> RultiRandom; */
+    /* RultiP.SeedInit -> RultiRandom; */
+    /* RultiP.Leds -> LedsC; */
     
     /// Linking for the neighbor module
     
@@ -109,15 +109,15 @@ implementation {
     EasyRoutingP.Timer -> BeaconTimer;
     EasyRoutingP.Leds -> LedsC;
 
-    EasyRoutingP.RelReceive -> RultiP.Receive;
-    EasyRoutingP.RelSend -> RultiP.AMSend;
+    EasyRoutingP.RelReceive -> RultiC.Receive;
+    EasyRoutingP.RelSend -> RultiC.AMSend;
     
 #ifndef TOSSIM
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;
 #endif
 
     /// Linking all our interfaces to the correct components
-    BlinkC.Packet -> RultiRtxSender.Packet;
+    BlinkC.Packet -> Sender.Packet;
     BlinkC.AMSend -> EasyRoutingP.AMSend;
     BlinkC.AMControl -> ActiveMessageC;
     BlinkC.Receive -> EasyRoutingP;
