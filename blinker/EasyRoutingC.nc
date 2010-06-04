@@ -21,6 +21,10 @@ implementation {
     components new AMSenderC(AM_BEACON) as BeaconSender;
     components new AMReceiverC(AM_BEACON) as BeaconReceiver;
 
+#ifndef TOSSIM
+    // needed for checking link quality
+    components CC2420ActiveMessageC;
+#endif
 
     EasyRoutingP.Packet -> BeaconSender.Packet;
     EasyRoutingP.BeaconSend -> BeaconSender.AMSend;
