@@ -7,12 +7,14 @@
  * 
  * 
  */
+#ifndef STORAGE_H
+#define STORAGE_H
+
 
 enum {
     // Sensing time in milliseconds
     SENSETIME = 1000
-}
-
+};
 
 // log entry
 typedef nx_struct logentry_t {
@@ -30,3 +32,5 @@ typedef struct sense_config_t {
     uint16_t temp_high_threshold;
     uint16_t temp_low_threshold;
 } sense_config_t;
+
+#endif
