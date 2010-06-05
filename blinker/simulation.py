@@ -25,6 +25,7 @@ import rlcompleter
 from re import match
 
 from colorize import colors
+from inter import MenuMaker
 from packet import *
 
 from TOSSIM import Tossim, SerialForwarder, Throttle
@@ -248,17 +249,20 @@ class Simulation(object):
 
     def interactive(self):
         # Use a dictionary and function calls instead
-        print "entering interactive session, another C-c to quit the program"
-        choice = input("\n\n1)topology management\n2)packet creation\n3)variable inspection\n4)inspect node\n\n")
-        if choice == 1:
-            self.manipulate_topology()
-        if choice == 2:
-            self.send_packet(make_packet())
-        if choice == 3:
-            self.inspect_variable()
-        if choice == 4:
-            self.inspect_node()
-  
+        def send_interactive():
+            packet = make_packet()
+            self.send_packet(packet)
+
+        choices = {
+            "topology management" : self.manipulate_topology,
+            "packet creation" : send_interactive,
+            "variable inspection" : self.inspect_variable,
+            "node inspection" : self.inspect_node
+            }
+
+        menu = MenuMaker(choices)
+        menu.call_option()
+
     def run_some_events(self):
         "Run some of the events"
         # TODO: pass some arguments to make sure they're enough
@@ -359,18 +363,14 @@ class Simulation(object):
             else:
                 self.topology.disconnect_node(node)
 
-        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n4)disconnect one node\n")
         choices = {
-            1: print_out,
-            2: add_nodes,
-            3: rem_nodes,
-            4: disconnect_node
+            "see topology": print_out,
+            "add one connection": add_nodes,
+            "remove one connection": rem_nodes,
+            "disconnect one node": disconnect_node
             }
 
-        if choice in choices:
-            choices[choice]()
-        else:
-            return 
+        MenuMaker(choices).call_option()
 
     def send_packet(self, msg):
         "Takes a BlinkMsg already generated and sends it via serial"
