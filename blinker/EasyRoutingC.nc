@@ -13,6 +13,9 @@ configuration EasyRoutingC @safe() {
 
 implementation {
     components RultiC;
+    // Using the Queue for sending
+    components new SendQueueC(10, sizeof(BlinkMsg)) as SendQueue;
+
     components EasyRoutingP;
     components LedsModC;
     components LedsC;
@@ -33,7 +36,11 @@ implementation {
     EasyRoutingP.Leds -> LedsC;
 
     EasyRoutingP.RelReceive -> RultiC.Receive;
-    EasyRoutingP.RelSend -> RultiC.AMSend;
+    EasyRoutingP.RelSend -> SendQueue.AMSend;
+    
+    // Tell the sending Queue to use the Rulti module for sending
+    SendQueue.LowSend -> RultiC.AMSend;
+    SendQueue.AMPacket -> RultiC.AMPacket;
 
 #ifndef TOSSIM
     EasyRoutingP.CC2420Packet -> CC2420ActiveMessageC;

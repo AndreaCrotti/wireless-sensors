@@ -13,6 +13,7 @@ configuration RultiC @safe() {
     provides interface AMSend;
     provides interface Receive;
     provides interface Packet;
+    provides interface AMPacket;
 }
 implementation {
     components RultiP;
@@ -22,7 +23,9 @@ implementation {
 
     components new AMSenderC(AM_RULTI_ACK) as RultiAckSender;
     components new AMReceiverC(AM_RULTI_ACK) as RultiAckReceiver;
-
+    // Using the SendQueue for Acknowledgements
+    components new SendQueueC(6, sizeof(RultiMsg)) as AckQueue;
+    
     components new TimerMilliC() as RultiRtxTimer;
     components new TimerMilliC() as RultiAckTimer;
 
@@ -34,7 +37,10 @@ implementation {
     RultiP.AMPacket -> RultiRtxSender.AMPacket;
     RultiP.PayloadSend -> RultiRtxSender.AMSend;
     RultiP.PayloadReceive -> RultiRtxReceiver.Receive;
-    RultiP.AckSend -> RultiAckSender.AMSend;
+    // Queue wiring 
+    RultiP.AckSend -> AckQueue.AMSend;
+    AckQueue.LowSend ->  RultiAckSender.AMSend;
+    AckQueue.AMPacket -> RultiAckSender.AMPacket;
     RultiP.AckReceive -> RultiAckReceiver.Receive;
     RultiP.RtxTimer -> RultiRtxTimer;
     RultiP.AckTimer -> RultiAckTimer;
@@ -45,4 +51,5 @@ implementation {
     AMSend = RultiP;
     Receive = RultiP;
     Packet = RultiRtxSender;
+    AMPacket = RultiRtxSender.AMPacket;
 }
