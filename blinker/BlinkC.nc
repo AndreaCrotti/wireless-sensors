@@ -222,7 +222,6 @@ implementation {
      *   ECANCEL if it was cancelled 
      */
     event void AMSend.sendDone(message_t* msg, error_t error) {
-        dbg("Radio", "Sending Done\n");
     }
     
     event void SerialAMSend.sendDone(message_t* msg, error_t error) {
