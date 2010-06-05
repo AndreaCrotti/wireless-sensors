@@ -1,5 +1,5 @@
 // should be safe without #ifdef since I have it outside it
-#include "Storage.h"
+#include "storage.h"
 
 // maybe making it generic would also make it possible to get the caller
 module StorageP @safe() {
@@ -15,15 +15,20 @@ module StorageP @safe() {
 }
 
 implementation {
+    // keeping the stored data, should be used as a circular queue
+    sensing_entry_t SENSING_DATA[MAX_DATA];
+    // we use a pointer to scan the array of last sensed data
+    uint8_t lastIdx = 0;
+
     // mount everything and start the timer for sensing
     command error_t Init.init() {
-        call SensingTimer.startPeriodic(SENSETIME);
+        call SensingTimer.startPeriodic(1000);
         // check that everything is mounted correctly and so on
     }
 
     // when the timer is fired means that we need to store new sensing stuff
     event void SensingTimer.fired(){
-        
+        // store a new data sensed in the array structure
     }
 
     // Events needed for the configuration protocol

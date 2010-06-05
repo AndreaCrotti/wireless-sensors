@@ -95,9 +95,13 @@ class RadioNetwork(object):
 
     def disconnect_node(self, node):
         "remove all the connections of node"
-        for couple in self:
+        asList = list(self.topology)
+        for couple in asList:
             if node in couple:
-                self.remove_connection(*couple)
+                try:
+                    self.remove_connection(*couple)
+                except KeyError:
+                    pass
     
     def topo_to_radio(self, topology, nodes):
         "Update the real radio world given the topology"
@@ -139,14 +143,21 @@ class Simulation(object):
         self.seqno = 0
         # operations on the topology and the radio channel
         self.topology = RadioNetwork(self.sim.radio())
-
+        self.channels = channels
         # adding all the channels
         for c in channels:
-            self.sim.addChannel(c, sys.stdout)
+            self.add_channel(c)
 
     def process(self):
         if not(self.test):
             self.sf.process()
+
+    # handle separately colors and moreoveor
+    def add_channel(self, channel):
+        self.sim.addChannel(channel, sys.stdout)
+
+    def remove_channel(self, channel):
+        self.sim.removeChannel(channel)
 
     def add_node(self, idx):
         # otherwise add to the dictionary the correct node
@@ -303,6 +314,21 @@ class Simulation(object):
         for x in sorted(self.nodes):
             print "%d -> %s" % (x, self.get_variable(x, var))
 
+    def manage_channels(self):
+        def add_channel():
+            # only give the remaining to add not all of them
+            c = rlcompleter.Completer(dict(zip(CHANNELS, CHANNELS)))
+            readline.set_completer(c.complete)
+            channel = raw_input("what channel you want to add?\n")
+            # TODO: see how to add for only one mote
+            self.add_channel(channel)
+
+        def rem_channel():
+            c = rlcompleter.Completer(dict(zip(self.channels, self.channels)))
+            readline.set_completer(c.complete)
+            channel = raw_input("what channel you want to remove?\n")
+            self.remove_channel(channel)
+
     def manipulate_topology(self):
         print_out = lambda: sys.stdout.write(str(self.topology))
         def add_nodes():
@@ -325,11 +351,20 @@ class Simulation(object):
             else:
                 self.remove_connection(n1, n2)
 
-        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n")
+        def disconnect_node():
+            try:
+                node = input("what node you want to disconnect\n")
+            except Exception:
+                self.manipulate_topology()
+            else:
+                self.topology.disconnect_node(node)
+
+        choice = input("1)see topology\n2)add one connection\n3)remove one connection\n4)disconnect one node\n")
         choices = {
             1: print_out,
             2: add_nodes,
-            3: rem_nodes
+            3: rem_nodes,
+            4: disconnect_node
             }
 
         if choice in choices:

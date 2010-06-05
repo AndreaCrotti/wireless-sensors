@@ -55,20 +55,20 @@ implementation{
         call AMPacket.setDestination(msg, dest);
         
         /* if(call Queue.size() > 2) */
-            dbg("Radio", "Queue size is %d!!!!!!!!\n", call Queue.size());
+        dbg("Radio", "Queue size is %d!!!!!!!!\n", call Queue.size());
 
         // Queue the message up if possible
-        if(call Queue.size() < call Queue.maxSize()){
-            if(call Queue.empty()){
+        if (call Queue.size() < call Queue.maxSize()) {
+            if (call Queue.empty()) {
                 // If the queue was empty we need to post the sending task
-                if(call Queue.enqueue(msg) != SUCCESS)
+                if (call Queue.enqueue(msg) != SUCCESS)
                     return FAIL;
                 post sendEnqueued();
                 return SUCCESS;
-            }else{
+            } else {
                 return call Queue.enqueue(msg);
             }
-        }else{
+        } else {
             // Queue is full!
             return EBUSY;
         }

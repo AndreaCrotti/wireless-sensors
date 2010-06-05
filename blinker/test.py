@@ -2,8 +2,11 @@
 """
 python script to test if some
 of the algorithms are working as expected
+
+TODO: use standard testing stuff instead
 """
 import sys
+import unittest
 from packet import *
 from gen_network import bin_tree
 from simulation import *
@@ -27,6 +30,19 @@ def make_tree(high):
 # - to remove
 # - variables to check
 # check if it's generic enough or how it could be modified
+
+# functional style testing or object oriented testing looks cleaner?
+class TestSimulation(unittest.TestCase):
+    def __init__(self, topology):
+        self.topology = topology
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        # in the teardown phase we can delete everything maybe
+        pass
+
 
 def _test_generic(topo, dbg_channels, toadd, torem, var_triples, max_cycles, verbose=False):
     from itertools import count
@@ -137,6 +153,12 @@ def test_leds():
     sim.run_some_events()
     sim.send_packet(turn_leds_all_nodes((0,1,2), led))
     assert(sim.check_vars_all_nodes("BlinkC.ledMask", led))
+
+def test_network_overloading():
+    # find some way to poison the radio network and see if everything is still working
+    pass
+
+
 
 
 TESTS = (test_leds, test_neigbour_discovery, test_routing_deletion, test_big_binary_tree)

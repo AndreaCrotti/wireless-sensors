@@ -1,5 +1,5 @@
 /**
- * @file   Storage.h
+ * @file   storage.h
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date   Wed Jun  2 18:52:35 2010
  * 
@@ -13,7 +13,7 @@
 
 enum {
     // Sensing time in milliseconds
-    SENSETIME = 1000
+    SENSE_TIME = 1000
 };
 
 // log entry
