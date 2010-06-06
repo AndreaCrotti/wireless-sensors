@@ -18,6 +18,7 @@ We can also do some sort of unit testing using variables.
 """
 
 import sys
+import os
 import subprocess
 import random
 import readline
@@ -32,6 +33,16 @@ from TOSSIM import Tossim, SerialForwarder, Throttle
 from tinyos.tossim.TossimApp import NescApp
 
 from gen_network import bin_tree, rand_graph
+
+TOSROOT = os.getenv("TOSROOT")
+if not(TOSROOT):
+    print "you need at least to setup your $TOSROOT variable correctly"
+    sys.exit(1)
+
+
+else:
+    sdk = os.path.join(TOSROOT, "suppport", "sdk", "python")
+    sys.path.append(sdk)
 
 RUNTIME = 2
 
@@ -418,12 +429,8 @@ if __name__ == '__main__':
     topo_file = "topo.txt"
 
     if len(sys.argv) == 2:
-        print sys.argv[1]
-        if sys.argv[1] == "test":
-            import nose
-            nose.run()
-        else:
-            topo_file = sys.argv[1]
+        # TODO: use some automated testing stuff if possible
+        topo_file = sys.argv[1]
     
     # TODO: only creates the number of nodes present our file
     sim.make_topology(topo_file)
