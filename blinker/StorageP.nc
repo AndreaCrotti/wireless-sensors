@@ -10,16 +10,20 @@ module StorageP @safe() {
         interface Init;
     }
 
-    // storing configuration
     uses {
+        // configuration interfaces
         interface ConfigStorage as Config;
         interface Mount as Mount;
+        // sensing timer
         interface Timer<TMilli> as SensingTimer;
-        // the sensor components
+        // sensor reading interfaces
         interface Read<data_t> as LightSensor;
         interface Read<data_t> as InfraSensor;
         interface Read<data_t> as TempSensor;
         interface Read<data_t> as HumSensor;
+        // logging interfaces
+        interface LogRead;
+        interface LogWrite;
     }
 }
 
@@ -46,7 +50,7 @@ implementation {
      */
     command logentry_t getLastLogEntry() {
         // we use a global message packet and fill it with our data
-        // find a way to write a log from the sensing_entry_t data structure 
+        // find a way to write a log from the sensing_entry_t data structure
     }
 
     /** 
@@ -145,6 +149,31 @@ implementation {
             // Handle failure
         }
     }
+
+    /****************/
+    /* logging part */
+    /****************/
+    event void LogWrite.appendDone(void* buf, storage_len_t len, 
+                                   bool recordsLost, error_t err) {
+    }
+
+    event void LogRead.seekDone(error_t err) {
+    }
+
+    event void LogWrite.syncDone(error_t err) {
+    }
+
+    
+    event void LogWrite.eraseDone(error_t err) {
+        if (err == SUCCESS) {
+            m_busy = FALSE;
+        }
+        else {
+            // Handle error.
+        }
+        call Leds.led0Off();
+    }
+    
 
     event void LightSensor.readDone(error_t result, data_t val){
         setSensingData(SENS_LIGHT, val);

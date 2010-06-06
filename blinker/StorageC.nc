@@ -13,6 +13,8 @@ implementation {
     components new HamamatsuS10871TsrC() as PhotoActiveC;
     // Normal light
     components new HamamatsuS1087ParC() as TotalSolarC;
+    // Logging part
+    components new LogStorageC(VOLUME_LOGTEST, TRUE);
 
     StorageP.LightSensor -> TotalSolarC;
     StorageP.InfraSensor -> PhotoActiveC;
@@ -21,5 +23,9 @@ implementation {
 
     StorageP.Config = ConfigStorageC.ConfigStorage;
     StorageP.Mount -> ConfigStorageC.Mount;
+    
+    StorageP.LogRead -> LogStorageC;
+    StorageP.LogWrite -> LogStorageC;
+
     Init = StorageP;
 }

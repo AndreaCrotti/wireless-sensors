@@ -21,3 +21,5 @@
   - TEST1 = ... (give a triple to test)
   - AFTER1 = ... (do something else after)
   - and so on
+
+* See if it's better to use the default LogWriter or some home made arrays and pointers for it
