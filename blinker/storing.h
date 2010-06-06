@@ -14,7 +14,17 @@
 enum {
     // Sensing time in milliseconds
     SENSE_TIME = 1000,
-    MAX_DATA = 10
+    MAX_DATA   = 10
+};
+
+// configuration enums
+enum {
+    // TODO: check exactly what is this CONFIG_ADDR used for
+    CONFIG_ADDR    = 0,
+    CONFIG_VERSION = 1,
+    DEFAULT_PERIOD = 1024,
+    MIN_PERIOD     = 128,
+    MAX_PERIOD     = 1024
 };
 
 // log entry
@@ -22,6 +32,8 @@ typedef nx_struct logentry_t {
     nx_uint8_t len;
     message_t msg;
 } logentry_t;
+
+
 
 // structure to keep the sensed data
 // this can be also used with non network-safe types

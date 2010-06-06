@@ -4,6 +4,10 @@ configuration StorageC {
 }
 
 implementation {
+    components new ConfigStorageC(VOLUME_CONFIGTEST);
     components StorageP;
+
+    StorageP.Config = ConfigStorageC.ConfigStorage;
+    StorageP.Mount -> ConfigStorageC.Mount;
     Init = StorageP;
 }
