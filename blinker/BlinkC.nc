@@ -44,12 +44,6 @@ module BlinkC @safe() {
 
         interface Boot;
         interface Leds;
-
-#ifndef TOSSIM
-        // storing configuration
-        interface ConfigStorage as Config;
-        interface Mount as Mount;
-#endif
     }
 }
 
@@ -109,22 +103,6 @@ implementation {
     async event void ActiveMessageAddress.changed() {
     }
 
-    // Events needed for the configuration protocol
-    event void Mount.mountDone(error_t error) {
-        
-    }
-
-    event void Config.readDone(storage_addr_t addr, void* buf, 
-                               storage_len_t len, error_t err) __attribute__((noinline)) {
-    }
-
-    event void Config.writeDone(storage_addr_t addr, void *buf, 
-                                storage_len_t len, error_t err) {
-    }
-
-    event void Config.commitDone(error_t err) {
-
-    }
 #endif
 
     /**

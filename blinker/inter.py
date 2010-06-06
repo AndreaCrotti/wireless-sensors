@@ -19,7 +19,8 @@ class MenuMaker(object):
 
     # maybe one other thing like __call__ would be better
     def call_option(self):
-        complete_on(self.menu.keys())
+        # not really needed since it's only a number
+        # complete_on(self.menu.keys())
         print str(self)
         ch = input()
         # calling the right function, should work anywhere given the correct scope

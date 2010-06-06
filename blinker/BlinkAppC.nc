@@ -67,10 +67,7 @@ implementation {
     BlinkC.Leds -> LedsC;
 
 #ifndef TOSSIM
-    /* components StorageC; */
-    // wiring configuration stuff
-    BlinkC.Config -> ConfigStorageC.ConfigStorage;
-    BlinkC.Mount  -> ConfigStorageC.Mount;
+    components StorageC;
 #endif
 
     /// Linking all our interfaces to the correct components
