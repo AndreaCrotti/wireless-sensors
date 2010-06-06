@@ -101,7 +101,8 @@ implementation {
         }
     }
 
-    // events needed for the configuration protocol
+    // before reading the configuration we need to mount the volume
+    // the same thing is not true for the logging for example
     event void Mount.mountDone(error_t error) {
         if (error == SUCCESS) {
             if (call Config.valid() == TRUE) {
@@ -177,7 +178,6 @@ implementation {
         else {
             // Handle error.
         }
-        call Leds.led0Off();
     }
     
 

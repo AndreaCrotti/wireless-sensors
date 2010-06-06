@@ -27,7 +27,7 @@ enum {
     MAX_PERIOD     = 1024
 };
 
-// log entry
+// log entry, I can't send it straight away in every case
 typedef nx_struct logentry_t {
     nx_uint8_t len;
     message_t msg;
@@ -40,7 +40,8 @@ typedef nx_struct logentry_t {
 
 // structure to keep the sensed data
 // this can be also used with non network-safe types
-// it will be inserted later in the payload of logentry_t
+// it's only used to store on the flash disk, but the messages to be sent
+// will take the data from here
 typedef struct sensing_entry_t {
     uint32_t sense_time;
     data_t light;

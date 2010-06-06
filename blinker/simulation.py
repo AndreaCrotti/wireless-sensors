@@ -12,12 +12,13 @@ ow the instructions
 
 We can also inspect variables while we run the program.
 If this script doesn't work make sure you have
-$TOSROOT/support/sdk/python/ in your PYTHONPATH variable
+the correct TOSROOT variable set.
 
 We can also do some sort of unit testing using variables.
 """
 
 import sys
+import os
 import subprocess
 import random
 import readline
@@ -32,6 +33,15 @@ from TOSSIM import Tossim, SerialForwarder, Throttle
 from tinyos.tossim.TossimApp import NescApp
 
 from gen_network import bin_tree, rand_graph
+
+TOSROOT = os.getenv("TOSROOT")
+if TOSROOT is None:
+    print "you need at least to setup your $TOSROOT variable correctly"
+    sys.exit(1)
+
+else:
+    sdk = os.path.join(TOSROOT, "suppport", "sdk", "python")
+    sys.path.append(sdk)
 
 RUNTIME = 2
 
@@ -71,10 +81,14 @@ class RadioNetwork(object):
         return len(self.topology)
 
     def __str__(self):
-        return "\n".join("%d - %d" % (x[0], x[1]) for x in list(self.topology))
+        return "\n".join("%d - %d" % (x[0], x[1]) for x in sorted(self.topology))
 
     def __iter__(self):
         return iter(self.topology)
+
+    # this is then used for sorting
+    def __cmp__(self):
+        pass
 
     # Adding and removing from our local data strucure AND the radio topology
     def add_connection(self, node1, node2, link=-56.0):
@@ -257,13 +271,11 @@ class Simulation(object):
             packet = make_packet()
             self.send_packet(packet)
 
-        choices = {
-            "topology management" : self.manipulate_topology,
-            "packet creation" : send_interactive,
-            "variable inspection" : self.inspect_variable,
-            "node inspection" : self.inspect_node,
-            "channel management" : self.manage_channels
-            }
+        choices = (("topology management" , self.manipulate_topology),
+                   ("packet creation" , send_interactive),
+                   ("variable inspection" , self.inspect_variable),
+                   ("node inspection" , self.inspect_node),
+                   ("channel management" , self.manage_channels))
 
         MenuMaker(choices).call_option()
 
@@ -350,12 +362,10 @@ class Simulation(object):
         def see_channels():
             print self.channels
 
-        choices = {
-            "Add a new debug channel" : add_channel,
-            "Remove a debug channel": rem_channel,
-            "See debug channels activated": see_channels,
-            "Activate all debug channels": activate_all
-            }
+        choices = (("Add a new debug channel",  add_channel),
+                   ("Remove a debug channel", rem_channel),
+                   ("See debug channels activated", see_channels),
+                   ("Activate all debug channels", activate_all))
 
         MenuMaker(choices).call_option()
 
@@ -390,12 +400,10 @@ class Simulation(object):
             else:
                 self.topology.disconnect_node(node)
 
-        choices = {
-            "see topology": print_out,
-            "add one connection": add_nodes,
-            "remove one connection": rem_nodes,
-            "disconnect one node": disconnect_node
-            }
+        choices = (("see topology", print_out),
+                   ("add one connection", add_nodes),
+                   ("remove one connection", rem_nodes),
+                   ("disconnect one node", disconnect_node))
 
         MenuMaker(choices).call_option()
 
@@ -418,12 +426,8 @@ if __name__ == '__main__':
     topo_file = "topo.txt"
 
     if len(sys.argv) == 2:
-        print sys.argv[1]
-        if sys.argv[1] == "test":
-            import nose
-            nose.run()
-        else:
-            topo_file = sys.argv[1]
+        # TODO: use some automated testing stuff if possible
+        topo_file = sys.argv[1]
     
     # TODO: only creates the number of nodes present our file
     sim.make_topology(topo_file)
