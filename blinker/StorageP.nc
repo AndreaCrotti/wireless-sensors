@@ -1,4 +1,4 @@
-// should be safe without #ifdef since I have it outside it
+// inside this module we can avoid all the #ifndef since we have it outside it
 #include "storing.h"
 
 // maybe making it generic would also make it possible to get the caller
@@ -6,18 +6,21 @@ module StorageP @safe() {
     provides {
         // give also an interface to fetch the actual message with the last
         // n logs inside it
-        /* interface Storage; */
+        interface Storage;
         interface Init;
     }
 
-#ifndef TOSSIM
     // storing configuration
     uses {
         interface ConfigStorage as Config;
         interface Mount as Mount;
         interface Timer<TMilli> as SensingTimer;
+        // the sensor components
+        interface Read<data_t> as LightSensor;
+        interface Read<data_t> as InfraSensor;
+        interface Read<data_t> as TempSensor;
+        interface Read<data_t> as HumSensor;
     }
-#endif
 }
 
 implementation {
@@ -41,7 +44,7 @@ implementation {
      * 
      * @return a logentry_t with the last sensed results
      */
-    command logentry_t getLastLog() {
+    command logentry_t getLastLogEntry() {
         // we use a global message packet and fill it with our data
         // find a way to write a log from the sensing_entry_t data structure 
     }
@@ -55,12 +58,40 @@ implementation {
         
     }
 
-    // when the timer is fired means that we need to store new sensing stuff
+    /** 
+     * Every time the timer is fired we store all the new data
+     * and put the pointer to the next position possible
+     */
     event void SensingTimer.fired(){
         // store a new data sensed in the array structure
+        SENSING_DATA[lastIdx].sense_time = call SensingTimer.getNow();
+        call LightSensor.read();
+        call HumSensor.read();
+        call InfraSensor.read();
+        call TempSensor.read();
+        // HOW CAN WE BE SURE THAT THEY'RE SET ALWAYS BEFORE THE NEXT TIMER FIRES??
+
+        // now we can go forward in our array
+        lastIdx = (lastIdx + 1) % MAX_DATA;
     }
 
-    // Events needed for the configuration protocol
+    void setSensingData(instr_t type, data_t data) {
+        switch (type) {
+        case SENS_LIGHT:
+            SENSING_DATA[lastIdx].light = data;
+            break;
+        case SENS_INFRA:
+            SENSING_DATA[lastIdx].infra = data;
+            break;
+        case SENS_TEMP:
+            SENSING_DATA[lastIdx].temp = data;
+            break;
+        case SENS_HUMIDITY:
+            SENSING_DATA[lastIdx].humidity = data;
+        }
+    }
+
+    // events needed for the configuration protocol
     event void Mount.mountDone(error_t error) {
         if (error == SUCCESS) {
             if (call Config.valid() == TRUE) {
@@ -113,5 +144,23 @@ implementation {
         if (err != SUCCESS) {
             // Handle failure
         }
+    }
+
+    event void LightSensor.readDone(error_t result, data_t val){
+        setSensingData(SENS_LIGHT, val);
+    }
+
+    event void InfraSensor.readDone(error_t result, data_t val){
+        setSensingData(SENS_INFRA, val);
+    }
+
+    // don't use an #ifdef here since the humidity sensor is the one we're using
+    // in the simulation, but this only depends on the order of wiring
+    event void HumSensor.readDone(error_t result, data_t val){
+        setSensingData(SENS_HUMIDITY, val);
+    }
+
+    event void TempSensor.readDone(error_t result, data_t val){
+        setSensingData(SENS_TEMP, val);
     }
 }

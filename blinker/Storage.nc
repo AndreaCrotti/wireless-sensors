@@ -8,5 +8,6 @@
  */
 
 interface Storage {
-    
+    // maybe should it be asynchronous?
+    command logentry_t getLastLogEntry();
 }

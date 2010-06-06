@@ -34,11 +34,15 @@ typedef nx_struct logentry_t {
 } logentry_t;
 
 
+// see how big it should be the payload, if it's possible to do some compression and in which layer it would be possible to do it
+// We could for example use only the delta of the change since another relevation
+// in this way we can gain a lot of space automatically
 
 // structure to keep the sensed data
 // this can be also used with non network-safe types
 // it will be inserted later in the payload of logentry_t
 typedef struct sensing_entry_t {
+    uint32_t sense_time;
     data_t light;
     data_t humidity;
     data_t infra;
