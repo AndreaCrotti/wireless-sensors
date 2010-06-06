@@ -79,6 +79,12 @@ implementation {
         lastIdx = (lastIdx + 1) % MAX_DATA;
     }
 
+    /** 
+     * Set the value in the actual sensing variable
+     * 
+     * @param type type of the data sensed
+     * @param data actual valued sensed
+     */
     void setSensingData(instr_t type, data_t data) {
         switch (type) {
         case SENS_LIGHT:

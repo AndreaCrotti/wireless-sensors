@@ -144,7 +144,7 @@ class Simulation(object):
         self.seqno = 0
         # operations on the topology and the radio channel
         self.topology = RadioNetwork(self.sim.radio())
-        self.channels = channels
+        self.channels = list(channels)
         # adding all the channels
         for c in channels:
             self.add_channel(c)
@@ -156,9 +156,13 @@ class Simulation(object):
     # handle separately colors and moreoveor
     def add_channel(self, channel):
         self.sim.addChannel(channel, sys.stdout)
+        if not(channel in self.channels):
+            self.channels.append(channel)
 
     def remove_channel(self, channel):
-        self.sim.removeChannel(channel)
+        self.sim.removeChannel(channel, sys.stdout)
+        if channel in self.channels:
+            self.channels.remove(channel)
 
     def add_node(self, idx):
         # otherwise add to the dictionary the correct node
@@ -257,11 +261,11 @@ class Simulation(object):
             "topology management" : self.manipulate_topology,
             "packet creation" : send_interactive,
             "variable inspection" : self.inspect_variable,
-            "node inspection" : self.inspect_node
+            "node inspection" : self.inspect_node,
+            "channel management" : self.manage_channels
             }
 
-        menu = MenuMaker(choices)
-        menu.call_option()
+        MenuMaker(choices).call_option()
 
     def run_some_events(self):
         "Run some of the events"
@@ -318,9 +322,14 @@ class Simulation(object):
         for x in sorted(self.nodes):
             print "%d -> %s" % (x, self.get_variable(x, var))
 
+    def inactive_channels(self):
+        "returns the inactive debug channels"
+        return list(set(CHANNELS) - set(self.channels))
+
     def manage_channels(self):
         def add_channel():
             # only give the remaining to add not all of them
+            readline.parse_and_bind("tab: complete")
             c = rlcompleter.Completer(dict(zip(CHANNELS, CHANNELS)))
             readline.set_completer(c.complete)
             channel = raw_input("what channel you want to add?\n")
@@ -328,10 +337,28 @@ class Simulation(object):
             self.add_channel(channel)
 
         def rem_channel():
+            readline.parse_and_bind("tab: complete")
             c = rlcompleter.Completer(dict(zip(self.channels, self.channels)))
             readline.set_completer(c.complete)
             channel = raw_input("what channel you want to remove?\n")
             self.remove_channel(channel)
+
+        def activate_all():
+            for c in self.inactive_channels():
+                self.add_channel(c)
+
+        def see_channels():
+            print self.channels
+
+        choices = {
+            "Add a new debug channel" : add_channel,
+            "Remove a debug channel": rem_channel,
+            "See debug channels activated": see_channels,
+            "Activate all debug channels": activate_all
+            }
+
+        MenuMaker(choices).call_option()
+
 
     def manipulate_topology(self):
         print_out = lambda: sys.stdout.write(str(self.topology))
