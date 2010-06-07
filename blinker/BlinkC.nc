@@ -123,15 +123,15 @@ implementation {
         // set the active message address to workaround the testbed bug
         call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(), TOS_NODE_ID);
 
-        // mount the file system and toggle the red led if it fails
-        if (call Mount.mount() != SUCCESS)
+        // we need to erase it at least the first time for sure
+        call LogWriteLight.erase();
 #endif
-
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
 
         call SenseTimer.startPeriodic(1000);
+
         // this is done to make sure the structure is created correctly?
         call LogWriteLight.erase();
         call LogWriteInfra.erase();
@@ -139,7 +139,7 @@ implementation {
         call LogWriteHum.erase();
         /* for (i = 0; i < SENSING_DATA_QUEUE_LEN; i++) */
         /*     sensingDataQueue[i] = SENSING_DATA_HANDLER_DISCARD; */
-    }
+  }
 
 #ifndef TOSSIM
     // 
