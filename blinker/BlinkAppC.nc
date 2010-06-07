@@ -21,6 +21,7 @@ implementation {
     components MainC, BlinkC, LedsC;
     components new TimerMilliC() as MsgRtxTimer;
     components new TimerMilliC() as SenseRtxTimer;
+    components new TimerMilliC() as SenseTimer;
 
     components ActiveMessageC;
 #ifndef TOSSIM
@@ -36,6 +37,11 @@ implementation {
     components CC2420ActiveMessageC;
     // support for storage
     components new ConfigStorageC(VOLUME_CONFIGTEST);
+    // log storage, TRUE stands for circular log
+    components new LogStorageC(VOLUME_LOG_LIGHT, TRUE) as LogLight;
+    components new LogStorageC(VOLUME_LOG_HUM, TRUE) as LogHum;
+    components new LogStorageC(VOLUME_LOG_TEMP, TRUE) as LogTemp;
+    components new LogStorageC(VOLUME_LOG_INFRA, TRUE) as LogInfra;
 #endif
 
 #ifdef TOSSIM
@@ -65,9 +71,20 @@ implementation {
     BlinkC.SenseRtxTimer -> SenseRtxTimer;
     BlinkC.MsgRtxTimer -> MsgRtxTimer;
     BlinkC.Leds -> LedsC;
+    BlinkC.SenseTimer -> SenseTimer;
 
 #ifndef TOSSIM
-    components StorageC;
+    // wiring configuration stuff
+    BlinkC.Config -> ConfigStorageC.ConfigStorage;
+    BlinkC.Mount  -> ConfigStorageC.Mount;
+    BlinkC.LogReadLight -> LogLight;
+    BlinkC.LogWriteLight -> LogLight;
+    /* BlinkC.LogReadHum -> LogHum; */
+    /* BlinkC.LogWriteHum -> LogHum; */
+    /* BlinkC.LogReadInfra -> LogInfra; */
+    /* BlinkC.LogWriteInfra -> LogInfra; */
+    /* BlinkC.LogReadTemp -> LogTemp; */
+    /* BlinkC.LogWriteTemp -> LogTemp; */
 #endif
 
     /// Linking all our interfaces to the correct components

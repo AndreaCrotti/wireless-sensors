@@ -1,5 +1,8 @@
 <!-- divide here the volume in different logical parts -->
 <volume_table>
-  <volume name="LOGTEST" size="262144"/>
+  <volume name="LOG_LIGHT" size="65536"/>
+  <volume name="LOG_HUM" size="65536"/>
+  <volume name="LOG_TEMP" size="65536"/>
+  <volume name="LOG_INFRA" size="65536"/>
   <volume name="CONFIGTEST" size="131072"/>
 </volume_table>

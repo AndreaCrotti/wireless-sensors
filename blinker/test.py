@@ -159,6 +159,8 @@ def test_network_overloading():
     pass
 
 
+def test_disconnect_node():
+    pass
 
 
 TESTS = (test_leds, test_neigbour_discovery, test_routing_deletion, test_big_binary_tree)

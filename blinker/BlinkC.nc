@@ -41,9 +41,25 @@ module BlinkC @safe() {
         // additional needed components
         interface Timer<TMilli> as SenseRtxTimer;
         interface Timer<TMilli> as MsgRtxTimer;
+        interface Timer<TMilli> as SenseTimer;
 
         interface Boot;
         interface Leds;
+
+#ifndef TOSSIM
+        // storing configuration
+        interface ConfigStorage as Config;
+        interface Mount as Mount;
+        // storing log
+        interface LogRead as LogReadLight;
+        interface LogWrite as LogWriteLight;
+        /* interface LogRead as LogReadHum; */
+        /* interface LogWrite as LogWriteHum; */
+        /* interface LogRead as LogReadTemp; */
+        /* interface LogWrite as LogWriteTemp; */
+        /* interface LogRead as LogReadInfra; */
+        /* interface LogWrite as LogWriteInfra; */
+#endif
     }
 }
 
@@ -52,8 +68,13 @@ implementation {
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     char amIaReceiver(BlinkMsg *);
+    /* void selectAndCallSensor(instr_t); */
     void sendSensingData(instr_t, data_t);
+    void logSensingData(instr_t, data_t);
     uint8_t getIDFromBM(nodeid_t);
+
+    // this is essentially a busy flag and a new level of indirection
+    void handleSensingData(instr_t, data_t);
 
     //// variables to control the channel ////
     // The current outgoing radio message
@@ -70,7 +91,14 @@ implementation {
     seqno_t own_sn = 1;
     // led mask
     uint8_t ledMask = 0;
-
+    // dummy log item (used to cache data)
+    /* logitem_t logitem_r; */
+    logitem_t logitem_temp;
+    logitem_t logitem_l1;
+    logitem_t logitem_l2;
+    logitem_t logitem_i;
+    logitem_t logitem_h;
+    
     // debug message packet
     message_t debug_pkt;
     
@@ -91,11 +119,15 @@ implementation {
 #ifndef TOSSIM
         // set the active message address to workaround the testbed bug
         call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(), TOS_NODE_ID);
-#endif
 
+        // we need to erase it at least the first time for sure
+        call LogWriteLight.erase();
+#endif
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
+
+        call SenseTimer.startPeriodic(1000);
     }
 
 #ifndef TOSSIM
@@ -103,6 +135,28 @@ implementation {
     async event void ActiveMessageAddress.changed() {
     }
 
+    // Events needed for the configuration protocol
+    event void Mount.mountDone(error_t error) {
+        if (error == SUCCESS) {
+            if (call Config.valid() != TRUE) {
+                call Config.commit();
+            }
+        } else {
+            call Mount.mount();
+        }
+    }
+
+    event void Config.readDone(storage_addr_t addr, void* buf, 
+                               storage_len_t len, error_t err) __attribute__((noinline)) {
+    }
+
+    event void Config.writeDone(storage_addr_t addr, void *buf, 
+                                storage_len_t len, error_t err) {
+    }
+
+    event void Config.commitDone(error_t err) {
+        
+    }
 #endif
 
     /**
@@ -112,10 +166,10 @@ implementation {
      */
     task void transmitMessage() {
         // TODO: should we also check the result or not?
-        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)) == EBUSY){
-            call MsgRtxTimer.startOneShot(RETRANSMIT_TIME);
-        }
-        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)); */
+        /* if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)) == EBUSY){ */
+        /*     call MsgRtxTimer.startOneShot(RETRANSMIT_TIME); */
+        /* } */
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg));
     }
 
 
@@ -127,10 +181,7 @@ implementation {
     task void transmitSensing() {
         //dbg("Radio", "Posted a transmitSensing task.\n");
          // TODO: should we also check the result or not?
-        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)) == EBUSY){
-            call SenseRtxTimer.startOneShot(RETRANSMIT_TIME);
-        }
-        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)); */
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
     }
 
     /**
@@ -176,6 +227,17 @@ implementation {
 
     event void SenseRtxTimer.fired(){
         post transmitSensing();
+    }
+
+    event void SenseTimer.fired() {
+        /* sensingDataQueue[sensingDataHead] = SENSING_DATA_HANDLER_LOG; */
+        /* sensingDataHead = (sensingDataHead + 1) % SENSING_DATA_QUEUE_LEN; */
+        /* selectAndCallSensor(AUTO_SENS); */
+        // read from every sensor
+        call LightSensor.read();
+        /* call HumSensor.read(); */
+        /* call InfraSensor.read(); */
+        /* call TempSensor.read(); */
     }
 
     /**
@@ -237,25 +299,28 @@ implementation {
             
         case MSG_SENS_REQ:
             dbg("Sensor", "recognized sensing request %d\n", msg->instr);
-            /* setLed(1); */
 
             // Message is a sensing request
             // store the message locally
             *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
-            // fetch the sensor data
+
             switch(msg->instr) {
             case SENS_LIGHT:
-                call LightSensor.read();
+#ifndef TOSSIM
+                call LogReadLight.read(&logitem_l2, sizeof(logitem_t));
+#endif
                 break;
-            case SENS_INFRA:
-                call InfraSensor.read();
-                break;
-            case SENS_HUMIDITY:
-                call HumSensor.read();
-                break;
-            case SENS_TEMP:
-                call TempSensor.read();
+            /* case SENS_INFRA: */
+            /*     call LogReadInfra.read(&logitem_i, sizeof(logitem_t)); */
+            /*     break; */
+            /* case SENS_HUMIDITY: */
+            /*     call LogReadHum.read(&logitem_h, sizeof(logitem_t)); */
+            /*     break; */
+            /* case SENS_TEMP: */
+            /*     call LogReadTemp.read(&logitem_temp, sizeof(logitem_t)); */
+            /*     break; */
             };
+
             break;
 
         case MSG_SENS_DATA:
@@ -363,39 +428,32 @@ implementation {
         }
         return message;
     }
-
-    /**************************************************
-     * Sensor events, they simply pass the value      *
-     **************************************************/
-    // FIXME: Are all those #ifdef really necessary?
+    
     event void LightSensor.readDone(error_t result, data_t val){
-
 #ifndef TOSSIM
         if(result == SUCCESS){
-            dbg("Sensor", "Light sensor finished \n");
-            sendSensingData(SENS_LIGHT, val);
+            /* handleSensingData(SENS_LIGHT, val); */
+            logitem_l1.sensData = val;
+            call LogWriteLight.append(&logitem_l1, sizeof(logitem_t));
         }
 #endif
 
     }
-
+    
     event void InfraSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
         if(result == SUCCESS){
-            dbg("Sensor", "Infrared sensor finished \n");
-            sendSensingData(SENS_INFRA, val);
+            /* call LogWriteInfra.append(&logitem_i, sizeof(logitem_t)); */
         }
 #endif
-
     }
 
     // don't use an #ifdef here since the humidity sensor is the one we're using
     // in the simulation, but this only depends on the order of wiring
     event void HumSensor.readDone(error_t result, data_t val){
         if(result == SUCCESS){
-            dbg("Sensor", "Humidity sensor finished \n");
-            sendSensingData(SENS_HUMIDITY, val);
+            /* call LogWriteHum.append(&logitem_h, sizeof(logitem_t)); */
         }
     }
 
@@ -403,8 +461,7 @@ implementation {
 
 #ifndef TOSSIM
         if(result == SUCCESS){
-            dbg("Sensor", "Temperature sensor finished \n");
-            sendSensingData(SENS_TEMP, val);
+            /* call LogWriteTemp.append(&logitem_temp, sizeof(logitem_t)); */
         }
 #endif
 
@@ -423,7 +480,6 @@ implementation {
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	
         dbg("Sensor", "sendSensingData is called\n");
-        /* setLed(2); */
 
         // Add new contents
 	newMsg->dests = (1 << (request->sender));
@@ -443,4 +499,27 @@ implementation {
 	post transmitSensing();
     }
 
+
+#ifndef TOSSIM
+
+    // we can here say if there
+    event void LogWriteLight.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
+        /* sendSensingData(SENS_LIGHT, ((logitem_t *) buf)->sensData); */
+    }
+
+    event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
+        // also checking the address and the size should be done
+        /* if (err == SUCCESS) { */
+        if ((len != sizeof(logitem_t)) || (buf != &logitem_l2)) {
+            call LogWriteLight.erase();
+        /* } else { */
+        /* } */
+        } else 
+            sendSensingData(SENS_LIGHT, ((logitem_t *) buf)->sensData);
+    }
+
+    event void LogReadLight.seekDone(error_t err) {}
+    event void LogWriteLight.syncDone(error_t err) {}
+    event void LogWriteLight.eraseDone(error_t err) {}
+#endif
 }

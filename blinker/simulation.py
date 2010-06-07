@@ -86,10 +86,6 @@ class RadioNetwork(object):
     def __iter__(self):
         return iter(self.topology)
 
-    # this is then used for sorting
-    def __cmp__(self):
-        pass
-
     # Adding and removing from our local data strucure AND the radio topology
     def add_connection(self, node1, node2, link=-56.0):
         "Add a connection between two nodes"
