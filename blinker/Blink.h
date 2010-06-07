@@ -68,9 +68,9 @@ enum {
     RETRANSMIT_TIME = 50
 };
 
-typedef nx_struct {
-    nx_uint32_t nodeTime;
-    nx_data_t sensData;
+typedef struct {
+    /* nx_uint32_t nodeTime; */
+    data_t sensData;
 } logitem_t;
 
 typedef enum {

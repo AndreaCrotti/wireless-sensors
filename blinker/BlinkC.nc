@@ -95,7 +95,8 @@ implementation {
     logitem_t logitem;
     /* logitem_t logitem_r; */
     logitem_t logitem_temp;
-    logitem_t logitem_l;
+    logitem_t logitem_l1;
+    logitem_t logitem_l2;
     logitem_t logitem_i;
     logitem_t logitem_h;
     
@@ -129,7 +130,6 @@ implementation {
 
         // mount the file system and toggle the red led if it fails
         if (call Mount.mount() != SUCCESS)
-            call Leds.set(1);
 #endif
 
         // initialize the curr_sn
@@ -338,7 +338,9 @@ implementation {
 
             switch(msg->instr) {
             case SENS_LIGHT:
-                call LogReadLight.read(&logitem_l, sizeof(logitem_t));
+#ifndef TOSSIM
+                call LogReadLight.read(&logitem_l2, sizeof(logitem_t));
+#endif
                 break;
             /* case SENS_INFRA: */
             /*     call LogReadInfra.read(&logitem_i, sizeof(logitem_t)); */
@@ -487,12 +489,11 @@ implementation {
     /* } */
     
     event void LightSensor.readDone(error_t result, data_t val){
-        // FIXME: Are all those #ifdef really necessary?
-
 #ifndef TOSSIM
         if(result == SUCCESS){
             /* handleSensingData(SENS_LIGHT, val); */
-            call LogWriteLight.append(&logitem_l, sizeof(logitem_t));
+            logitem_l1.sensData = val;
+            call LogWriteLight.append(&logitem_l1, sizeof(logitem_t));
         }
 #endif
 
@@ -538,7 +539,6 @@ implementation {
 	BlinkMsg* request = (BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0));
 	
         dbg("Sensor", "sendSensingData is called\n");
-        /* setLed(2); */
 
         // Add new contents
 	newMsg->dests = (1 << (request->sender));
@@ -563,17 +563,18 @@ implementation {
 
     // we can here say if there
     event void LogWriteLight.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
+        /* sendSensingData(SENS_LIGHT, ((logitem_t *) buf)->sensData); */
     }
 
     event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
         // also checking the address and the size should be done
-        if (err == SUCCESS) {
-        /* if ((len != sizeof(logitem_t)) || (buf != &logitem_l)) { */
-        /*     call LogWriteLight.erase(); */
+        /* if (err == SUCCESS) { */
+        if ((len != sizeof(logitem_t)) || (buf != &logitem_l2)) {
+            call LogWriteLight.erase();
         /* } else { */
         /* } */
-            sendSensingData(SENS_LIGHT, logitem_l.sensData);
-        }
+        } else 
+            sendSensingData(SENS_LIGHT, ((logitem_t *) buf)->sensData);
     }
 
     event void LogReadLight.seekDone(error_t err) {}
