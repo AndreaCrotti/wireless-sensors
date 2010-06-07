@@ -61,10 +61,6 @@ enum {
 };
 
 enum {
-    AUTO_SENS = SENS_LIGHT
-};
-
-enum {
     RETRANSMIT_TIME = 50
 };
 
@@ -72,15 +68,5 @@ typedef struct {
     /* nx_uint32_t nodeTime; */
     data_t sensData;
 } logitem_t;
-
-typedef enum {
-    SENSING_DATA_HANDLER_DISCARD,
-    SENSING_DATA_HANDLER_SEND,
-    SENSING_DATA_HANDLER_LOG
-} SensingDataHandler;
-
-enum {
-    SENSING_DATA_QUEUE_LEN = 8
-};
 
 #endif

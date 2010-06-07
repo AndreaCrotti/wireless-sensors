@@ -92,7 +92,6 @@ implementation {
     // led mask
     uint8_t ledMask = 0;
     // dummy log item (used to cache data)
-    logitem_t logitem;
     /* logitem_t logitem_r; */
     logitem_t logitem_temp;
     logitem_t logitem_l1;
@@ -100,13 +99,6 @@ implementation {
     logitem_t logitem_i;
     logitem_t logitem_h;
     
-    /* // queue of sensing data requests */
-    /* SensingDataHandler sensingDataQueue[SENSING_DATA_QUEUE_LEN]; */
-    /* // where to write to next time */
-    /* size_t sensingDataHead = 0; */
-    /* // where to read from next time (no overrun check is done) */
-    /* size_t sensingDataTail = 0; */
-
     // debug message packet
     message_t debug_pkt;
     
@@ -137,6 +129,8 @@ implementation {
             curr_sn[i] = 0;
 
         call SenseTimer.startPeriodic(1000);
+        // this is done to make sure the structure is created correctly?
+        call LogWriteLight.erase();
         /* for (i = 0; i < SENSING_DATA_QUEUE_LEN; i++) */
         /*     sensingDataQueue[i] = SENSING_DATA_HANDLER_DISCARD; */
     }
@@ -166,7 +160,7 @@ implementation {
     }
 
     event void Config.commitDone(error_t err) {
-
+        
     }
 #endif
 
@@ -192,9 +186,6 @@ implementation {
     task void transmitSensing() {
         //dbg("Radio", "Posted a transmitSensing task.\n");
          // TODO: should we also check the result or not?
-        /* if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)) == EBUSY){ */
-        /*     call SenseRtxTimer.startOneShot(RETRANSMIT_TIME); */
-        /* } */
         call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
     }
 
@@ -297,23 +288,6 @@ implementation {
         call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
     }
 
-    /* void selectAndCallSensor(instr_t ins) { */
-    /*     switch(ins) { */
-    /*     case SENS_LIGHT: */
-    /*         call LightSensor.read(); */
-    /*         break; */
-    /*     case SENS_INFRA: */
-    /*         call InfraSensor.read(); */
-    /*         break; */
-    /*     case SENS_HUMIDITY: */
-    /*         call HumSensor.read(); */
-    /*         break; */
-    /*     case SENS_TEMP: */
-    /*         call TempSensor.read(); */
-    /*         break; */
-    /*     }; */
-    /* } */
-
     /** 
      * Handle the message received calling the correct instructions
      * 
@@ -330,7 +304,6 @@ implementation {
             
         case MSG_SENS_REQ:
             dbg("Sensor", "recognized sensing request %d\n", msg->instr);
-            /* setLed(1); */
 
             // Message is a sensing request
             // store the message locally
@@ -353,16 +326,6 @@ implementation {
             /*     break; */
             };
 
-            // fetch the sensor data
-/*             if (msg->instr == AUTO_SENS) { */
-/* #ifndef TOSSIM */
-/*                 call LogReadLight.read(&logitem_r, sizeof(logitem_r)); */
-/* #endif */
-/*             } else { */
-/*                 sensingDataQueue[sensingDataHead] = SENSING_DATA_HANDLER_SEND; */
-/*                 sensingDataHead = (sensingDataHead + 1) % SENSING_DATA_QUEUE_LEN; */
-/*                 selectAndCallSensor(msg->instr); */
-/*             } */
             break;
 
         case MSG_SENS_DATA:
@@ -470,23 +433,6 @@ implementation {
         }
         return message;
     }
-
-    /* /\************************************************** */
-    /*  * Sensor events, they simply pass the value      * */
-    /*  **************************************************\/ */
-    /* void handleSensingData(instr_t instr, data_t data) { */
-    /*     SensingDataHandler sdHandler = sensingDataQueue[sensingDataTail]; */
-    /*     sensingDataTail = (sensingDataTail + 1) % SENSING_DATA_QUEUE_LEN; */
-    /*     switch (sdHandler) { */
-    /*     case SENSING_DATA_HANDLER_SEND: */
-    /*         sendSensingData(instr,data); */
-    /*         break; */
-    /*     case SENSING_DATA_HANDLER_LOG: */
-    /*         logSensingData(instr,data);                 */
-    /*         break; */
-    /*     default: //discarding is so easy :) */
-    /*     } */
-    /* } */
     
     event void LightSensor.readDone(error_t result, data_t val){
 #ifndef TOSSIM
@@ -582,18 +528,3 @@ implementation {
     event void LogWriteLight.eraseDone(error_t err) {}
 #endif
 }
-
-    /**
-     * Sensing data logging
-     *
-     * @param sensingInstr Instruction to execute on the mote
-     * @param sensingData data
-     */
-/*     void logSensingData(instr_t sensingInstr, data_t sensingData) { */
-/*         static uint32_t ntime = 0; */
-/*         logitem.nodeTime = ntime++; */
-/*         logitem.sensData = sensingData; */
-/* #ifndef TOSSIM */
-/*         call LogWriteLight.append(&logitem,sizeof(logitem_t)); */
-/* #endif */
-/*     } */

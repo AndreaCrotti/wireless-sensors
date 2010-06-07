@@ -38,10 +38,10 @@ implementation {
     // support for storage
     components new ConfigStorageC(VOLUME_CONFIGTEST);
     // log storage, TRUE stands for circular log
-    components new LogStorageC(VOLUME_LOG_LIGHT, FALSE) as LogLight;
-    components new LogStorageC(VOLUME_LOG_HUM, FALSE) as LogHum;
-    components new LogStorageC(VOLUME_LOG_TEMP, FALSE) as LogTemp;
-    components new LogStorageC(VOLUME_LOG_INFRA, FALSE) as LogInfra;
+    components new LogStorageC(VOLUME_LOG_LIGHT, TRUE) as LogLight;
+    components new LogStorageC(VOLUME_LOG_HUM, TRUE) as LogHum;
+    components new LogStorageC(VOLUME_LOG_TEMP, TRUE) as LogTemp;
+    components new LogStorageC(VOLUME_LOG_INFRA, TRUE) as LogInfra;
 #endif
 
 #ifdef TOSSIM
