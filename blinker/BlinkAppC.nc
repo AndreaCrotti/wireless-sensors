@@ -21,6 +21,7 @@ implementation {
     components MainC, BlinkC, LedsC;
     components new TimerMilliC() as MsgRtxTimer;
     components new TimerMilliC() as SenseRtxTimer;
+    components new TimerMilliC() as SenseTimer;
 
     components ActiveMessageC;
 #ifndef TOSSIM
@@ -70,6 +71,7 @@ implementation {
     BlinkC.SenseRtxTimer -> SenseRtxTimer;
     BlinkC.MsgRtxTimer -> MsgRtxTimer;
     BlinkC.Leds -> LedsC;
+    BlinkC.SenseTimer -> SenseTimer;
 
 #ifndef TOSSIM
     // wiring configuration stuff

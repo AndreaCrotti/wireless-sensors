@@ -68,7 +68,7 @@ implementation {
     void setLed(uint8_t);
     uint8_t selectRandomLed();
     char amIaReceiver(BlinkMsg *);
-    void selectAndCallSensor(instr_t);
+    /* void selectAndCallSensor(instr_t); */
     void sendSensingData(instr_t, data_t);
     void logSensingData(instr_t, data_t);
     uint8_t getIDFromBM(nodeid_t);
@@ -135,6 +135,8 @@ implementation {
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
             curr_sn[i] = 0;
+
+        call SenseTimer.startPeriodic(1000);
         /* for (i = 0; i < SENSING_DATA_QUEUE_LEN; i++) */
         /*     sensingDataQueue[i] = SENSING_DATA_HANDLER_DISCARD; */
     }
@@ -295,22 +297,22 @@ implementation {
         call SerialAMSend.send(AM_BROADCAST_ADDR, &pkt_serial_out, sizeof(BlinkMsg));
     }
 
-    void selectAndCallSensor(instr_t ins) {
-        switch(ins) {
-        case SENS_LIGHT:
-            call LightSensor.read();
-            break;
-        case SENS_INFRA:
-            call InfraSensor.read();
-            break;
-        case SENS_HUMIDITY:
-            call HumSensor.read();
-            break;
-        case SENS_TEMP:
-            call TempSensor.read();
-            break;
-        };
-    }
+    /* void selectAndCallSensor(instr_t ins) { */
+    /*     switch(ins) { */
+    /*     case SENS_LIGHT: */
+    /*         call LightSensor.read(); */
+    /*         break; */
+    /*     case SENS_INFRA: */
+    /*         call InfraSensor.read(); */
+    /*         break; */
+    /*     case SENS_HUMIDITY: */
+    /*         call HumSensor.read(); */
+    /*         break; */
+    /*     case SENS_TEMP: */
+    /*         call TempSensor.read(); */
+    /*         break; */
+    /*     }; */
+    /* } */
 
     /** 
      * Handle the message received calling the correct instructions
@@ -556,6 +558,30 @@ implementation {
 	post transmitSensing();
     }
 
+
+#ifndef TOSSIM
+
+    // we can here say if there
+    event void LogWriteLight.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
+    }
+
+    event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
+        // also checking the address and the size should be done
+        if (err == SUCCESS) {
+        /* if ((len != sizeof(logitem_t)) || (buf != &logitem_l)) { */
+        /*     call LogWriteLight.erase(); */
+        /* } else { */
+        /* } */
+            sendSensingData(SENS_LIGHT, logitem_l.sensData);
+        }
+    }
+
+    event void LogReadLight.seekDone(error_t err) {}
+    event void LogWriteLight.syncDone(error_t err) {}
+    event void LogWriteLight.eraseDone(error_t err) {}
+#endif
+}
+
     /**
      * Sensing data logging
      *
@@ -570,21 +596,3 @@ implementation {
 /*         call LogWriteLight.append(&logitem,sizeof(logitem_t)); */
 /* #endif */
 /*     } */
-
-#ifndef TOSSIM
-    event void LogWriteLight.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
-    }
-
-    event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
-        if ((len != sizeof(logitem_t)) || (buf != &logitem_l)) {
-            call LogWriteLight.erase();
-        } else {
-            sendSensingData(SENS_LIGHT, logitem_l.sensData);
-        }
-    }
-
-    event void LogReadLight.seekDone(error_t err) {}
-    event void LogWriteLight.syncDone(error_t err) {}
-    event void LogWriteLight.eraseDone(error_t err) {}
-#endif
-}
