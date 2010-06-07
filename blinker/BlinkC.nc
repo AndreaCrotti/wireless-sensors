@@ -51,8 +51,14 @@ module BlinkC @safe() {
         interface ConfigStorage as Config;
         interface Mount as Mount;
         // storing log
-        interface LogRead;
-        interface LogWrite;
+        interface LogRead as LogReadLight;
+        interface LogWrite as LogWriteLight;
+        /* interface LogRead as LogReadHum; */
+        /* interface LogWrite as LogWriteHum; */
+        /* interface LogRead as LogReadTemp; */
+        /* interface LogWrite as LogWriteTemp; */
+        /* interface LogRead as LogReadInfra; */
+        /* interface LogWrite as LogWriteInfra; */
 #endif
     }
 }
@@ -320,7 +326,7 @@ implementation {
             // fetch the sensor data
             if (msg->instr == AUTO_SENS) {
 #ifndef TOSSIM
-                call LogRead.read(&logitem_r,sizeof(logitem_r));
+                call LogReadLight.read(&logitem_r,sizeof(logitem_r));
 #endif
             } else {
                 sensingDataQueue[sensingDataHead] = SENSING_DATA_HANDLER_SEND;
@@ -539,23 +545,23 @@ implementation {
         logitem.nodeTime = ntime++;
         logitem.sensData = sensingData;
 #ifndef TOSSIM
-        call LogWrite.append(&logitem,sizeof(logitem_t));
+        call LogWriteLight.append(&logitem,sizeof(logitem_t));
 #endif
     }
 
 #ifndef TOSSIM
-    event void LogWrite.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
+    event void LogWriteLight.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
     }
 
-    event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
+    event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
         if ( (len != sizeof(logitem_t)) || (buf != &logitem_r) ) {
-            call LogWrite.erase();
+            call LogWriteLight.erase();
         }
         sendSensingData(AUTO_SENS, logitem_r.sensData);
     }
 
-    event void LogRead.seekDone(error_t err) {}
-    event void LogWrite.syncDone(error_t err) {}
-    event void LogWrite.eraseDone(error_t err) {}
+    event void LogReadLight.seekDone(error_t err) {}
+    event void LogWriteLight.syncDone(error_t err) {}
+    event void LogWriteLight.eraseDone(error_t err) {}
 #endif
 }

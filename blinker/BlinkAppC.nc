@@ -36,8 +36,11 @@ implementation {
     components CC2420ActiveMessageC;
     // support for storage
     components new ConfigStorageC(VOLUME_CONFIGTEST);
-    // log storage
-    components new LogStorageC(VOLUME_LOGTEST,TRUE) as Log;
+    // log storage, TRUE stands for circular log
+    components new LogStorageC(VOLUME_LOG_LIGHT, TRUE) as LogLight;
+    components new LogStorageC(VOLUME_LOG_HUM, TRUE) as LogHum;
+    components new LogStorageC(VOLUME_LOG_TEMP, TRUE) as LogTemp;
+    components new LogStorageC(VOLUME_LOG_INFRA, TRUE) as LogInfra;
 #endif
 
 #ifdef TOSSIM
@@ -72,8 +75,14 @@ implementation {
     // wiring configuration stuff
     BlinkC.Config -> ConfigStorageC.ConfigStorage;
     BlinkC.Mount  -> ConfigStorageC.Mount;
-    BlinkC.LogRead -> Log;
-    BlinkC.LogWrite -> Log;
+    BlinkC.LogReadLight -> LogLight;
+    BlinkC.LogWriteLight -> LogLight;
+    /* BlinkC.LogReadHum -> LogHum; */
+    /* BlinkC.LogWriteHum -> LogHum; */
+    /* BlinkC.LogReadInfra -> LogInfra; */
+    /* BlinkC.LogWriteInfra -> LogInfra; */
+    /* BlinkC.LogReadTemp -> LogTemp; */
+    /* BlinkC.LogWriteTemp -> LogTemp; */
 #endif
 
     /// Linking all our interfaces to the correct components
