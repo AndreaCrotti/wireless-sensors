@@ -136,9 +136,9 @@ implementation {
     // Events needed for the configuration protocol
     event void Mount.mountDone(error_t error) {
         if (error == SUCCESS) {
-          if (call Config.valid() != TRUE) {
-            call Config.commit();
-          }
+            if (call Config.valid() != TRUE) {
+                call Config.commit();
+            }
         } else {
             call Mount.mount();
         }
@@ -281,18 +281,18 @@ implementation {
 
     void selectAndCallSensor(instr_t ins) {
         switch(ins) {
-            case SENS_LIGHT:
-                call LightSensor.read();
-                break;
-            case SENS_INFRA:
-                call InfraSensor.read();
-                break;
-            case SENS_HUMIDITY:
-                call HumSensor.read();
-                break;
-            case SENS_TEMP:
-                call TempSensor.read();
-                break;
+        case SENS_LIGHT:
+            call LightSensor.read();
+            break;
+        case SENS_INFRA:
+            call InfraSensor.read();
+            break;
+        case SENS_HUMIDITY:
+            call HumSensor.read();
+            break;
+        case SENS_TEMP:
+            call TempSensor.read();
+            break;
         };
     }
 
@@ -319,7 +319,9 @@ implementation {
             *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
             // fetch the sensor data
             if (msg->instr == AUTO_SENS) {
+#ifndef TOSSIM
                 call LogRead.read(&logitem_r,sizeof(logitem_r));
+#endif
             } else {
                 sensingDataQueue[sensingDataHead] = SENSING_DATA_HANDLER_SEND;
                 sensingDataHead = (sensingDataHead + 1) % SENSING_DATA_QUEUE_LEN;
@@ -440,18 +442,18 @@ implementation {
         SensingDataHandler sdHandler = sensingDataQueue[sensingDataTail];
         sensingDataTail = (sensingDataTail + 1) % SENSING_DATA_QUEUE_LEN;
         switch (sdHandler) {
-            case SENSING_DATA_HANDLER_SEND:
-                sendSensingData(instr,data);
-                break;
-            case SENSING_DATA_HANDLER_LOG:
-                logSensingData(instr,data);
-                break;
-            default: //discarding is so easy :)
+        case SENSING_DATA_HANDLER_SEND:
+            sendSensingData(instr,data);
+            break;
+        case SENSING_DATA_HANDLER_LOG:
+            logSensingData(instr,data);                
+            break;
+        default: //discarding is so easy :)
         }
     }
     
     event void LightSensor.readDone(error_t result, data_t val){
-    // FIXME: Are all those #ifdef really necessary?
+        // FIXME: Are all those #ifdef really necessary?
 
 #ifndef TOSSIM
         if(result == SUCCESS){
@@ -461,7 +463,7 @@ implementation {
 #endif
 
     }
-
+    
     event void InfraSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
@@ -525,6 +527,7 @@ implementation {
 	// assign to the payload of the our global packet the new message created 
 	post transmitSensing();
     }
+
     /**
      * Sensing data logging
      *
@@ -535,19 +538,24 @@ implementation {
         static uint32_t ntime = 0;
         logitem.nodeTime = ntime++;
         logitem.sensData = sensingData;
+#ifndef TOSSIM
         call LogWrite.append(&logitem,sizeof(logitem_t));
+#endif
     }
 
+#ifndef TOSSIM
     event void LogWrite.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
     }
+
     event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
-       if ( (len != sizeof(logitem_t)) || (buf != &logitem_r) ) {
-           call LogWrite.erase();
-       }
-       sendSensingData(AUTO_SENS,logitem_r.sensData);
+        if ( (len != sizeof(logitem_t)) || (buf != &logitem_r) ) {
+            call LogWrite.erase();
+        }
+        sendSensingData(AUTO_SENS, logitem_r.sensData);
     }
 
     event void LogRead.seekDone(error_t err) {}
     event void LogWrite.syncDone(error_t err) {}
     event void LogWrite.eraseDone(error_t err) {}
+#endif
 }

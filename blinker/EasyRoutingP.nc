@@ -12,6 +12,7 @@
  * and an unreliable protocol for discovering the neighbours.
  * 
  * We also keep a value on the parent to send the results only on the shortest path.
+ * removing connection to 4 for example 8 never timeouts
  *
  */
 
@@ -68,7 +69,7 @@ implementation {
     void checkTimeout(uint32_t);
     void addNeighbour(nodeid_t);
     void removeNeighbour(nodeid_t);
-    uint8_t isNeighbour(nodeid_t);
+    bool isNeighbour(nodeid_t);
     void updateHops(uint8_t);
     uint8_t otherReceivers(nodeid_t);
     void selectBestParent(void);
@@ -292,8 +293,6 @@ implementation {
     void checkTimeout(uint32_t delay) {
         int i;
         for (i = 0; i < MAX_MOTES; i++) {
-            /* dbg("Routing", "delay = %d and LAST_ARRIVAL[%d] = %d\n", delay, i, LAST_ARRIVAL[i]); */
-            
             // maybe it would be better to check only for the neighbours, but also adding 
             if ((isNeighbour(i) != 0) &&
                 (((delay / PERIOD) - LAST_ARRIVAL[i]) >= TIMEOUT)) {
@@ -343,6 +342,8 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
+        if (TOS_NODE_ID == 4)
+            dbg("Routing", "removing node %d from neighbour list, now %d\n", idx, neighbours);
         // maybe we should check if it's really needed, if it's not there already
         // the other checks are not really needed
 
@@ -362,10 +363,12 @@ implementation {
      */
     void addNeighbour(nodeid_t idx) {
         neighbours |= (1 << idx);
+        if (TOS_NODE_ID == 4)
+            dbg("Routing", "adding node %d to neighbour list, now %d\n", idx, neighbours);
     }
 
-    uint8_t isNeighbour(nodeid_t idx) {
-        return neighbours & (1 << idx);
+    bool isNeighbour(nodeid_t idx) {
+        return ((neighbours & (1 << idx)) != 0);
     }
 
     // Just calling the lower layer
