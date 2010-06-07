@@ -125,6 +125,9 @@ implementation {
 
         // we need to erase it at least the first time for sure
         call LogWriteLight.erase();
+        call LogWriteInfra.erase();
+        call LogWriteTemp.erase();
+        call LogWriteHum.erase();
 #endif
         // initialize the curr_sn
         for (i = 0; i < MAX_MOTES; i++)
@@ -132,13 +135,6 @@ implementation {
 
         call SenseTimer.startPeriodic(1000);
 
-        // this is done to make sure the structure is created correctly?
-        call LogWriteLight.erase();
-        call LogWriteInfra.erase();
-        call LogWriteTemp.erase();
-        call LogWriteHum.erase();
-        /* for (i = 0; i < SENSING_DATA_QUEUE_LEN; i++) */
-        /*     sensingDataQueue[i] = SENSING_DATA_HANDLER_DISCARD; */
   }
 
 #ifndef TOSSIM
@@ -315,11 +311,10 @@ implementation {
             // store the message locally
             *(BlinkMsg*)(call Packet.getPayload(&pkt_sensing_in, 0)) = *msg;
 
+#ifndef TOSSIM
             switch(msg->instr) {
             case SENS_LIGHT:
-#ifndef TOSSIM
                 call LogReadLight.read(&logitem_l2, sizeof(logitem_t));
-#endif
                 break;
             case SENS_INFRA:
                 call LogReadInfra.read(&logitem_i2, sizeof(logitem_t));
@@ -333,6 +328,7 @@ implementation {
             };
 
             break;
+#endif
 
         case MSG_SENS_DATA:
             // Message contains sensing data
@@ -465,7 +461,9 @@ implementation {
     event void HumSensor.readDone(error_t result, data_t val){
         if(result == SUCCESS){
             logitem_h1.sensData = val;
+#ifndef TOSSIM
             call LogWriteHum.append(&logitem_h1, sizeof(logitem_t));
+#endif
         }
     }
 
