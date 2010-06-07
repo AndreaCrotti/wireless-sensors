@@ -463,7 +463,7 @@ implementation {
 #endif
 
     }
-
+    
     event void InfraSensor.readDone(error_t result, data_t val){
 
 #ifndef TOSSIM
@@ -546,11 +546,12 @@ implementation {
 #ifndef TOSSIM
     event void LogWrite.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
     }
+
     event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
         if ( (len != sizeof(logitem_t)) || (buf != &logitem_r) ) {
             call LogWrite.erase();
         }
-        sendSensingData(AUTO_SENS,logitem_r.sensData);
+        sendSensingData(AUTO_SENS, logitem_r.sensData);
     }
 
     event void LogRead.seekDone(error_t err) {}
