@@ -94,7 +94,7 @@ implementation {
     // dummy log item (used to cache data)
     logitem_t logitem;
     /* logitem_t logitem_r; */
-    logitem_t logitem_t;
+    logitem_t logitem_temp;
     logitem_t logitem_l;
     logitem_t logitem_i;
     logitem_t logitem_h;
@@ -517,7 +517,7 @@ implementation {
 
 #ifndef TOSSIM
         if(result == SUCCESS){
-            /* call LogWriteTemp.append(&logitem_t, sizeof(logitem_t)); */
+            /* call LogWriteTemp.append(&logitem_temp, sizeof(logitem_t)); */
         }
 #endif
 
@@ -576,10 +576,10 @@ implementation {
     }
 
     event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
-        if ( (len != sizeof(logitem_t)) || (buf != &logitem_r) ) {
+        if ( (len != sizeof(logitem_t)) || (buf != &logitem_l) ) {
             call LogWriteLight.erase();
         }
-        sendSensingData(AUTO_SENS, logitem_r.sensData);
+        sendSensingData(SENS_LIGHT, logitem_l.sensData);
     }
 
     event void LogReadLight.seekDone(error_t err) {}
