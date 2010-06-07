@@ -79,12 +79,12 @@ implementation {
     BlinkC.Mount  -> ConfigStorageC.Mount;
     BlinkC.LogReadLight -> LogLight;
     BlinkC.LogWriteLight -> LogLight;
-    /* BlinkC.LogReadHum -> LogHum; */
-    /* BlinkC.LogWriteHum -> LogHum; */
-    /* BlinkC.LogReadInfra -> LogInfra; */
-    /* BlinkC.LogWriteInfra -> LogInfra; */
-    /* BlinkC.LogReadTemp -> LogTemp; */
-    /* BlinkC.LogWriteTemp -> LogTemp; */
+    BlinkC.LogReadHum -> LogHum;
+    BlinkC.LogWriteHum -> LogHum;
+    BlinkC.LogReadInfra -> LogInfra;
+    BlinkC.LogWriteInfra -> LogInfra;
+    BlinkC.LogReadTemp -> LogTemp;
+    BlinkC.LogWriteTemp -> LogTemp;
 #endif
 
     /// Linking all our interfaces to the correct components
