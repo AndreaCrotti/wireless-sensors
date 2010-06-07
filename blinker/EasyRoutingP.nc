@@ -278,7 +278,6 @@ implementation {
 
     event message_t * RelReceive.receive(message_t *msg, void *payload, uint8_t len) {
         if (len == sizeof(BlinkMsg)) {
-            dbg("Routing", "Received a message\n");
             
             signal Receive.receive(msg, payload, len);
         }
@@ -342,8 +341,6 @@ implementation {
      */
     void removeNeighbour(nodeid_t idx) {
         neighbours &= ~(1 << idx);
-        if (TOS_NODE_ID == 4)
-            dbg("Routing", "removing node %d from neighbour list, now %d\n", idx, neighbours);
         // maybe we should check if it's really needed, if it's not there already
         // the other checks are not really needed
 
@@ -362,8 +359,6 @@ implementation {
      */
     void addNeighbour(nodeid_t idx) {
         neighbours |= (1 << idx);
-        if (TOS_NODE_ID == 4)
-            dbg("Routing", "adding node %d to neighbour list, now %d\n", idx, neighbours);
     }
 
     bool isNeighbour(nodeid_t idx) {
