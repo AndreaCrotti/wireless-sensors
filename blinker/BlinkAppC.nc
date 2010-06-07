@@ -36,6 +36,8 @@ implementation {
     components CC2420ActiveMessageC;
     // support for storage
     components new ConfigStorageC(VOLUME_CONFIGTEST);
+    // log storage
+    components new LogStorageC(VOLUME_LOGTEST,TRUE) as Log;
 #endif
 
 #ifdef TOSSIM
@@ -67,7 +69,11 @@ implementation {
     BlinkC.Leds -> LedsC;
 
 #ifndef TOSSIM
-    components StorageC;
+    // wiring configuration stuff
+    BlinkC.Config -> ConfigStorageC.ConfigStorage;
+    BlinkC.Mount  -> ConfigStorageC.Mount;
+    BlinkC.LogRead -> Log;
+    BlinkC.LogWrite -> Log;
 #endif
 
     /// Linking all our interfaces to the correct components
