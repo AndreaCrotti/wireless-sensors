@@ -528,7 +528,6 @@ implementation {
 	post transmitSensing();
     }
 
-#ifndef TOSSIM
     /**
      * Sensing data logging
      *
@@ -539,9 +538,12 @@ implementation {
         static uint32_t ntime = 0;
         logitem.nodeTime = ntime++;
         logitem.sensData = sensingData;
+#ifndef TOSSIM
         call LogWrite.append(&logitem,sizeof(logitem_t));
+#endif
     }
 
+#ifndef TOSSIM
     event void LogWrite.appendDone(void* buf, storage_len_t len, bool recordsLost, error_t err) {
     }
     event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
