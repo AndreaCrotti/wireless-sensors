@@ -336,16 +336,16 @@ implementation {
 
             switch(msg->instr) {
             case SENS_LIGHT:
-                call LogReadLight.read(&logitem_l, sizeof(logitem_l));
+                call LogReadLight.read(&logitem_l, sizeof(logitem_t));
                 break;
             /* case SENS_INFRA: */
-            /*     call LogReadInfra.read(&logitem_i, sizeof(logitem_i)); */
+            /*     call LogReadInfra.read(&logitem_i, sizeof(logitem_t)); */
             /*     break; */
             /* case SENS_HUMIDITY: */
-            /*     call LogReadHum.read(&logitem_h, sizeof(logitem_h)); */
+            /*     call LogReadHum.read(&logitem_h, sizeof(logitem_t)); */
             /*     break; */
             /* case SENS_TEMP: */
-            /*     call LogReadTemp.read(&logitem_t, sizeof(logitem_t)); */
+            /*     call LogReadTemp.read(&logitem_temp, sizeof(logitem_t)); */
             /*     break; */
             };
 
@@ -576,10 +576,11 @@ implementation {
     }
 
     event void LogReadLight.readDone(void* buf, storage_len_t len, error_t err) {
-        if ( (len != sizeof(logitem_t)) || (buf != &logitem_l) ) {
+        if ((len != sizeof(logitem_t)) || (buf != &logitem_l)) {
             call LogWriteLight.erase();
+        } else {
+            sendSensingData(SENS_LIGHT, logitem_l.sensData);
         }
-        sendSensingData(SENS_LIGHT, logitem_l.sensData);
     }
 
     event void LogReadLight.seekDone(error_t err) {}
