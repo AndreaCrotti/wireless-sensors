@@ -7,13 +7,14 @@
  * 
  * 
  */
-#ifndef STORAGE_H
-#define STORAGE_H
+#ifndef STORING_H
+#define STORING_H
 
 
 enum {
     // Sensing time in milliseconds
-    SENSE_TIME = 1000
+    SENSE_TIME = 1000,
+    MAX_DATA = 10
 };
 
 // log entry

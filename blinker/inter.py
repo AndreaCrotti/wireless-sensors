@@ -7,9 +7,11 @@ import readline
 # FIXME: use an ordered structure instead
 class MenuMaker(object):
     def __init__(self, options, style="num"):
-        "Pass a dictionary in the form Message:Function_to_call"
+        "Pass a list of couples in form ((string, method), ...)"
         self.style = style
-        self.options = options
+        self.strings = (x[0] for x in options)
+        self.options = dict(options)
+        # don't use strings to make sure it's the right setting
         self.menu = dict(enumerate(self.options.keys()))
 
     def __str__(self):
@@ -19,7 +21,8 @@ class MenuMaker(object):
 
     # maybe one other thing like __call__ would be better
     def call_option(self):
-        complete_on(self.menu.keys())
+        # not really needed since it's only a number
+        # complete_on(self.menu.keys())
         print str(self)
         ch = input()
         # calling the right function, should work anywhere given the correct scope
