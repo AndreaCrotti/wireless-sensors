@@ -54,8 +54,8 @@ implementation{
         // Write the destination into the message header
         call AMPacket.setDestination(msg, dest);
         
-        /* if(call Queue.size() > 2) */
-        dbg("Radio", "Queue size is %d!!!!!!!!\n", call Queue.size());
+        if(call Queue.size() > 2)
+            dbg("Radio", "Queue size is %d!!!!!!!!\n", call Queue.size());
 
         // Queue the message up if possible
         if (call Queue.size() < call Queue.maxSize()) {
@@ -124,6 +124,8 @@ implementation{
     event void LowSend.sendDone(message_t* msg, error_t error){
         // Remove the message from the queue
         call Queue.dequeue();
+        
+        dbg("Radio", "Sended a message, remaining queue size is %d \n", call Queue.size());
         
         // Send the next message
         if(!(call Queue.empty())){

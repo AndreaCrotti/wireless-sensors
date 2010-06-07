@@ -134,10 +134,10 @@ implementation {
      */
     task void transmitMessage() {
         // TODO: should we also check the result or not?
-        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)) == EBUSY){
-            call MsgRtxTimer.startOneShot(RETRANSMIT_TIME);
-        }
-        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)); */
+        /* if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg)) == EBUSY){ */
+        /*     call MsgRtxTimer.startOneShot(RETRANSMIT_TIME); */
+        /* } */
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_cmd_out, sizeof(BlinkMsg));
     }
 
 
@@ -149,10 +149,10 @@ implementation {
     task void transmitSensing() {
         //dbg("Radio", "Posted a transmitSensing task.\n");
          // TODO: should we also check the result or not?
-        if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)) == EBUSY){
-            call SenseRtxTimer.startOneShot(RETRANSMIT_TIME);
-        }
-        /* call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)); */
+        /* if(call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg)) == EBUSY){ */
+        /*     call SenseRtxTimer.startOneShot(RETRANSMIT_TIME); */
+        /* } */
+        call AMSend.send(AM_BROADCAST_ADDR, &pkt_sensing_out, sizeof(BlinkMsg));
     }
 
     /**
