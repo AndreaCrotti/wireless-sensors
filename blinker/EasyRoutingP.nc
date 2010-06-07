@@ -312,15 +312,15 @@ implementation {
 
         for (i = 0; i < MAX_MOTES; i++) {
             if (isNeighbour(i)) {
-#ifndef TOSSIM
-                // in case I have the same hop count as the best actual value I also check the rssi
-                if (HOP_COUNTS[i] == min) {
-                    if (RSSI_VALS[i] > RSSI_VALS[closest]) {
-                        min = HOP_COUNTS[i];
-                        closest = i;
-                    }
-                }
-#endif                    
+/* #ifndef TOSSIM */
+/*                 // in case I have the same hop count as the best actual value I also check the rssi */
+/*                 if (HOP_COUNTS[i] == min) { */
+/*                     if (RSSI_VALS[i] > RSSI_VALS[closest]) { */
+/*                         min = HOP_COUNTS[i]; */
+/*                         closest = i; */
+/*                     } */
+/*                 } */
+/* #endif                     */
                 if (HOP_COUNTS[i] < min) {
                     min = HOP_COUNTS[i];
                     closest = i;
@@ -347,7 +347,6 @@ implementation {
         // maybe we should check if it's really needed, if it's not there already
         // the other checks are not really needed
 
-        /* dbg("Routing", "Node %d is in timeout\n", idx); */
         // that means that we are removing our parent, so look for the next best one
         // setting to the MAX the hop count because it's not reachable anymore
         HOP_COUNTS[idx] = MAX_HOPS;
