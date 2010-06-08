@@ -1,8 +1,0 @@
-#+SEQ_TODO: Marius Andrea Oscar | Done
-
-* Done Task 1
-
-* Task 2
-** Marius Write a java graphical interface
-** Andrea Write the backend java-tos
-** Oscar Modify the existing Blink code

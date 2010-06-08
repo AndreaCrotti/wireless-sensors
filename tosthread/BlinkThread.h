@@ -8,18 +8,18 @@
  * 
  */
 
-#ifndef BLINKTORADIO_H
-#define BLINKTORADIO_H
+#ifndef BLINKTHREAD_H
+#define BLINKTHREAD_H
 
 /// we only need the id number of the message and the index of the led to turn on
 typedef nx_struct BlinkToRadioMsg {
-nx_uint16_t id;
-nx_uint16_t led_idx;
+    nx_uint16_t id;
+    nx_uint16_t led_idx;
 } BlinkToRadioMsg;
 
 enum {
-  AM_BLINKTORADIO = 6,
-  INTERVAL = 10000
+    AM_BLINKTORADIO = 6,
+    INTERVAL = 10000
 };
  
 #endif

@@ -1,3 +1,3 @@
-COMPONENT=BlinkAppC
+COMPONENT=BlinkThreadAppC
 include $(MAKERULES)
 

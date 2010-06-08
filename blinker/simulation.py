@@ -2,9 +2,7 @@
 
 """
 TODO: instead of just printing to debug can I get and parse the output from the program?
-TODO: check what is the minimal number of events to run to be sure we trigger everything
-TODO: check problems with multiple destinations
-TODO: catch exceptions when getting input from string
+TODO: add a nice section to work with avrora, jython would be perfect to call it directly
 
 Usage:
 Run normally "python simulation.py", wait that the motes are booted and then, pressing C-c it will ask interactively to build a packet and will send it over the serial channel
@@ -25,7 +23,6 @@ import readline
 import rlcompleter
 from re import match
 
-from colorize import colors
 from inter import MenuMaker
 from packet import *
 
@@ -62,13 +59,6 @@ def print_var_table(vars):
         if match(MODULES_REGEXP, v):
             print v
     print "\n"
-
-def get_decorated_file(f, prefix, color):
-    proc = subprocess.Popen(['python', 'colorize.py', prefix, color],
-                            bufsize=0,
-                            stdin=subprocess.PIPE,
-                            stdout=f)
-    return proc.stdin
 
 class RadioNetwork(object):
     "Manage the network topology"

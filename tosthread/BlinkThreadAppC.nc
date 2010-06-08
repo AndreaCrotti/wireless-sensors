@@ -1,5 +1,5 @@
 #include <Timer.h>
-#include "Blink.h"
+#include "BlinkThread.h"
 
 /**
  * Configuration for the first task.
@@ -14,32 +14,32 @@
  * 
  */
 
-configuration BlinkAppC {
+configuration BlinkThreadAppC {
 
 }
 
 implementation {
-    components MainC, BlinkC, LedsC;
+    components MainC, BlinkThreadC, LedsC;
     components new TimerMilliC() as Timer;
     components ActiveMessageC;
     components new AMSenderC(AM_BLINKTORADIO);
     components new AMReceiverC(AM_BLINKTORADIO);
     components RandomC;
     
-    BlinkC -> MainC.Boot;
+    BlinkThreadC -> MainC.Boot;
     
-    BlinkC.Timer -> Timer;
-    BlinkC.Leds -> LedsC;
+    BlinkThreadC.Timer -> Timer;
+    BlinkThreadC.Leds -> LedsC;
 
     /// Linking all our interfaces to the correct components
-    BlinkC.Packet -> AMSenderC;
-    BlinkC.AMPacket -> AMSenderC;
-    BlinkC.AMSend -> AMSenderC;
-    BlinkC.AMControl -> ActiveMessageC;
-    BlinkC.Receive -> AMReceiverC;
+    BlinkThreadC.Packet -> AMSenderC;
+    BlinkThreadC.AMPacket -> AMSenderC;
+    BlinkThreadC.AMSend -> AMSenderC;
+    BlinkThreadC.AMControl -> ActiveMessageC;
+    BlinkThreadC.Receive -> AMReceiverC;
     
     /// Connect the Random component for the LED choice
-    BlinkC.Random -> RandomC;
-    BlinkC.SeedInit -> RandomC;
+    BlinkThreadC.Random -> RandomC;
+    BlinkThreadC.SeedInit -> RandomC;
 }
 

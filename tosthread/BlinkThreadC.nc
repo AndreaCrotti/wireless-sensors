@@ -5,12 +5,12 @@
  * The other nodes accept the command, make sure they only receive once
  * and set the led also.
  * 
- * @file BlinkC.nc
+ * @file BlinkThreadC.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date So 2. Mai 21:14:53 CEST 2010
  **/
 
-module BlinkC {
+module BlinkThreadC {
     // required interfaces to manage and send/receive packages
     uses interface Packet;
     uses interface AMPacket;
