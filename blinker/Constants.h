@@ -13,7 +13,7 @@
 #define CONSTANTS_H
 
 enum {
-    MAX_MOTES = 20
+    MAX_MOTES = 16
 };
 
 #endif

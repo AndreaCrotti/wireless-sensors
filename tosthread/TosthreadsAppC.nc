@@ -10,7 +10,7 @@
  * This files creates all tasks and components and wires them to the TosthreadsC file.
  *
  */
-configuration TosthreadsAppC @safe() {
+configuration TosthreadsAppC /*@safe()*/ {
 }
 
 implementation {
@@ -21,11 +21,11 @@ implementation {
     components TosthreadsP;
     
     // Create the needed threads
-    components new ThreadC(BOOT_THREAD_STACK_SIZE) as BootThread,
-        new ThreadC(RADIO_RECEIVE_THREAD_STACK_SIZE) as RadioReceiveThread,
-        new ThreadC(RADIO_SEND_THREAD_STACK_SIZE) as RadioSendThread,
-        new ThreadC(SERIAL_SEND_THREAD_STACK_SIZE) as SerialSendThread,
-        new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread;
+    components new ThreadC(BOOT_THREAD_STACK_SIZE) as BootThread;
+    components new ThreadC(RADIO_RECEIVE_THREAD_STACK_SIZE) as RadioReceiveThread;
+    components new ThreadC(RADIO_SEND_THREAD_STACK_SIZE) as RadioSendThread;
+    components new ThreadC(SERIAL_SEND_THREAD_STACK_SIZE) as SerialSendThread;
+    components new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread;
 
    
     components ActiveMessageAddressC;
