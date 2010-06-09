@@ -43,6 +43,8 @@ enum {
     SERIAL_SEND_THREAD_STACK_SIZE = 200
 }; enum {
     SERIAL_RECEIVE_THREAD_STACK_SIZE = 200
+}; enum {
+    QUEUE_SIZE = 5
 };
 
 // TODO: What was that for??

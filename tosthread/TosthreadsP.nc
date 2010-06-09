@@ -8,7 +8,7 @@
  * @date So 2. Mai 21:14:53 CEST 2010
  **/
 
-module TosthreadsP /*@safe()*/ {
+module TosthreadsP @safe() {
     // required interfaces to manage and send/receive packets
     uses {
         // standart components
@@ -21,9 +21,10 @@ module TosthreadsP /*@safe()*/ {
         // Radio interfaces
         interface BlockingAMSend as RadioSend[uint8_t id];
         interface BlockingReceive as RadioReceive;
+        interface Pool<message_t> as RadioPool;
+        interface Queue<message_t*> as RadioQueue;
 
-        // Serial interfaces
-        interface BlockingAMSend as SerialSend[uint8_t id];
+        // Serial interface
         interface BlockingReceive as SerialReceive;
 
         // For setting the node's addresses
@@ -35,6 +36,11 @@ module TosthreadsP /*@safe()*/ {
 
         // Threads
         interface Thread as BootThread;
+        interface Thread as SerialReceiveThread;
+
+        // Thread synchronization
+        interface ConditionVariable;
+        interface Mutex;
     }
 }
 
@@ -43,6 +49,9 @@ implementation {
     /********************/
     /* Global variables */
     /********************/
+    
+    message_t pkt_serial;
+    message_t pkt_radio;
 
     /**********/
     /* Events */
@@ -74,6 +83,17 @@ implementation {
         // set the active message address to workaround the testbed bug
         call ActiveMessageAddress.setAddress(call ActiveMessageAddress.amGroup(), 
                                              TOS_NODE_ID);
+        // Start the other threads
+        call SerialReceiveThread.start(NULL);
+    }
+
+    
+    event void SerialReceiveThread.run(void* arg){
+        message_t* msg;
+
+        for(;;){
+            //if(call SerialReceive.receive
+        }
     }
 
 }

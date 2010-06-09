@@ -10,7 +10,7 @@
  * This files creates all tasks and components and wires them to the TosthreadsC file.
  *
  */
-configuration TosthreadsAppC /*@safe()*/ {
+configuration TosthreadsAppC @safe() {
 }
 
 implementation {
@@ -27,12 +27,15 @@ implementation {
     components new ThreadC(SERIAL_SEND_THREAD_STACK_SIZE) as SerialSendThread;
     components new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread;
 
-   
     components ActiveMessageAddressC;
     
     // For serial/radio communication;
     components BlockingActiveMessageC as BlockingRadioActiveMessageC;             
     components BlockingActiveMessageC as BlockingSerialActiveMessageC;
+    
+    // Queue and Pool
+    components new PoolC(message_t, QUEUE_SIZE) as RadioPool;
+    components new QueueC(message_t*, QUEUE_SIZE) as RadioQueue;
 
     components ThreadSynchronizationC;
 
@@ -50,13 +53,20 @@ implementation {
     TosthreadsP.RadioSend -> BlockingRadioActiveMessageC;
     TosthreadsP.RadioReceive -> BlockingRadioActiveMessageC.BlockingReceiveAny;
 
+    TosthreadsP.RadioQueue -> RadioQueue;
+    TosthreadsP.RadioPool -> RadioPool;
+
     TosthreadsP.SerialControl -> BlockingSerialActiveMessageC;
-    TosthreadsP.SerialSend -> BlockingSerialActiveMessageC;
     TosthreadsP.SerialReceive -> BlockingSerialActiveMessageC.BlockingReceiveAny;
 
     TosthreadsP.ActiveMessageAddress -> ActiveMessageAddressC;
 
     // Wire the threads
     TosthreadsP.BootThread -> BootThread;
+    TosthreadsP.SerialReceiveThread -> SerialReceiveThread;
+
+    // Thread synchronization
+    TosthreadsP.ConditionVariable -> ThreadSynchronizationC;
+    TosthreadsP.Mutex -> ThreadSynchronizationC;
 }
 
