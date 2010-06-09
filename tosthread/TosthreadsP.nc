@@ -2,6 +2,9 @@
 
 /**
  * TODO: Dokumentation!!!!!1111elf
+ * TODO: check if there are problems with the destination stuff
+ * TODO: check if removing completely the serial part will work correctly
+ * TODO: check if when and if we signal that the queue/pool are usable
  * 
  * @file BlinkC.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
@@ -104,27 +107,31 @@ implementation {
         msg = call RadioPool.get();
         call Mutex.unlock(&m_pool);
 
-        for(;;){
+        for (;;) {
             setLed(2);
             // wait for a message to arrive
-            if(call SerialReceive.receive(msg, 3000) == SUCCESS){
+            if (call SerialReceive.receive(msg, 3000) == SUCCESS) {
                 setLed(4);
 
                 // Check whether the message is for us and handle it
                 processMessage(msg);
-
-                // Forward the message
+ 
+               // Forward the message
                 call Mutex.lock(&m_queue);
                 call RadioQueue.enqueue(msg);
                 call Mutex.unlock(&m_queue);
-                if( call RadioQueue.size() == 1 ) {
+
+                if (call RadioQueue.size() == 1) {
                     call ConditionVariable.signalAll(&c_queue);
                 }
 
                 // get a new message struct out of the pool
                 call Mutex.lock(&m_pool);
-                while( call RadioPool.empty() )
+                
+                while(call RadioPool.empty()) {
                     call ConditionVariable.wait(&c_pool, &m_pool);
+                }
+
                 msg = call RadioPool.get();
                 call Mutex.unlock(&m_pool);
             }
@@ -144,7 +151,7 @@ implementation {
         static seqno_t curr_sn = 0;
         seqno_t sn;
 
-        CmdMsg* cmdmsg = (CmdMsg*)(call Packet.getPayload(msg, 0));
+        CmdMsg* cmdmsg = (CmdMsg *)(call Packet.getPayload(msg, 0));
 
         sn = cmdmsg->seqno;
         
@@ -158,7 +165,7 @@ implementation {
             }
         }
     }
-
+    
     /**
      * Applies an instruction to the LEDs.
      *
