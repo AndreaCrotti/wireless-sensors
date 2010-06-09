@@ -30,7 +30,10 @@ implementation {
     components ActiveMessageAddressC;
     
     // For serial/radio communication;
+    components new BlockingAMSenderC(AM_TOSTHREADS) as RadioSender;
+    components new BlockingAMReceiverC(AM_TOSTHREADS) as RadioReceiver;
     components BlockingActiveMessageC as BlockingRadioActiveMessageC;             
+    components new BlockingAMReceiverC(AM_SERIAL_TOSTHREADS) as SerialReceiver;
     components BlockingActiveMessageC as BlockingSerialActiveMessageC;
     
     // Queue and Pool
@@ -50,14 +53,14 @@ implementation {
     TosthreadsP.Packet -> BlockingSerialActiveMessageC;
 
     TosthreadsP.RadioControl -> BlockingRadioActiveMessageC;
-    TosthreadsP.RadioSend -> BlockingRadioActiveMessageC;
-    TosthreadsP.RadioReceive -> BlockingRadioActiveMessageC.BlockingReceiveAny;
+    TosthreadsP.RadioSend -> RadioSender;
+    TosthreadsP.RadioReceive -> RadioReceiver;
 
     TosthreadsP.RadioQueue -> RadioQueue;
     TosthreadsP.RadioPool -> RadioPool;
 
     TosthreadsP.SerialControl -> BlockingSerialActiveMessageC;
-    TosthreadsP.SerialReceive -> BlockingSerialActiveMessageC.BlockingReceiveAny;
+    TosthreadsP.SerialReceive -> SerialReceiver;
 
     TosthreadsP.ActiveMessageAddress -> ActiveMessageAddressC;
 

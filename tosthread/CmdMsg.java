@@ -7,12 +7,12 @@
 public class CmdMsg extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 6;
+    public static final int DEFAULT_MESSAGE_SIZE = 4;
 
     /** The Active Message type associated with this message. */
-    public static final int AM_TYPE = -1;
+    public static final int AM_TYPE = 7;
 
-    /** Create a new CmdMsg of size 6. */
+    /** Create a new CmdMsg of size 4. */
     public CmdMsg() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -86,9 +86,6 @@ public class CmdMsg extends net.tinyos.message.Message {
       String s = "Message <CmdMsg> \n";
       try {
         s += "  [dests=0x"+Long.toHexString(get_dests())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      try {
-        s += "  [sender=0x"+Long.toHexString(get_sender())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [seqno=0x"+Long.toHexString(get_seqno())+"]\n";
@@ -165,72 +162,9 @@ public class CmdMsg extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: sender
-    //   Field type: int, unsigned
-    //   Offset (bits): 16
-    //   Size (bits): 16
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'sender' is signed (false).
-     */
-    public static boolean isSigned_sender() {
-        return false;
-    }
-
-    /**
-     * Return whether the field 'sender' is an array (false).
-     */
-    public static boolean isArray_sender() {
-        return false;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'sender'
-     */
-    public static int offset_sender() {
-        return (16 / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'sender'
-     */
-    public static int offsetBits_sender() {
-        return 16;
-    }
-
-    /**
-     * Return the value (as a int) of the field 'sender'
-     */
-    public int get_sender() {
-        return (int)getUIntBEElement(offsetBits_sender(), 16);
-    }
-
-    /**
-     * Set the value of the field 'sender'
-     */
-    public void set_sender(int value) {
-        setUIntBEElement(offsetBits_sender(), 16, value);
-    }
-
-    /**
-     * Return the size, in bytes, of the field 'sender'
-     */
-    public static int size_sender() {
-        return (16 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of the field 'sender'
-     */
-    public static int sizeBits_sender() {
-        return 16;
-    }
-
-    /////////////////////////////////////////////////////////
     // Accessor methods for field: seqno
     //   Field type: short, unsigned
-    //   Offset (bits): 32
+    //   Offset (bits): 16
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -252,14 +186,14 @@ public class CmdMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'seqno'
      */
     public static int offset_seqno() {
-        return (32 / 8);
+        return (16 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'seqno'
      */
     public static int offsetBits_seqno() {
-        return 32;
+        return 16;
     }
 
     /**
@@ -293,7 +227,7 @@ public class CmdMsg extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: instr
     //   Field type: short, unsigned
-    //   Offset (bits): 40
+    //   Offset (bits): 24
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -315,14 +249,14 @@ public class CmdMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'instr'
      */
     public static int offset_instr() {
-        return (40 / 8);
+        return (24 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'instr'
      */
     public static int offsetBits_instr() {
-        return 40;
+        return 24;
     }
 
     /**

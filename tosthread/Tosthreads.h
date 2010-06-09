@@ -17,8 +17,6 @@
 typedef nx_struct CmdMsg {
     // The destination of the message stored as a bitmask
     nx_nodes_t dests;
-    // The sender of the message
-    nx_nodeid_t sender;
     // The sequential number of the message
     nx_seqno_t seqno;
     // A specific instruction
@@ -30,6 +28,10 @@ typedef nx_struct CmdMsg {
 enum {
     AM_TOSTHREADS = 6,
     AM_SERIAL_TOSTHREADS = 7
+};
+
+enum {
+    AM_CMDMSG = 7
 };
 
 /// Constants for the Threads stack sizes
@@ -47,9 +49,5 @@ enum {
     QUEUE_SIZE = 5
 };
 
-// TODO: What was that for??
-/* enum { */
-/*     AM_BLINKMSG = AM_SERIAL_BLINK */
-/* }; */
 
 #endif
