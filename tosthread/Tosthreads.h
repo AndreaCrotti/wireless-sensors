@@ -21,24 +21,15 @@ typedef nx_struct BlinkMsg {
     nx_nodeid_t sender;
     // The sequential number of the message
     nx_seqno_t seqno;
-    // The type of the message
-    // [1=led instruction, 2=sensing request, 3=sensing data]
-    nx_type_t type;
     // A specific instruction
     // - For led intruction: led-toggle bitmask
-    // - For sensing: [1=light, 2=infrared, 3=humidity, 4=temperature]
     nx_instr_t instr;
-    // Dataload for sensing results (empty for instructions)
-    nx_data_t data;
 } BlinkMsg;
 
 /// constants representing the communication channels used
 enum {
     AM_BLINK = 6,
-    AM_SERIAL_BLINK = 7,
-    AM_BEACON = 8,
-    AM_RULTI_RTX = 9,
-    AM_RULTI_ACK = 10
+    AM_SERIAL_BLINK = 7
 };
 
 enum {
@@ -63,10 +54,5 @@ enum {
 enum {
     RETRANSMIT_TIME = 50
 };
-
-typedef struct {
-    /* nx_uint32_t nodeTime; */
-    data_t sensData;
-} logitem_t;
 
 #endif
