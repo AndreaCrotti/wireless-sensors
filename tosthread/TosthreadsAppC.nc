@@ -23,18 +23,18 @@ implementation {
     // Create the needed threads
     components new ThreadC(BOOT_THREAD_STACK_SIZE) as BootThread,
         new ThreadC(RADIO_RECEIVE_THREAD_STACK_SIZE) as RadioReceiveThread,
-        new ThreadC(RADIO_SNOOP_THREAD_STACK_SIZE) as RadioSnoopThread,
+        new ThreadC(RADIO_SEND_THREAD_STACK_SIZE) as RadioSendThread,
         new ThreadC(SERIAL_SEND_THREAD_STACK_SIZE) as SerialSendThread,
-        new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread,
-        new ThreadC(RADIO_SEND_THREAD_STACK_SIZE) as RadioSendThread;
+        new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread;
+
    
     components ActiveMessageAddressC;
     
     // For serial/radio communication;
-    components BlockingActiveMessageC as BlockingRadioActiveMessageC,             
-        BlockingSerialActiveMessageC;
+    components BlockingActiveMessageC as BlockingRadioActiveMessageC;             
+    components BlockingActiveMessageC as BlockingSerialActiveMessageC;
 
-    components ThreadSynchronization;
+    components ThreadSynchronizationC;
 
     /**********/
     /* Wiring */
@@ -48,14 +48,15 @@ implementation {
 
     TosthreadsP.RadioControl -> BlockingRadioActiveMessageC;
     TosthreadsP.RadioSend -> BlockingRadioActiveMessageC;
-    TosthreadsP.RadioReceive -> BlockingRadioActiveMessageC;
+    TosthreadsP.RadioReceive -> BlockingRadioActiveMessageC.BlockingReceiveAny;
 
     TosthreadsP.SerialControl -> BlockingSerialActiveMessageC;
     TosthreadsP.SerialSend -> BlockingSerialActiveMessageC;
-    TosthreadsP.SerialReceive -> BlockingSerialActiveMessageC;
+    TosthreadsP.SerialReceive -> BlockingSerialActiveMessageC.BlockingReceiveAny;
 
     TosthreadsP.ActiveMessageAddress -> ActiveMessageAddressC;
 
-    
+    // Wire the threads
+    TosthreadsP.BootThread -> BootThread;
 }
 
