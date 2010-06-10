@@ -3,9 +3,13 @@
 /**
  * TODO: Dokumentation!!!!!1111elf
  * TODO: check if there are problems with the destination stuff
+ *       => The destination stuff was overtaken from our BlinkC application and should work.
+ *          The current error is definitely not related to the destination, since no message is received at all.
  * TODO: check if removing completely the serial part will work correctly
+ *       => probably not, since radio receive is quite the same...
  * TODO: check if when and if we signal that the queue/pool are usable
- * 
+ *       => just search for 'signalAll' in the code  
+ *
  * @file BlinkC.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
  * @date So 2. Mai 21:14:53 CEST 2010
@@ -214,10 +218,8 @@ implementation {
             msg = call RadioQueue.dequeue();
             call Mutex.unlock(&m_queue);
 
-            // NOTE: Be careful here!
-            // If another thread also uses AMPacket, either a second AMPacket instance
-            // or a new mutex is needed.
-            len = call AMPacket.payloadLength(msg);
+            // TODO: Synchronization needed?
+            len = call Packet.payloadLength(msg);
             
             // Broadcast the message over the radio module
             call RadioSend.send(AM_BROADCAST_ADDR, msg, len);
@@ -243,6 +245,7 @@ implementation {
      * @param msg A pointer to the received message.
      */
     void processMessage(message_t* msg){
+        // TODO: Synchronization needed?
         CmdMsg* cmdmsg = (CmdMsg *)(call Packet.getPayload(msg, 0));
 
         if(amIaReceiver(cmdmsg)){
@@ -262,7 +265,8 @@ implementation {
     bool isUnseen(message_t* msg){
         static seqno_t curr_sn = 0;
         seqno_t sn;
-
+        
+        // TODO: Synchronization needed?
         CmdMsg* cmdmsg = (CmdMsg *)(call Packet.getPayload(msg, 0));
         sn = cmdmsg->seqno;
 
