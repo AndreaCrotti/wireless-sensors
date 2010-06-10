@@ -119,7 +119,9 @@ implementation {
 
         // Get a message struct from the pool
         call Mutex.lock(&m_pool);
-        msg = call RadioPool.get();
+        {
+            msg = call RadioPool.get();
+        }
         call Mutex.unlock(&m_pool);
 
         for (;;) {
@@ -137,7 +139,9 @@ implementation {
  
                     // Forward the message
                     call Mutex.lock(&m_queue);
-                    call RadioQueue.enqueue(msg);
+                    {
+                        call RadioQueue.enqueue(msg);
+                    }
                     call Mutex.unlock(&m_queue);
 
                     if (call RadioQueue.size() == 1) {
@@ -146,10 +150,12 @@ implementation {
 
                     // get a new message struct out of the pool
                     call Mutex.lock(&m_pool);
-                    while(call RadioPool.empty()) {
-                        call ConditionVariable.wait(&c_pool, &m_pool);
+                    {
+                        while(call RadioPool.empty()) {
+                            call ConditionVariable.wait(&c_pool, &m_pool);
+                        }
+                        msg = call RadioPool.get();
                     }
-                    msg = call RadioPool.get();
                     call Mutex.unlock(&m_pool);
                 }
             }
@@ -166,7 +172,9 @@ implementation {
 
         // Get a message struct from the pool
         call Mutex.lock(&m_pool);
-        msg = call RadioPool.get();
+        {
+            msg = call RadioPool.get();
+        }
         call Mutex.unlock(&m_pool);
 
         for (;;) {
@@ -181,7 +189,9 @@ implementation {
  
                     // Forward the message
                     call Mutex.lock(&m_queue);
-                    call RadioQueue.enqueue(msg);
+                    {
+                        call RadioQueue.enqueue(msg);
+                    }
                     call Mutex.unlock(&m_queue);
 
                     if (call RadioQueue.size() == 1) {
@@ -190,10 +200,12 @@ implementation {
 
                     // get a new message struct out of the pool
                     call Mutex.lock(&m_pool);
-                    while(call RadioPool.empty()) {
-                        call ConditionVariable.wait(&c_pool, &m_pool);
+                    {
+                        while(call RadioPool.empty()) {
+                            call ConditionVariable.wait(&c_pool, &m_pool);
+                        }
+                        msg = call RadioPool.get();
                     }
-                    msg = call RadioPool.get();
                     call Mutex.unlock(&m_pool);
                 }
             }
@@ -212,10 +224,12 @@ implementation {
         for(;;){
             // Wait for an outgoing message
             call Mutex.lock(&m_queue);
-            while(call RadioQueue.empty()){
-                call ConditionVariable.wait(&c_queue, &m_queue);
+            {
+                while(call RadioQueue.empty()){
+                    call ConditionVariable.wait(&c_queue, &m_queue);
+                }
+                msg = call RadioQueue.dequeue();
             }
-            msg = call RadioQueue.dequeue();
             call Mutex.unlock(&m_queue);
 
             // TODO: Synchronization needed?
@@ -226,7 +240,9 @@ implementation {
 
             // Give the message struct back to the pool
             call Mutex.lock(&m_pool);
-            call RadioPool.put(msg);
+            {
+                call RadioPool.put(msg);
+            }
             call Mutex.unlock(&m_pool);
             if(call RadioPool.size() == 1){
                 // Signal other threads, that the pool is not empty anymore
