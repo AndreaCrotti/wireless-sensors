@@ -1,3 +1,4 @@
+TOSTHREAD_MAIN=CThread.c
 COMPONENT=TosthreadsAppC
 BUILD_EXTRA_DEPS += CmdMsg.java GUI.class Console.class
 CLEAN_EXTRA = *.class CmdMsg.java #SerialMsg.py CmdMsg.py
