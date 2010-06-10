@@ -20,6 +20,7 @@ module TosthreadsP @safe() {
         
         // For accessing packets
         interface Packet;
+        interface AMPacket;
 
         // Radio interfaces
         interface BlockingAMSend as RadioSend;
@@ -40,6 +41,8 @@ module TosthreadsP @safe() {
         // Threads
         interface Thread as BootThread;
         interface Thread as SerialReceiveThread;
+        interface Thread as RadioReceiveThread;
+        interface Thread as RadioSendThread;
 
         // Thread synchronization
         interface ConditionVariable;
@@ -48,7 +51,8 @@ module TosthreadsP @safe() {
 }
 
 implementation {
-  
+
+    bool isUnseen(message_t* msg);
     void setLed(instr_t led);
     void processMessage(message_t* msg);
     bool amIaReceiver(CmdMsg* msg);
@@ -97,12 +101,19 @@ implementation {
                                              TOS_NODE_ID);
         // Start the other threads
         call SerialReceiveThread.start(NULL);
+        call RadioReceiveThread.start(NULL);
+        call RadioSendThread.start(NULL);
     }
 
-    
+    /** 
+     * Receives messages from the serial module and handles them.
+     * 
+     * @param arg A pointer...
+     */
     event void SerialReceiveThread.run(void* arg){
         message_t* msg;
 
+        // Get a message struct from the pool
         call Mutex.lock(&m_pool);
         msg = call RadioPool.get();
         call Mutex.unlock(&m_pool);
@@ -110,30 +121,114 @@ implementation {
         for (;;) {
             setLed(2);
             // wait for a message to arrive
-            if (call SerialReceive.receive(msg, 3000) == SUCCESS) {
+            // TODO: If the last message was not for us, can we then reuse the same
+            //       message struct?
+            if (call SerialReceive.receive(msg, 0) == SUCCESS) {
                 setLed(4);
-
-                // Check whether the message is for us and handle it
-                processMessage(msg);
- 
-               // Forward the message
-                call Mutex.lock(&m_queue);
-                call RadioQueue.enqueue(msg);
-                call Mutex.unlock(&m_queue);
-
-                if (call RadioQueue.size() == 1) {
-                    call ConditionVariable.signalAll(&c_queue);
-                }
-
-                // get a new message struct out of the pool
-                call Mutex.lock(&m_pool);
                 
-                while(call RadioPool.empty()) {
-                    call ConditionVariable.wait(&c_pool, &m_pool);
-                }
+                // Check, whether this is a new message
+                if(isUnseen(msg)){
+                    // Check whether the message is for us and handle the message.
+                    processMessage(msg);
+ 
+                    // Forward the message
+                    call Mutex.lock(&m_queue);
+                    call RadioQueue.enqueue(msg);
+                    call Mutex.unlock(&m_queue);
 
-                msg = call RadioPool.get();
-                call Mutex.unlock(&m_pool);
+                    if (call RadioQueue.size() == 1) {
+                        call ConditionVariable.signalAll(&c_queue);
+                    }
+
+                    // get a new message struct out of the pool
+                    call Mutex.lock(&m_pool);
+                    while(call RadioPool.empty()) {
+                        call ConditionVariable.wait(&c_pool, &m_pool);
+                    }
+                    msg = call RadioPool.get();
+                    call Mutex.unlock(&m_pool);
+                }
+            }
+        }
+    }
+
+    /** 
+     * Receives messages from the radio module and handles them.
+     * 
+     * @param arg A pointer...
+     */
+    event void RadioReceiveThread.run(void* arg){
+        message_t* msg;
+
+        // Get a message struct from the pool
+        call Mutex.lock(&m_pool);
+        msg = call RadioPool.get();
+        call Mutex.unlock(&m_pool);
+
+        for (;;) {
+            // wait for a message to arrive
+            // TODO: If the last message was not for us, can we then reuse the same
+            //       message struct?
+            if (call RadioReceive.receive(msg, 0) == SUCCESS) {
+                // Check, whether this is a new message
+                if(isUnseen(msg)){
+                    // Check whether the message is for us and handle the message.
+                    processMessage(msg);
+ 
+                    // Forward the message
+                    call Mutex.lock(&m_queue);
+                    call RadioQueue.enqueue(msg);
+                    call Mutex.unlock(&m_queue);
+
+                    if (call RadioQueue.size() == 1) {
+                        call ConditionVariable.signalAll(&c_queue);
+                    }
+
+                    // get a new message struct out of the pool
+                    call Mutex.lock(&m_pool);
+                    while(call RadioPool.empty()) {
+                        call ConditionVariable.wait(&c_pool, &m_pool);
+                    }
+                    msg = call RadioPool.get();
+                    call Mutex.unlock(&m_pool);
+                }
+            }
+        }
+    }
+
+    /** 
+     * Waits, until a message is in the sending queue and then sends it.
+     * 
+     * @param arg  
+     */
+    event void RadioSendThread.run(void* arg){
+        message_t* msg;
+        uint8_t len;
+        
+        for(;;){
+            // Wait for an outgoing message
+            call Mutex.lock(&m_queue);
+            while(call RadioQueue.empty()){
+                call ConditionVariable.wait(&c_queue, &m_queue);
+            }
+            msg = call RadioQueue.dequeue();
+            call Mutex.unlock(&m_queue);
+
+            // NOTE: Be careful here!
+            // If another thread also uses AMPacket, either a second AMPacket instance
+            // or a new mutex is needed.
+            len = call AMPacket.payloadLength(msg);
+            
+            // Broadcast the message over the radio module
+            call RadioSend.send(AM_BROADCAST_ADDR, msg, len);
+
+            // Give the message struct back to the pool
+            call Mutex.lock(&m_pool);
+            call RadioPool.put(msg);
+            call Mutex.unlock(&m_pool);
+            if(call RadioPool.size() == 1){
+                // Signal other threads, that the pool is not empty anymore
+                call ConditionVariable.signalAll(&c_pool);
             }
         }
     }
@@ -148,21 +243,37 @@ implementation {
      * @param msg A pointer to the received message.
      */
     void processMessage(message_t* msg){
+        CmdMsg* cmdmsg = (CmdMsg *)(call Packet.getPayload(msg, 0));
+
+        if(amIaReceiver(cmdmsg)){
+            // We are a receiver!
+            // Set the LEDs accordingly
+            setLed(cmdmsg->instr);
+        }
+    }
+    
+    /** 
+     * Checks, whether this message was seen before or not.
+     * 
+     * @param msg A pointer to the received message.
+     * 
+     * @return 1, if is new, 0 otherwise.
+     */
+    bool isUnseen(message_t* msg){
         static seqno_t curr_sn = 0;
         seqno_t sn;
 
         CmdMsg* cmdmsg = (CmdMsg *)(call Packet.getPayload(msg, 0));
-
         sn = cmdmsg->seqno;
-        
+
         // Check, whether this is a new message.
         if(sn > curr_sn || (!sn && curr_sn)) {
+            // This is a new message
             curr_sn = sn;
-            if(amIaReceiver(cmdmsg)){
-                // We are a receiver!
-                // Set the LEDs accordingly
-                setLed(cmdmsg->instr);
-            }
+            return 1;
+        }else{
+            // This message is old
+            return 0;
         }
     }
     

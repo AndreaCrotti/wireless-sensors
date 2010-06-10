@@ -24,7 +24,6 @@ implementation {
     components new ThreadC(BOOT_THREAD_STACK_SIZE) as BootThread;
     components new ThreadC(RADIO_RECEIVE_THREAD_STACK_SIZE) as RadioReceiveThread;
     components new ThreadC(RADIO_SEND_THREAD_STACK_SIZE) as RadioSendThread;
-    components new ThreadC(SERIAL_SEND_THREAD_STACK_SIZE) as SerialSendThread;
     components new ThreadC(SERIAL_RECEIVE_THREAD_STACK_SIZE) as SerialReceiveThread;
 
     components ActiveMessageAddressC;
@@ -51,6 +50,7 @@ implementation {
     
     // Wiring the packet access to an arbitrary Active message module
     TosthreadsP.Packet -> BlockingSerialActiveMessageC;
+    TosthreadsP.AMPacket -> BlockingSerialActiveMessageC;
 
     TosthreadsP.RadioControl -> BlockingRadioActiveMessageC;
     TosthreadsP.RadioSend -> RadioSender;
@@ -67,6 +67,8 @@ implementation {
     // Wire the threads
     TosthreadsP.BootThread -> BootThread;
     TosthreadsP.SerialReceiveThread -> SerialReceiveThread;
+    TosthreadsP.RadioSendThread -> RadioSendThread;
+    TosthreadsP.RadioReceiveThread -> RadioReceiveThread;
 
     // Thread synchronization
     TosthreadsP.ConditionVariable -> ThreadSynchronizationC;
