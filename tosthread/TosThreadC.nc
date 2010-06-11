@@ -26,5 +26,5 @@ implementation {
         } else {
             signal SenderBoot.booted();
         }
-    }  
+    }
 }
