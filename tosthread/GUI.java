@@ -569,8 +569,6 @@ public class GUI extends JFrame {
         		destMask += (1 << (i));
         	}
         }
-        connector.sendLedMask(destMask, ledMask);
-        //connector.sendLedMask((short)-1, ledMask);
     }
 
     /**

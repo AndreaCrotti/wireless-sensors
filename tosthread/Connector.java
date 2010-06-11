@@ -9,16 +9,11 @@ import net.tinyos.util.PrintStreamMessenger;
 
 /**
  * @author Andrea Crotti, Marius Grysla, Oscar Dustmann
- * 
- * TODO: change it to start automatically the printf client instead
  */
 public class Connector implements MessageListener {
 
     // The serial interface
     MoteIF moteInterface = null;
-    
-    // The mote ID we communicate with directly
-    int commID = 0;
 
     public void messageReceived(int to, Message message) {
         // print only the led settings
@@ -38,36 +33,7 @@ public class Connector implements MessageListener {
     public Connector(MoteIF moteInterface, Message message){
         // we get as input the more generic message from Message
         this.moteInterface = moteInterface;
-        this.moteInterface.registerListener(message, this);
-    }
-    
-    /**
-     * Connects to a mote via serial cable.
-     * 
-     * @param ip The IP-Address
-     * @param port The Port
-     */
-    public void connect(String ip, String port){
-        String source = "sf@" + ip + ":" + port;
-        
-        try{
-            connect(source);
-        } catch (Exception e){
-            System.err.println(e.getMessage());
-        }
-    }
-    
-    // FIXME: this just crashes when we try to connect to an unknown destination
-    public void connect(String source) throws IOException{
-        PhoenixSource phoenix;
-        phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
-                
-        // Set the mote Interface
-        this.moteInterface = new MoteIF(phoenix);
-    }
-    
-    public void disconnect(){
-        this.moteInterface = null;
+        this.moteInterface.registerListener(new CmdMsg(), this);
     }
     
     private static MoteIF makeSFIf(String ip, String port) {
