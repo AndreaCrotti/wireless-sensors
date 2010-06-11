@@ -96,100 +96,10 @@ public class Connector implements MessageListener {
         }
     }
     
-    public void requestLightData(short destination){
-        requestData(destination, (short)1);
-    }
-    
-    public void requestInfraredData(short destination){
-        requestData(destination, (short)2);
-    }
-        
-    public void requestHumidityData(short destination){
-        requestData(destination, (short)3);
-    }
-        
-    public void requestTemperatureData(short destination){
-        requestData(destination, (short)4);
-    }
-        
-    public void requestData(short destination, short type){
-        // requesting data is not needed for task 2 implementation
-    	/*
-    	// Create the message
-        BlinkMsg message = new BlinkMsg();
-        
-        // Set the contents
-        message.set_dests(destination);
-        //message.set_sender(0);
-        //message.set_seqno(this.seqNo++);
-        message.set_type((short)2);
-        message.set_instr(type);
-        
-        this.output.print("Requesting data type " + type + " from destination " + destination);
-        
-        try {
-            moteInterface.send(this.commID, message);
-        } catch(Exception e) {
-            this.output.print(e.getMessage());
-        }
-        */
-    }
-    
     /**
      * Implements the MessageListener interface.
      */
-    public void messageReceived(int to, Message message) {
-        // We dont receive any messages in task 2
-    	
-    	/*
-    	// add a check on the type of message received
-
-        BlinkMsg msg = (BlinkMsg)message;
-        
-        int sender = msg.get_sender();
-        short instr = msg.get_instr();
-        int data = msg.get_data();
-        
-        switch (instr) {
-        case 1:
-            this.output.print("Mote " + sender + " sensed Light: " + convertLight(data));
-            break;
-        case 2:
-            this.output.print("Mote " + sender + " sensed Infrared: " + convertInfrared(data));
-            break;
-        case 3:
-            this.output.print("Mote " + sender + " sensed Humidity: " + convertHumidity(data) + "%");
-            break;
-        case 4:
-            this.output.print("Mote " + sender + " sensed Temperature: " + convertTemp(data) + "°C");
-            break;
-        default:
-            break;
-        }
-        */
-    }
-    
-    /**
-     * Those three functions convert the values got from the sensor to a usable
-     * value.
-     */
-    public int convertLight(int data) {
-        return data;
-    }
-    
-    public int convertInfrared(int data) {
-        return data;
-    }
-    
-    public double convertHumidity(int data) {
-        double hum_lin = -0.0000028*data*data + 0.0405*data-4;
-
-        return hum_lin;
-    }
-    
-    public double convertTemp(int data){
-        return (-38.4 + 0.0098 * data);
-    }
+    public void messageReceived(int to, Message message) { }
 
     /**
      * Get the ID of a mote from the bitmask

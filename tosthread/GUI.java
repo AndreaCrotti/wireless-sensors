@@ -218,7 +218,6 @@ public class GUI extends JFrame {
             jPanel2.add(jLabel1, BorderLayout.NORTH);
             jPanel2.add(getJPanel3(), BorderLayout.WEST);
             jPanel2.add(getJPanel4(), BorderLayout.EAST);
-            jPanel2.add(getSensingCmdPanel(), BorderLayout.CENTER);
         }
         return jPanel2;
     }
@@ -788,100 +787,6 @@ public class GUI extends JFrame {
 			});
 		}
 		return disconnectButton;
-	}
-
-	/**
-	 * This method initializes sensingCmdPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getSensingCmdPanel() {
-		if (sensingCmdPanel == null) {
-			sensingCmdPanel = new JPanel();
-			sensingCmdPanel.setLayout(new BoxLayout(getSensingCmdPanel(), BoxLayout.Y_AXIS));
-			sensingCmdPanel.add(getLightButton(), null);
-			sensingCmdPanel.add(getInfraredButton(), null);
-			sensingCmdPanel.add(getHumidityButton(), null);
-			sensingCmdPanel.add(getTempButton(), null);
-		}
-		return sensingCmdPanel;
-	}
-
-	/**
-	 * This method initializes lightButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getLightButton() {
-		if (lightButton == null) {
-			lightButton = new JButton();
-			lightButton.setText("Get Light");
-			lightButton.setHorizontalTextPosition(SwingConstants.CENTER);
-			lightButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					short destMask = getCurrentDests();
-					connector.requestLightData(destMask);
-				}
-			});
-		}
-		return lightButton;
-	}
-
-	/**
-	 * This method initializes infraredButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getInfraredButton() {
-		if (infraredButton == null) {
-			infraredButton = new JButton();
-			infraredButton.setText("Get Infrared");
-			infraredButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					short destMask = getCurrentDests();
-					connector.requestInfraredData(destMask);
-				}
-			});
-		}
-		return infraredButton;
-	}
-
-	/**
-	 * This method initializes humidityButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getHumidityButton() {
-		if (humidityButton == null) {
-			humidityButton = new JButton();
-			humidityButton.setText("Get Humidity");
-			humidityButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					short destMask = getCurrentDests();
-					connector.requestHumidityData(destMask);
-				}
-			});
-		}
-		return humidityButton;
-	}
-
-	/**
-	 * This method initializes tempButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getTempButton() {
-		if (tempButton == null) {
-			tempButton = new JButton();
-			tempButton.setText("Get Temperature");
-			tempButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					short destMask = getCurrentDests();
-					connector.requestTemperatureData(destMask);
-				}
-			});
-		}
-		return tempButton;
 	}
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

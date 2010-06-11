@@ -8,7 +8,8 @@
  * TODO: check if removing completely the serial part will work correctly
  *       => probably not, since radio receive is quite the same...
  * TODO: check if when and if we signal that the queue/pool are usable
- *       => just search for 'signalAll' in the code  
+ *       => just search for 'signalAll' in the code
+ *
  *
  * @file BlinkC.nc
  * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
