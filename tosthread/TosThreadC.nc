@@ -1,6 +1,7 @@
 module BaseStationC {
     provides {
         interface Boot as BaseStationBoot;
+        interface Boot as SenderBoot;
     }
     uses {
         interface Boot;    
@@ -23,7 +24,7 @@ implementation {
         if (TOS_NODE_ID == 0) {
             signal BaseStationBoot.booted();
         } else {
-            signal Sender.booted();
+            signal SenderBoot.booted();
         }
     }  
 }

@@ -24,6 +24,11 @@ typedef nx_struct CmdMsg {
     nx_instr_t instr;
 } CmdMsg;
 
+enum {
+    BRECEIVE_TIMEOUT = 1000,
+    BSEND_SLEEP = 3000
+};
+
 /// constants representing the communication channels used
 enum {
     AM_TOSTHREADS = 6,
