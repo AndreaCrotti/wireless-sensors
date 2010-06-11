@@ -17,11 +17,14 @@ configuration ThreadAppC {
 
 implementation {
     // Standart components
-    components MainC, LedsC;
+    components MainC, LedsC, TosThreadC;
 
     /********************************/
     /* SENDER COMPONENTS AND WIRING */
     /********************************/
+
+    TosThreadC.Boot -> MainC;
+
     components Sender;
     components BlockingActiveMessageC;
     Sender.BlockingAMControl -> BlockingActiveMessageC;

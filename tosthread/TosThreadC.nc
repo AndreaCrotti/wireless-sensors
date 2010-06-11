@@ -1,9 +1,10 @@
-module BaseStationC {
+module TosThreadC {
     provides {
         interface Boot as BaseStationBoot;
+        interface Boot as SenderBoot;
     }
     uses {
-        interface Boot;    
+        interface Boot;
         interface Thread as BootThread;
         interface BlockingStdControl as BlockingRadioAMControl;
         interface BlockingStdControl as BlockingSerialAMControl;
@@ -23,7 +24,7 @@ implementation {
         if (TOS_NODE_ID == 0) {
             signal BaseStationBoot.booted();
         } else {
-            signal Sender.booted();
+            signal SenderBoot.booted();
         }
     }  
 }
