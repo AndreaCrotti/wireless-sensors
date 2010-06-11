@@ -48,6 +48,7 @@ implementation {
         CmdMsg* cmds = (CmdMsg*)(call Packet.getPayload(&ms,sizeof(CmdMsg)));
         call BlockingAMControl.start();
         for(;;) {
+            cmds->instr++;
             call BlockingAMSend.send(AM_BROADCAST_ADDR,&ms,sizeof(CmdMsg));
             call BlockingSendThread.sleep(BSEND_SLEEP);
         }
