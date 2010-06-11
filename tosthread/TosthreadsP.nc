@@ -12,7 +12,7 @@
  *
  *
  * @file BlinkC.nc
- * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
+ * @author Andrea Crotti, Marius Grysla, Oscar Dustmann
  * @date So 2. Mai 21:14:53 CEST 2010
  **/
 
@@ -108,6 +108,7 @@ implementation {
         call SerialReceiveThread.start(NULL);
         call RadioReceiveThread.start(NULL);
         call RadioSendThread.start(NULL);
+        signal Tosthreads.booted();
     }
 
     /** 
