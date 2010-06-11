@@ -1,6 +1,6 @@
 #include "AM.h"
 
-module RadioStressC {
+module Sender {
     uses {
         interface Boot;
         interface BlockingStdControl as BlockingAMControl;
@@ -34,7 +34,7 @@ implementation {
 
     event void RadioStressThread0.run(void* arg) {
         call BlockingAMControl.start();
-        for(;;) {
+        for (;;) {
             if(TOS_NODE_ID == 0) {
                 // receive something, put it on m0 with the timeout 5000
                 call BlockingReceive0.receive(&m0, 5000);
@@ -51,7 +51,7 @@ implementation {
   
     event void RadioStressThread1.run(void* arg) {
         call BlockingAMControl.start();
-        for(;;) {
+        for (;;) {
             if(TOS_NODE_ID == 0) {
                 call BlockingReceive1.receive(&m1, 5000);
                 call Leds.led1Toggle();
@@ -66,7 +66,7 @@ implementation {
   
     event void RadioStressThread2.run(void* arg) {
         call BlockingAMControl.start();
-        for(;;) {
+        for (;;) {
             if(TOS_NODE_ID == 0) {
                 call BlockingReceive2.receive(&m2, 5000);
                 call Leds.led2Toggle();
