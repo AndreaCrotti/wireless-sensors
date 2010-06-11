@@ -1,7 +1,7 @@
 #include "AM.h"
 #include "Tosthreads.h"
 
-module RadioStressC {
+module Sender {
     uses {
         interface Boot;
         interface BlockingStdControl as BlockingAMControl;
