@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[ "$1" = "" ] && echo "Please pass a number for the port you want to connect to. Exiting." && exit 1
+
+java net.tinyos.tools.Listen -comm sf@137.226.59.145:$1

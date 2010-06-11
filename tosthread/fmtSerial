@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[ "$1" = "" ] && echo "Please specify fmt file. Exiting." && exit
+
+fmt=$(cat "$1" | sed '/^#/d' | sed '/^ *$/d' | sed '2,$d')
+
+h2b () {
+  echo -n "$1" | sed 's/0/oooo/g' | sed 's/1/oooi/g' | sed 's/2/ooio/g' | sed 's/3/ooii/g' | sed 's/4/oioo/g' | sed 's/5/oioi/g' | sed 's/6/oiio/g' | sed 's/7/oiii/g' | sed 's/8/iooo/g' | sed 's/9/iooi/g' | sed 's/A/ioio/g' | sed 's/B/ioii/g' | sed 's/C/iioo/g' | sed 's/D/iioi/g' | sed 's/E/iiio/g' | sed 's/F/iiii/g' | sed 's/i/1/g' | sed 's/o/0/g' # this is the ugliest code I have ever written --- by far!
+}
+
+export h2b
+
+while read m0 m1 m2 m3 m4 m5 m6 m7 line
+do
+  eval set -- "$line - - - - - - - - - - - - - - - - - - - - -"
+  eval "echo $fmt"
+done
