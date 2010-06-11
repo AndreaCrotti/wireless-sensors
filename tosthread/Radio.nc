@@ -32,6 +32,10 @@ implementation {
     event void Boot.booted() {
         call BlockingReceiveThread.start(NULL);
         call BlockingSendThread.start(NULL);
+        /*if (!TOS_NODE_ID) {
+            call BlockingSerialReceiveThread.start(NULL);
+            call BlockingSerialSendThread.start(NULL);
+        }*/
     }
 
     event void BlockingReceiveThread.run(void* arg) {
