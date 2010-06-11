@@ -17,9 +17,6 @@ public class Connector implements MessageListener {
     // The serial interface
     MoteIF moteInterface = null;
     
-    // A sequential number
-    short seqNo = 1;
-    
     // The mote ID we communicate with directly
     int commID = 0;
 
@@ -27,10 +24,9 @@ public class Connector implements MessageListener {
         // print only the led settings
         CmdMsg msg = (CmdMsg) message;
         
-        int sender = msg.get_sender();
         short instr = msg.get_instr();
         
-        System.out.printf("From mote %d in ledmask %d %n", sender, instr);
+        System.out.printf("Ledmask %d %n", instr);
     }
 
    /**
@@ -56,8 +52,8 @@ public class Connector implements MessageListener {
         
         try{
             connect(source);
-        } catch(Exception e){
-            output.print(e.getMessage());
+        } catch (Exception e){
+            System.err.println(e.getMessage());
         }
     }
     
@@ -100,12 +96,15 @@ public class Connector implements MessageListener {
     public static void main(String[] args) {
         // Check the command line arguments
         String ip = null;
+        String port = null;
 
         if (args.length < 2) {
             System.err.println("java Connector <ip> <port>");
-            exit(1);
+            System.exit(1);
         }
+        ip = args[0];
+        port = args[1];
             
-        makeSerialConnector(makeSFIf(ip, master_port));
+        makeSerialConnector(makeSFIf(ip, port));
     }
 }
