@@ -31,8 +31,13 @@ enum {
 
 /// constants representing the communication channels used
 enum {
-    AM_TOSTHREADS = 6,
+    AM_RADIO_TOSTHREADS = 6,
     AM_SERIAL_TOSTHREADS = 7
+};
+
+enum {
+    THREAD_STACK_RADIO_RECEIVE = 300,
+    THREAD_STACK_RADIO_SEND = 300
 };
 
 enum {

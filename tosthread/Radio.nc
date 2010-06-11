@@ -1,7 +1,7 @@
 #include "AM.h"
 #include "Tosthreads.h"
 
-module Sender {
+module Radio {
     uses {
         interface Boot;
         interface BlockingStdControl as BlockingAMControl;
@@ -35,17 +35,17 @@ implementation {
     }
 
     event void BlockingReceiveThread.run(void* arg) {
-        CmdMsg* cmdr = (CmdMsg*)Packet.getPayload(&mr,sizeof(CmdMsg));
+        CmdMsg* cmdr = (CmdMsg*)(call Packet.getPayload(&mr,sizeof(CmdMsg)));
         call BlockingAMControl.start();
         for(;;) {
             if (call BlockingReceive.receive(&mr,BRECEIVE_TIMEOUT) == SUCCESS) {
-                Leds.set(cmdr->instr);
+                call Leds.set(cmdr->instr);
             }
         }
     }
 
     event void BlockingSendThread.run(void* arg) {
-        CmdMsg* cmds = (CmdMsg*)Packet.getPayload(&ms,sizeof(CmdMsg));
+        CmdMsg* cmds = (CmdMsg*)(call Packet.getPayload(&ms,sizeof(CmdMsg)));
         call BlockingAMControl.start();
         for(;;) {
             call BlockingAMSend.send(AM_BROADCAST_ADDR,&ms,sizeof(CmdMsg));

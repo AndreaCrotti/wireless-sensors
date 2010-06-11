@@ -1,5 +1,5 @@
 #include "base_station.h"
-#include "stack.h"
+//include "stack.h"
 #include "message.h"
 
 /**
@@ -17,44 +17,35 @@ configuration ThreadAppC {
 
 implementation {
     // Standart components
-    components MainC, LedsC, TosThreadC;
+    components MainC, LedsC;//, TosThreadC;
 
     /********************************/
     /* SENDER COMPONENTS AND WIRING */
     /********************************/
 
-    TosThreadC.Boot -> MainC;
+   // TosThreadC.Boot -> MainC;
 
-    components Sender;
+    components Radio;
     components BlockingActiveMessageC;
-    Sender.BlockingAMControl -> BlockingActiveMessageC;
-    Sender.Leds -> LedsC;
+    /////// XXX
+    Radio.Boot -> MainC;
+    Radio.BlockingAMControl -> BlockingActiveMessageC;
+    Radio.Leds -> LedsC;
 
-    components new ThreadC(300) as RadioStressThread0;
-    components new BlockingAMSenderC(220) as BlockingAMSender0;
-    components new BlockingAMReceiverC(220) as BlockingAMReceiver0;
-    Sender.RadioStressThread0 -> RadioStressThread0;
-    Sender.BlockingAMSend0 -> BlockingAMSender0;
-    Sender.BlockingReceive0 -> BlockingAMReceiver0;
+    components new ThreadC(THREAD_STACK_RADIO_SEND) as RadioSendThread;
+    components new BlockingAMSenderC(AM_RADIO_TOSTHREADS) as BlockingSenderC;
+    Radio.BlockingSendThread -> RadioSendThread;
+    Radio.BlockingAMSend -> BlockingSenderC;
+    Radio.Packet -> BlockingSenderC;
+    components new ThreadC(THREAD_STACK_RADIO_RECEIVE) as RadioReceiveThread;
+    components new BlockingAMReceiverC(AM_RADIO_TOSTHREADS) as BlockingReceive;
+    Radio.BlockingReceiveThread -> RadioReceiveThread;
+    Radio.BlockingReceive -> BlockingReceive;
   
-    components new ThreadC(300) as RadioStressThread1;
-    components new BlockingAMSenderC(221) as BlockingAMSender1;
-    components new BlockingAMReceiverC(221) as BlockingAMReceiver1;
-    Sender.RadioStressThread1 -> RadioStressThread1;
-    Sender.BlockingAMSend1 -> BlockingAMSender1;
-    Sender.BlockingReceive1 -> BlockingAMReceiver1;
-  
-    components new ThreadC(300) as RadioStressThread2;
-    components new BlockingAMSenderC(222) as BlockingAMSender2;
-    components new BlockingAMReceiverC(222) as BlockingAMReceiver2;
-    Sender.RadioStressThread2 -> RadioStressThread2;
-    Sender.BlockingAMSend2 -> BlockingAMSender2;
-    Sender.BlockingReceive2 -> BlockingAMReceiver2;
-
 
     /**********************/
     /* BASESTATION WIRING */
-    /**********************/
+    /**********************
     components BaseStationC,
         new BaseSendReceiveP() as RadioReceiveSerialSendP,
         new BaseSendReceiveP() as SerialReceiveRadioSendP,
@@ -115,6 +106,6 @@ implementation {
     SerialReceiveRadioSendP.ReceiveAMPacket -> BlockingSerialActiveMessageC;
     SerialReceiveRadioSendP.SendAMPacket -> BlockingRadioActiveMessageC;             
     SerialReceiveRadioSendP.BlockingReceiveAny -> BlockingSerialActiveMessageC.BlockingReceiveAny;
-    SerialReceiveRadioSendP.BlockingAMSend -> BlockingRadioActiveMessageC;
+    SerialReceiveRadioSendP.BlockingAMSend -> BlockingRadioActiveMessageC; */
 }
 
