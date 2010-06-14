@@ -9,6 +9,8 @@ import net.tinyos.util.PrintStreamMessenger;
 
 /**
  * @author Andrea Crotti, Marius Grysla, Oscar Dustmann
+ * TODO: Check if we need also to add the "-comm" prefix
+ * "See also here tinyos-2.x/apps/tests/TestSerial/TestSerial.java"
  */
 public class Connector implements MessageListener {
 
