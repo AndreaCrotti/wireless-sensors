@@ -32,6 +32,9 @@ implementation {
     message_t ms;
     // NOTE: since we usually only either receive or send, one buffer should be enough, but we use two to support future modifications to this module
   
+    /**
+     * Boot this module
+     */
     event void Boot.booted() {
         call BlockingReceiveThread.start(NULL);
         if (TOS_NODE_ID == 1) {
@@ -39,6 +42,11 @@ implementation {
         }
     }
 
+    /**
+     * Thread to receive messages over the radio.
+     * 
+     * @param arg not used
+     */
     event void BlockingReceiveThread.run(void* arg) {
         CmdMsg* cmdr = (CmdMsg*)(call Packet.getPayload(&mr,sizeof(CmdMsg)));
         call BlockingAMControl.start();
@@ -49,6 +57,11 @@ implementation {
         }
     }
 
+    /**
+     * Thread to send messages over the radio. This is only run if we are node 1.
+     * 
+     * @param arg not used
+     */
     event void BlockingSendThread.run(void* arg) {
         CmdMsg* cmds = (CmdMsg*)(call Packet.getPayload(&ms,sizeof(CmdMsg)));
         call BlockingAMControl.start();
