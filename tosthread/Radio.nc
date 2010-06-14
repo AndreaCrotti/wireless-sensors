@@ -34,11 +34,9 @@ implementation {
   
     event void Boot.booted() {
         call BlockingReceiveThread.start(NULL);
-        call BlockingSendThread.start(NULL);
-        /*if (!TOS_NODE_ID) {
-            call BlockingSerialReceiveThread.start(NULL);
-            call BlockingSerialSendThread.start(NULL);
-        }*/
+        if (TOS_NODE_ID == 1) {
+            call BlockingSendThread.start(NULL);
+        }
     }
 
     event void BlockingReceiveThread.run(void* arg) {
@@ -56,6 +54,7 @@ implementation {
         call BlockingAMControl.start();
         for(;;) {
             cmds->instr++;
+            cmds->seqno++;
             call BlockingAMSend.send(AM_BROADCAST_ADDR,&ms,sizeof(CmdMsg));
             call BlockingSendThread.sleep(BSEND_SLEEP);
         }
