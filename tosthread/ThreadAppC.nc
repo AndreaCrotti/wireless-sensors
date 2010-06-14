@@ -16,16 +16,16 @@ configuration ThreadAppC {
 
 implementation {
     // Standart components
-    components MainC, LedsC, TosThreadC;
+    components MainC, LedsC, TosThreadP;
 
     /********************************/
     /* SENDER COMPONENTS AND WIRING */
     /********************************/
 
-    TosThreadC.Boot -> MainC;
+    TosThreadP.Boot -> MainC;
 
     components Radio;
-    Radio.Boot -> TosThreadC.RadioBoot;
+    Radio.Boot -> TosThreadP.RadioBoot;
     components BlockingActiveMessageC as BlockingRadioActiveMessageC;
     Radio.BlockingAMControl -> BlockingRadioActiveMessageC;
     Radio.Leds -> LedsC;
@@ -62,7 +62,7 @@ implementation {
              
         ThreadSynchronizationC;
 
-    BaseStationC.Boot -> TosThreadC.BaseStationBoot;
+    BaseStationC.Boot -> TosThreadP.BaseStationBoot;
     RadioReceiveSerialSendP.Boot -> BaseStationC;
     SerialReceiveRadioSendP.Boot -> BaseStationC;
 
