@@ -1,3 +1,11 @@
+/**
+ * @file   Radio.nc
+ * @author Andrea Crotti, Marius Gysla, Oscar Dustmann
+ * @date   Wed Jun 13 12:02:18 2010
+ * 
+ * @brief  Main module for all active nodes (that is nodes != 0).
+ * 
+ */
 #include "AM.h"
 #include "Tosthreads.h"
 
@@ -13,21 +21,16 @@ module Radio {
         interface Thread as BlockingSendThread;
         interface BlockingAMSend as BlockingAMSend;
     
-        /*interface Thread as RadioStressThread1;
-        interface BlockingAMSend as BlockingAMSend1;
-        interface BlockingReceive as BlockingReceive1;
-    
-        interface Thread as RadioStressThread2;
-        interface BlockingAMSend as BlockingAMSend2;
-        interface BlockingReceive as BlockingReceive2;*/
-
         interface Leds;
     }
 }
 
 implementation {
+    // the message buffer we use for receiving
     message_t mr;
+    // the message buffer we use for sending
     message_t ms;
+    // NOTE: since we usually only either receive or send, one buffer should be enough, but we use two to support future modifications to this module
   
     event void Boot.booted() {
         call BlockingReceiveThread.start(NULL);
